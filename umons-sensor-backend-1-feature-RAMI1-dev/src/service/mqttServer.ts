@@ -15,6 +15,7 @@ import SensorOverMqtt from "@/service/sensorsOverMqtt";
 import KafkaService from "@/service/kafkaService";
 const DB: any = db;
 const { Sensor } = DB;
+
 // --- end of model import
 
 /**
@@ -22,6 +23,7 @@ const { Sensor } = DB;
  * and message handling for sensor communication.
  */
 class MqttServer {
+  private reconnectAttemps = 0;
   private static instance: MqttServer | undefined;
   public mqttClient: MqttClient | undefined;
   private sensorsMap: Map<string, SensorOverMqtt> = new Map([]);
@@ -117,6 +119,9 @@ class MqttServer {
    * @return {Promise<void>}
    */
   private async reconnectBroker(): Promise<void> {
+    this.reconnectAttemps++;
+    const delay = Math.min(Math.pow(2, this.reconnectAttemps), 30) * 1000; // Exponential backoff with a maximum delay of 30 seconds
+    await new Promise((resolve) => setTimeout(resolve, delay)); // Exponential backoff
     await this.connectBroker(BROKER_INFO); // Attempt to reconnect after 5 seconds
   }
 
@@ -164,9 +169,8 @@ class MqttServer {
    * @return {Promise<void>}
    */
   private async handleConnect() {
-    //console.log(`Connecté au broker à l'adresse mqtts://${BROKER_INFO.url}`);
+    this.reconnectAttemps = 0; 
     if (Sensor !== undefined) {
-      // We check that our Sensor model is in our database !!!
       await this.initializeSensorsAndSubscribeToTheirTopic();
     }
   }

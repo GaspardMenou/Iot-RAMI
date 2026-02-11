@@ -1,7 +1,7 @@
 import { Kafka, Producer, Consumer } from "kafkajs";
 import { envs } from "@/utils/env";
 class KafkaService {
-  private static instance: KafkaService;
+  private static instance: KafkaService | undefined;
   private kafka!: Kafka;
   private producer!: Producer;
   private consumer!: Consumer;
@@ -11,10 +11,15 @@ class KafkaService {
   }
   public static async getInstance(): Promise<KafkaService> {
     if (!KafkaService.instance) {
-      console.log("📦 Creating new Kafka Service instance");
-      KafkaService.instance = new KafkaService();
-      await KafkaService.instance.connectToKafka();
-      await KafkaService.instance.connect();
+      try {
+        console.log("📦 Creating new Kafka Service instance");
+        KafkaService.instance = new KafkaService();
+        await KafkaService.instance.connectToKafka();
+        await KafkaService.instance.connect();
+      } catch (error) {
+        KafkaService.instance = undefined; // Reset instance on failure
+        throw error; // Rethrow to handle it in the caller
+      }
     }
     return KafkaService.instance;
   }
