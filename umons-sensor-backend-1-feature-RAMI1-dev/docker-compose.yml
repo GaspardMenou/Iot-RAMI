@@ -1,7 +1,18 @@
 services:
   node-backend:
     container_name: ${NODE_CONTAINER_NAME}
-    image: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV}
+        - DB_USER=${DB_USER}
+        - DB_PASSWORD=${DB_PASSWORD}
+        - DB_NAME=${DB_NAME}
+        - DB_HOST=${DB_CONTAINER_NAME}
+        - DB_DIALECT=${DB_DIALECT}
+        - NODE_PORT_IN=${NODE_PORT_IN}
+        - KAFKA_BROKERS=${KAFKA_BROKERS}
     restart: always
     ports:
       - ${NODE_PORT_OUT}:${NODE_PORT_IN}
@@ -20,6 +31,11 @@ services:
       - PM2_PUBLIC_KEY=${PM2_PUBLIC_KEY}
       - PM2_SECRET_KEY=${PM2_SECRET_KEY}
       - PM2_INSTANCES=${PM2_INSTANCES}
+      - KAFKA_BROKERS=${KAFKA_BROKERS}
+      - MQTT_URL=${MQTT_URL}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
     networks:
       - default
     depends_on:
@@ -53,8 +69,22 @@ services:
     networks:
       - default  # Ajout au réseau par défaut
 
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosquitto
+    restart: always
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/config/password.txt:/mosquitto/config/password.txt
+      - mosquitto-data:/mosquitto/data
+    networks:
+      - default
+
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
     depends_on:
       - zookeeper
@@ -72,6 +102,7 @@ services:
 volumes:
   db-data:
     name: db-data-${NODE_ENV}
+  mosquitto-data:
 
 networks:
   default:

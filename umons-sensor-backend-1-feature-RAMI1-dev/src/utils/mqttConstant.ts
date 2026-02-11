@@ -5,13 +5,14 @@ import {
   Responses,
   MessageFields,
 } from "#/mqttConstants";
+import { envs } from "@/utils/env";
 
 const BROKER_INFO: BrokerInfo = {
   // You can easily change the broker here, you just have to provide your broker information
-  url: "b8ae34f9f9614007847e4a94196aa111.s1.eu.hivemq.cloud", // USE mqtts = mqtt + tls
-  port: 8883,
-  username: "sensorsOverHiveMQ",
-  password: "KUvhSswNgi..7w4",
+  url: envs.MQTT_URL,
+  port: envs.MQTT_PORT,
+  username: envs.MQTT_USERNAME,
+  password: envs.MQTT_PASSWORD,
 };
 
 const TOPICS: Topics = {

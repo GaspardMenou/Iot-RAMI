@@ -59,7 +59,7 @@ class MqttServer {
    */
   private async connectBroker(BROKER_INFO: BrokerInfo): Promise<void> {
     try {
-      console.log('🔄 [connectBroker] Démarrage connexion MQTT');
+      console.log("🔄 [connectBroker] Démarrage connexion MQTT");
 
       const connectOptions: mqtt.IClientOptions = {
         clientId: "RAMI1-Server",
@@ -70,33 +70,34 @@ class MqttServer {
 
       // Créer le client MQTT
       this.mqttClient = mqtt.connect(
-        `mqtts://${BROKER_INFO.url}`,
+        `mqtt://${BROKER_INFO.url}`,
         connectOptions
       );
 
       // Attacher les handlers AVANT la connexion
-      this.mqttClient.on('connect', () => {
-        console.log('🟢 [MQTT] Connecté au broker');
+      this.mqttClient.on("connect", () => {
+        console.log("🟢 [MQTT] Connecté au broker");
         this.handleConnect();
       });
 
       // Handler de messages - avec debug explicite
-      this.mqttClient.on('message', (topic: string, message: Buffer) => {
-        console.log('⬇️ [MQTT] ENTRÉE DANS LE HANDLER DE MESSAGE');
-        console.log('📨 [MQTT] Topic:', topic);
-        console.log('📨 [MQTT] Message:', message.toString());
+      this.mqttClient.on("message", (topic: string, message: Buffer) => {
+        console.log("⬇️ [MQTT] ENTRÉE DANS LE HANDLER DE MESSAGE");
+        console.log("📨 [MQTT] Topic:", topic);
+        console.log("📨 [MQTT] Message:", message.toString());
         this.handleMessageReceivedFromSensor(topic, message);
       });
 
       // Handler d'erreur
-      this.mqttClient.on('error', (error) => {
-        console.error('❌ [MQTT] Erreur:', error);
+      this.mqttClient.on("error", (error) => {
+        console.error("❌ [MQTT] Erreur:", error);
       });
 
-      console.log('✅ [connectBroker] Client MQTT initialisé et handlers attachés');
-
+      console.log(
+        "✅ [connectBroker] Client MQTT initialisé et handlers attachés"
+      );
     } catch (error) {
-      console.error('❌ [connectBroker] Erreur:', error);
+      console.error("❌ [connectBroker] Erreur:", error);
       throw error;
     }
   }
@@ -189,16 +190,19 @@ class MqttServer {
    * @param {Buffer} message - The message payload.
    * @return {Promise<void>}
    */
-  private async handleMessageReceivedFromSensor(topic: string, message: Buffer) {
+  private async handleMessageReceivedFromSensor(
+    topic: string,
+    message: Buffer
+  ) {
     try {
       const messageString = message.toString();
-      console.log('🔍 [MQTT] Message reçu:', messageString);
+      console.log("🔍 [MQTT] Message reçu:", messageString);
 
       const parsedMessage = JSON.parse(messageString);
 
       // Si c'est une réponse à une commande, on l'ignore
       if (parsedMessage.ans) {
-        console.log('ℹ️ [MQTT] Message de contrôle ignoré:', parsedMessage.ans);
+        console.log("ℹ️ [MQTT] Message de contrôle ignoré:", parsedMessage.ans);
         return;
       }
 
@@ -209,30 +213,40 @@ class MqttServer {
         if (sensorId) {
           try {
             // Sauvegarde en base de données
-            await createSensorData(sensorId, parsedMessage.timestamp, parseFloat(parsedMessage.value));
-            console.log('💾 [DB] Donnée sauvegardée pour le capteur:', sensorId);
+            await createSensorData(
+              sensorId,
+              parsedMessage.timestamp,
+              parseFloat(parsedMessage.value)
+            );
+            console.log(
+              "💾 [DB] Donnée sauvegardée pour le capteur:",
+              sensorId
+            );
 
             // Tentative de publication Kafka (mais on ne bloque pas si ça échoue)
             try {
               const kafkaService = await KafkaService.getInstance();
-              await kafkaService.publishSensorData('sensor-data', {
+              await kafkaService.publishSensorData("sensor-data", {
                 sensorId,
                 timestamp: parsedMessage.timestamp,
                 value: parseFloat(parsedMessage.value),
-                topic
+                topic,
               });
-              console.log('📨 [Kafka] Donnée publiée avec succès');
+              console.log("📨 [Kafka] Donnée publiée avec succès");
             } catch (kafkaError) {
-              console.warn('⚠️ [Kafka] Erreur de publication (non bloquante):', kafkaError);
+              console.warn(
+                "⚠️ [Kafka] Erreur de publication (non bloquante):",
+                kafkaError
+              );
             }
           } catch (dbError) {
-            console.error('❌ [DB] Erreur de sauvegarde:', dbError);
+            console.error("❌ [DB] Erreur de sauvegarde:", dbError);
             throw dbError;
           }
         }
       }
     } catch (error) {
-      console.error('❌ [MQTT] Erreur de traitement:', error);
+      console.error("❌ [MQTT] Erreur de traitement:", error);
     }
   }
 
@@ -242,6 +256,7 @@ class MqttServer {
    * @param {Error} _error - The error object.
    */
   private handleErrorMqtt(_error: Error) {
+    console.error("[MQTT] Erreur:", _error);
     //console.log(error);
     //throw new ServerErrorException(error.message, "mqtt.error");
   }
@@ -256,24 +271,33 @@ class MqttServer {
    */
   private async subscribeTopic(topic: string): Promise<void> {
     try {
-      console.log('🔄 [subscribeTopic] Tentative de souscription au topic:', topic);
-      console.log('📡 [subscribeTopic] État de la connexion MQTT:', this.mqttClient?.connected);
+      console.log(
+        "🔄 [subscribeTopic] Tentative de souscription au topic:",
+        topic
+      );
+      console.log(
+        "📡 [subscribeTopic] État de la connexion MQTT:",
+        this.mqttClient?.connected
+      );
 
       if (this.mqttClient?.connected) {
         await new Promise<void>((resolve, reject) => {
           this.mqttClient?.subscribe(topic, (err) => {
             if (err) {
-              console.error('❌ [subscribeTopic] Erreur de souscription:', err);
+              console.error("❌ [subscribeTopic] Erreur de souscription:", err);
               reject(err);
             } else {
-              console.log('✅ [subscribeTopic] Souscription réussie au topic:', topic);
+              console.log(
+                "✅ [subscribeTopic] Souscription réussie au topic:",
+                topic
+              );
               resolve();
             }
           });
         });
       }
     } catch (err) {
-      console.error('❌ [subscribeTopic] Erreur:', err);
+      console.error("❌ [subscribeTopic] Erreur:", err);
       this.handleErrorMqtt(err as Error);
     }
   }
@@ -380,10 +404,10 @@ class MqttServer {
   public getTopicForHearingTheSensorOnWebClientSide(
     topicFromDB: string
   ): string {
-    console.log('🔍 [getTopicForHearingTheSensorOnWebClientSide]', {
+    console.log("🔍 [getTopicForHearingTheSensorOnWebClientSide]", {
       topicFromDB,
       suffix: TOPICS.HEARING_THE_SENSOR,
-      result: `${topicFromDB}${TOPICS.HEARING_THE_SENSOR}`
+      result: `${topicFromDB}${TOPICS.HEARING_THE_SENSOR}`,
     });
     return this.getTopicForHearingTheSensor(topicFromDB);
   }
@@ -398,7 +422,7 @@ class MqttServer {
    */
   public async subscribeServer(topicFromDB: string) {
     const fullTopic = this.getTopicForHearingTheSensor(topicFromDB);
-    console.log('🔄 [subscribeServer] Souscription au topic:', fullTopic);
+    console.log("🔄 [subscribeServer] Souscription au topic:", fullTopic);
     await this.subscribeTopic(fullTopic);
   }
 
@@ -452,7 +476,10 @@ class MqttServer {
    * @return {Promise<void>}
    */
   public async sendStartSignal(topicFromDB: string) {
-    console.log('🚀 [sendStartSignal] Envoi du signal START au topic:', topicFromDB);
+    console.log(
+      "🚀 [sendStartSignal] Envoi du signal START au topic:",
+      topicFromDB
+    );
     await this.publishCommandToSensor(topicFromDB, COMMANDS.START);
   }
 
@@ -478,8 +505,7 @@ class MqttServer {
 
       // S'assurer d'être souscrit au topic de réponse
       const responseTopic = this.getTopicForHearingTheSensor(topicFromDB);
-      await this.subscribeTopic(responseTopic);  // Ajoutez cette ligne
-
+      await this.subscribeTopic(responseTopic); // Ajoutez cette ligne
 
       const handleResponse = (response: string) => {
         responseReceived = response;
@@ -497,9 +523,12 @@ class MqttServer {
         try {
           const parsedMessage = JSON.parse(messageString);
           const ans = parsedMessage[MESSAGE_FIELDS.ANS];
-          console.log('Expected topic:', this.getTopicForHearingTheSensor(topicFromDB)); // Debug log
-          console.log('Actual topic:', topic); // Debug log
-          console.log('Answer received:', ans); // Debug log
+          console.log(
+            "Expected topic:",
+            this.getTopicForHearingTheSensor(topicFromDB)
+          ); // Debug log
+          console.log("Actual topic:", topic); // Debug log
+          console.log("Answer received:", ans); // Debug log
 
           if (this.getTopicForHearingTheSensor(topicFromDB) === topic) {
             if (ans === RESPONSES.PONG) {

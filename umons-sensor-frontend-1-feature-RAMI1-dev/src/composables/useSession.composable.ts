@@ -269,13 +269,12 @@ const useSession = () => {
 		const options = {
 			username: mqttInfo.username,
 			password: mqttInfo.password,
-			protocol: "wss" as MqttProtocol,
-			port: 8884,
-			rejectUnauthorized: false,
+			protocol: "ws" as MqttProtocol,
+			port: 9001,
 		}
 
 		topic.value = mqttInfo.topic
-		mqttClient.value = mqtt.connect(`wss://${mqttInfo.url}/mqtt`, options)
+		mqttClient.value = mqtt.connect(`${import.meta.env.VITE_APP_MQTT_URL}`, options)
 
 		mqttClient.value.on("connect", () => {
 			console.log("Connecté au broker MQTT")
