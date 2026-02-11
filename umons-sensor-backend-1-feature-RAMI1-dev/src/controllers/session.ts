@@ -232,7 +232,7 @@ const deleteAllSessions = async (_: Request, res: Response) => {
 
 const getSessionData = async (req: Request, res: Response) => {
   const { id } = req.params;
-  console.log('🔍 getSessionData called with id:', id); // Nouveau log
+  console.log("🔍 getSessionData called with id:", id); // Nouveau log
   try {
     // Let's find out the session
     const session = await Session.findByPk(id);

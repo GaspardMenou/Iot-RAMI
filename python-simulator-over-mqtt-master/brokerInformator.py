@@ -49,7 +49,7 @@ class BrokerInformator:
     def hivemq():
         # Do not forget about the secure version (tls)
         return {
-            "url": "b8ae34f9f9614007847e4a94196aa111.s1.eu.hivemq.cloud",
+            "url": "82093dec19714340be5279126c522a92.s1.eu.hivemq.cloud",
             "port": 8883,
             "username": "sensorsOverHiveMQ",
             "password": "KUvhSswNgi..7w4",
@@ -73,7 +73,7 @@ class BrokerInformator:
     @staticmethod
     def websocket_client_over_hivemq():
         return {
-            "url": "b8ae34f9f9614007847e4a94196aa111.s1.eu.hivemq.cloud",
+            "url": "82093dec19714340be5279126c522a92.s1.eu.hivemq.cloud",
             "port": 8884,
             "username": "sensorsOverHiveMQ",
             "password": "KUvhSswNgi..7w4",

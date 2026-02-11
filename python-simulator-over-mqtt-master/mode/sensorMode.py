@@ -89,7 +89,7 @@ class SensorMode(Mode):
     def publish_random_value(self, topic):
         while True:
             if self.allow_to_publish:
-                value = random.randint(1, 100)
+                value = random.randint(1, 100)/100
                 self.publish_value(topic, value)
             time.sleep(self.time_sleep_beetween_two_values)
 
