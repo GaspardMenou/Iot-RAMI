@@ -5,6 +5,7 @@ class KafkaService {
   private kafka!: Kafka;
   private producer!: Producer;
   private consumer!: Consumer;
+  private isKafkaConnected = false;
 
   private constructor() {
     // Constructeur privé pour empêcher l'instanciation directe}
@@ -53,8 +54,11 @@ class KafkaService {
 
       await this.consumer.connect();
       console.log("✅ Kafka Consumer connected successfully");
+
+      this.isKafkaConnected = true;
     } catch (error) {
       console.error("❌ Error connecting to Kafka:", error);
+      this.isKafkaConnected = false;
       throw error;
     }
   }
@@ -99,7 +103,9 @@ class KafkaService {
       throw error;
     }
   }
-
+  public isConnected(): boolean {
+    return this.isKafkaConnected;
+  }
   public async disconnect(): Promise<void> {
     try {
       await this.producer.disconnect();
@@ -107,6 +113,7 @@ class KafkaService {
 
       await this.consumer.disconnect();
       console.log("👋 Kafka Consumer disconnected");
+      this.isKafkaConnected = false;
     } catch (error) {
       console.error("❌ Error disconnecting from Kafka:", error);
       throw error;
