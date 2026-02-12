@@ -21,6 +21,11 @@ module.exports = {
       statements: 0,
     },
   },
+  globals: {
+    "ts-jest": {
+      isolatedModules: true,
+    },
+  },
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^@controllers/(.*)$": "<rootDir>/src/controllers/$1",
