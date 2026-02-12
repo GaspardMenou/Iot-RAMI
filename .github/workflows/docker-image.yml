@@ -6,13 +6,31 @@ on:
   pull_request:
     branches: [ "main" ]
 
-jobs:
+defaults:
+    run:
+      working-directory: ./umons-sensor-backend-1-feature-RAMI1-dev
 
+jobs:
+  lint :
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Lint the Dockerfile
+      run: npm install && npm run format
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run tests
+      run: npm install && npm run test
   build:
+    needs: lint
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: docker build ./umons-sensor-backend-1-feature-RAMI1-dev --file ./umons-sensor-backend-1-feature-RAMI1-dev/Dockerfile --tag umons-sensor-dev:$(date +%s)
+      run: docker build . --file Dockerfile --tag umons-sensor-dev:$(date +%s)
