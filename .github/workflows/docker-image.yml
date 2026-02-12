@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag umons-sensor-dev:$(date +%s)
+      run: docker build ./umons-sensor-backend-1-feature-RAMI1-dev --file Dockerfile --tag umons-sensor-dev:$(date +%s)
