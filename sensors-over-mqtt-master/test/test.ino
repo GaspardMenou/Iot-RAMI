@@ -4,12 +4,12 @@
 #include <ArduinoJson.h>
 
 /**** Constantes WiFi et MQTT *****/
-const char *SSID = "http://dkoop.be";
-const char *PASSWORD = "dkoop2013";
-const char *MQTT_BROKER = "b8ae34f9f9614007847e4a94196aa111.s1.eu.hivemq.cloud";
-const char *MQTT_USERNAME = "sensorsOverHiveMQ";
-const char *MQTT_PASSWORD = "KUvhSswNgi..7w4";
-const int MQTT_PORT = 8883;
+const char *SSID = "NETGEAR36";
+const char *PASSWORD = "giftedcar426";
+const char *MQTT_BROKER = "192.168.1.3";
+const char *MQTT_USERNAME = "test";
+const char *MQTT_PASSWORD = "test";
+const int MQTT_PORT = 1883;
 const char *MQTT_TOPIC_TO_SPEAK_ON = "pysimulator-esp32-ecg-topic/sensor";
 const char *MQTT_TOPIC_TO_LISTEN_ON = "pysimulator-esp32-ecg-topic/server";
 
@@ -56,18 +56,20 @@ unsigned long previousMillis = 0;
 const float MIN_VALUE = 0;
 const float MAX_VALUE = 1000;
 
-WiFiClientSecure espClient;
+WiFiClient espClient;
 PubSubClient client(espClient);
 
 /**** Fonction de publication des valeurs *****/
 void publishValue(float value)
 {
     DynamicJsonDocument doc(200);
+    time_t now;
+    time(&now);
     // Utiliser le temps en secondes avec décimales comme en Python
-    float timestamp = millis() / 1000.0;
+    long long timestamp = (long long)now * 1000000LL + (micros() % 1000000);
     doc["timestamp"] = timestamp;
     doc["value"] = value;
-
+    
     char buffer[200];
     serializeJson(doc, buffer);
     client.publish(MQTT_TOPIC_TO_SPEAK_ON, buffer);
@@ -136,13 +138,17 @@ void reconnect()
 
 void setup()
 {
+    
     Serial.begin(115200);
     randomSeed(analogRead(0));
-
     setup_wifi();
-    espClient.setCACert(ROOT_CA);
     client.setServer(MQTT_BROKER, MQTT_PORT);
     client.setCallback(callback);
+    configTime(0, 3600, "pool.ntp.org");
+    struct tm timeinfo;
+    while (!getLocalTime(&timeinfo)) {
+      delay(500);
+    }
 }
 
 void loop()
