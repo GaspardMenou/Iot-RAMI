@@ -1,7 +1,18 @@
 import MqttServer from "@/service/mqttServer";
 import { COMMANDS, TOPICS } from "@/utils/mqttConstant";
 
-jest.mock("mqtt");
+jest.mock("mqtt", () => ({
+  connect: jest.fn(() => ({
+    on: jest.fn(),
+    once: jest.fn(),
+    removeListener: jest.fn(),
+    end: jest.fn((_force, cb) => cb && cb()),
+    subscribe: jest.fn((_topic, cb) => cb && cb(null)),
+    unsubscribe: jest.fn((_topic, cb) => cb && cb(null)),
+    publish: jest.fn((_topic, _msg, cb) => cb && cb(null)),
+    connected: true,
+  })),
+}));
 
 describe("MqttServer", () => {
   let instance: MqttServer;
@@ -28,16 +39,20 @@ describe("MqttServer", () => {
     const topicFromDB = "test/topic";
     const expectedFullTopic = `${topicFromDB}${TOPICS.HEARING_THE_SENSOR}`;
 
-    const result = instance.getTopicForHearingTheSensorOnWebClientSide(topicFromDB);
+    const result =
+      instance.getTopicForHearingTheSensorOnWebClientSide(topicFromDB);
 
     expect(result).toBe(expectedFullTopic);
   });
 
   it("should subscribe to the correct topic", async () => {
     const topicFromDB = "test/topic";
-    const fullTopic = instance.getTopicForHearingTheSensorOnWebClientSide(topicFromDB);
+    const fullTopic =
+      instance.getTopicForHearingTheSensorOnWebClientSide(topicFromDB);
 
-    const subscribeTopicSpy = jest.spyOn(instance as any, "subscribeTopic").mockResolvedValue(undefined);
+    const subscribeTopicSpy = jest
+      .spyOn(instance as any, "subscribeTopic")
+      .mockResolvedValue(undefined);
 
     await instance.subscribeServer(topicFromDB);
 
@@ -48,9 +63,12 @@ describe("MqttServer", () => {
 
   it("should unsubscribe from the correct topic", async () => {
     const topicFromDB = "test/topic";
-    const fullTopic = instance.getTopicForHearingTheSensorOnWebClientSide(topicFromDB);
+    const fullTopic =
+      instance.getTopicForHearingTheSensorOnWebClientSide(topicFromDB);
 
-    const unsubscribeTopicSpy = jest.spyOn(instance as any, "unsubscribeTopic").mockResolvedValue(undefined);
+    const unsubscribeTopicSpy = jest
+      .spyOn(instance as any, "unsubscribeTopic")
+      .mockResolvedValue(undefined);
 
     await instance.unsubscribeServer(topicFromDB);
 
@@ -77,11 +95,16 @@ describe("MqttServer", () => {
   it("should send start signal to sensor", async () => {
     const topicFromDB = "test/topic";
 
-    const publishCommandToSensorSpy = jest.spyOn(instance as any, "publishCommandToSensor").mockResolvedValue(undefined);
+    const publishCommandToSensorSpy = jest
+      .spyOn(instance as any, "publishCommandToSensor")
+      .mockResolvedValue(undefined);
 
     await instance.sendStartSignal(topicFromDB);
 
-    expect(publishCommandToSensorSpy).toHaveBeenCalledWith(topicFromDB, COMMANDS.START);
+    expect(publishCommandToSensorSpy).toHaveBeenCalledWith(
+      topicFromDB,
+      COMMANDS.START
+    );
 
     publishCommandToSensorSpy.mockRestore();
   });
@@ -89,11 +112,16 @@ describe("MqttServer", () => {
   it("should send stop signal to sensor", async () => {
     const topicFromDB = "test/topic";
 
-    const publishCommandToSensorSpy = jest.spyOn(instance as any, "publishCommandToSensor").mockResolvedValue(undefined);
+    const publishCommandToSensorSpy = jest
+      .spyOn(instance as any, "publishCommandToSensor")
+      .mockResolvedValue(undefined);
 
     await instance.sendStopSignal(topicFromDB);
 
-    expect(publishCommandToSensorSpy).toHaveBeenCalledWith(topicFromDB, COMMANDS.STOP);
+    expect(publishCommandToSensorSpy).toHaveBeenCalledWith(
+      topicFromDB,
+      COMMANDS.STOP
+    );
 
     publishCommandToSensorSpy.mockRestore();
   });
