@@ -289,21 +289,21 @@ const useSession = () => {
 
 		mqttClient.value.on("message", (topic: string, message: Buffer) => {
 			try {
-				console.log('📨 [MQTT] Message reçu sur le topic:', topic);
+				console.log("📨 [MQTT] Message reçu sur le topic:", topic)
 				const messageString = message.toString()
-				console.log('📨 [MQTT] Contenu du message:', messageString);
+				console.log("📨 [MQTT] Contenu du message:", messageString)
 				const parsedMessage = JSON.parse(messageString)
 
 				const { timestamp, value } = parsedMessage
-				console.log('📨 [MQTT] Décodage du message:', parsedMessage);
+				console.log("📨 [MQTT] Décodage du message:", parsedMessage)
 
 				// Convertir le timestamp UNIX en objet Date
 				const date = new Date(Math.floor(timestamp / 1000))
 
-				console.log('📊 [MQTT] Données extraites:', {
+				console.log("📊 [MQTT] Données extraites:", {
 					date: date.toISOString(),
-					value
-				});
+					value,
+				})
 
 				// Vérifier si la valeur est bien convertible en nombre flottant
 				if (!isNaN(value)) {
