@@ -37,7 +37,8 @@ static BLEAdvertisedDevice* myDevice;
 
 
 /** Secure WiFi Connectivity Initialisation ***/
-WiFiClientSecure loraClient;
+// WiFiClientSecure loraClient;
+WiFiClient loraClient;
 
 /** MQTT Client Initialisation Using WiFi Connection ***/
 PubSubClient MqttClient(loraClient);
@@ -137,8 +138,8 @@ bool connectToServer() {
 
     // Read the value of the characteristic.
     if(pRemoteCharacteristic->canRead()) {
-      std::string stdValue = pRemoteCharacteristic->readValue();
-      String value = String(stdValue.c_str());
+      String stdValue = pRemoteCharacteristic->readValue();
+      String value = String(pRemoteCharacteristic->readValue());
       Serial.print("The characteristic value was: ");
       Serial.println(value);
     }
@@ -247,7 +248,7 @@ void setup() {
 
 
   setup_wifi(SSID, PASSWORD);
-  setCACertForTLS(loraClient, ROOT_CA);
+  // setertForTLS(loraClient, ROOT_CA);
 
   configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER);
 
