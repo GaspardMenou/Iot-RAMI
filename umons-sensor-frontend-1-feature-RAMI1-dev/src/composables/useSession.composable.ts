@@ -1,7 +1,7 @@
 import { ref } from "vue"
 import { useAxios } from "@/composables/useAxios.composable"
 import mqtt, { type MqttProtocol } from "mqtt"
-
+import { io } from "socket.io-client"
 import type { CreateClientSideSessionRequestBody, CreateSessionOnServerRequestBody, MqttCredentials, CreateServorSessionResponse, Session } from "#/session"
 import { UserFields, EventTypes, handleEvent } from "@/composables/useUser.composable"
 import type { ChartData } from "chart.js"
@@ -121,13 +121,14 @@ const useSession = () => {
 	// *************************** [ATTRIBUTE]  MQTT
 	const mqttClient = ref<any>(null)
 	const topic = ref("")
+	const socketClient = ref<any>(null)
 
 	// *************************** [ATTRIBUTE]  GRAPH SESSION (both realtime and non realtime)
 	const chartData = ref({
 		labels: [] as string[],
 		datasets: [
 			{
-				label: "Value collected from sensor via MQTT",
+				label: "Value collected from sensor via WebSocket",
 				backgroundColor: "rgba(75, 192, 192, 0.5)",
 				borderColor: "rgba(75, 192, 192, 1)",
 				fill: false,
@@ -201,7 +202,7 @@ const useSession = () => {
 			const { data } = (await axios.post<MqttCredentials>(SessionControllerPaths.START_SESSION_ON_CLIENT_SIDE, { ...clientSideSession })) as { data: MqttCredentials }
 			// This retrieve the sensor topic on which you can get the values
 			setBeforeStartMqttSession(clientSideSession.idUser, clientSideSession.idSensor, data.topic, new Date())
-			connectToMQTT(data)
+			connectToWebSocket(data.topic)
 		} catch (error) {
 			console.error("Erreur lors de la récupération du topic du capteur:", error)
 		}
@@ -235,15 +236,7 @@ const useSession = () => {
 		try {
 			const { data } = (await axios.post<CreateServorSessionResponse>(SessionControllerPaths.COMPLETE_SESSION_ON_SERVER_SIDE, sessionData)) as unknown as { data: CreateServorSessionResponse }
 
-			mqttClient.value.unsubscribe(topic.value, (err: any) => {
-				if (!err) {
-					console.log(`Désabonné du topic ${topic.value}`)
-				} else {
-					console.error("Erreur lors du désabonnement au topic:", err)
-				}
-			})
-
-			mqttClient.value.end()
+			socketClient.value?.disconnect()
 			cleanAfterSession()
 		} catch (error) {
 			console.error("Erreur lors de la tentative de fin de la session:", error)
@@ -262,6 +255,31 @@ const useSession = () => {
 		topic.value = ""
 		createdAt.value = null
 		endedAt.value = null
+	}
+	const connectToWebSocket = (topic: string) => {
+		const token = localStorage.getItem(UserFields.TOKEN)
+		const socket = io(import.meta.env.VITE_SOCKET_URL)
+		socketClient.value = socket
+		socket.emit("join-session", { topic, token })
+		socket.on("new-data", (data: any) => {
+			try {
+				const { timestamp, value } = data
+
+				const date = new Date(Math.floor(timestamp / 1000))
+				if (!isNaN(value)) {
+					updateChart(date, parseFloat(value))
+					updateTransmissionSpeed(date)
+					console.log("📨 [WebSocket] Données extraites:", {
+						date: date.toISOString(),
+						value,
+					})
+				}
+			} catch (error) {
+				console.error("Error processing WebSocket data:", error)
+			}
+		})
+
+		return socket
 	}
 
 	// *************************** [METHOD]  MQTT

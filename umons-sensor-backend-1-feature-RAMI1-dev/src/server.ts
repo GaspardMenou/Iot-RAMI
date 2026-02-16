@@ -1,5 +1,6 @@
 import app from "@/app";
 import http from "http";
+import SocketService from "@/service/socketService";
 
 const normalizePort = (val: string) => {
   const port = parseInt(val, 10);
@@ -40,7 +41,9 @@ const errorHandler = (error: { syscall: string; code: any }) => {
 
 const server = http.createServer(app);
 server.timeout = 1000 * 60 * 10; // 10 minutes
-
+const socketService = new SocketService(server);
+socketService.initialize();
+socketService.startKafkaConsumer()
 server.on("error", errorHandler);
 server.on("listening", () => {
   const address = server.address();
