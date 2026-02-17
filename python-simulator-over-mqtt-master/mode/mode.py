@@ -11,7 +11,7 @@ class Mode(ABC):
         self.mqtt_service.client.on_message = self.on_message_for_mode
 
         # topic duplication
-        topic = input("Enter topic used for communication (between sensor and server): \n")
+        topic = input("Enter topic used for communication (between sensor and server): \n")+"-topic"
         self.topic_for_hearing_from_sensor = MqttAppConstants.get_full_topic_name(topic, MqttAppConstants.HEARING_FROM_SENSOR)
         self.topic_for_hearing_from_server = MqttAppConstants.get_full_topic_name(topic, MqttAppConstants.HEARING_FROM_SERVER)
 

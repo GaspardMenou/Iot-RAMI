@@ -105,8 +105,6 @@ const createSessionOnClientSide = async (req: Request, res: Response) => {
 
     return res.status(201).json({
       url: BROKER_INFO.url,
-      username: BROKER_INFO.username,
-      password: BROKER_INFO.password,
       topic: topicForHearingFromSensor,
     }); // Send the topic to the user so that he can subscribe to the channel
   } catch (error) {
