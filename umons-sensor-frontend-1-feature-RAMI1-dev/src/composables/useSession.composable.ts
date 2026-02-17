@@ -1,8 +1,7 @@
 import { ref } from "vue"
 import { useAxios } from "@/composables/useAxios.composable"
-import mqtt, { type MqttProtocol } from "mqtt"
 import { io } from "socket.io-client"
-import type { CreateClientSideSessionRequestBody, CreateSessionOnServerRequestBody, MqttCredentials, CreateServorSessionResponse, Session } from "#/session"
+import type { CreateClientSideSessionRequestBody, CreateSessionOnServerRequestBody, StartSessionResponse, CreateServorSessionResponse, Session } from "#/session"
 import { UserFields, EventTypes, handleEvent } from "@/composables/useUser.composable"
 import type { ChartData } from "chart.js"
 
@@ -118,8 +117,7 @@ const useSession = () => {
 	const createdAt = ref<Date | null>(null)
 	const endedAt = ref<Date | null>(null)
 
-	// *************************** [ATTRIBUTE]  MQTT
-	const mqttClient = ref<any>(null)
+	// *************************** [ATTRIBUTE]  WebSocket
 	const topic = ref("")
 	const socketClient = ref<any>(null)
 
@@ -199,9 +197,9 @@ const useSession = () => {
 
 	const startSessionOnClientSide = async (clientSideSession: CreateClientSideSessionRequestBody) => {
 		try {
-			const { data } = (await axios.post<MqttCredentials>(SessionControllerPaths.START_SESSION_ON_CLIENT_SIDE, { ...clientSideSession })) as { data: MqttCredentials }
+			const { data } = (await axios.post<StartSessionResponse>(SessionControllerPaths.START_SESSION_ON_CLIENT_SIDE, { ...clientSideSession })) as { data: StartSessionResponse }
 			// This retrieve the sensor topic on which you can get the values
-			setBeforeStartMqttSession(clientSideSession.idUser, clientSideSession.idSensor, data.topic, new Date())
+			setupSession(clientSideSession.idUser, clientSideSession.idSensor, data.topic, new Date())
 			connectToWebSocket(data.topic)
 		} catch (error) {
 			console.error("Erreur lors de la récupération du topic du capteur:", error)
@@ -243,7 +241,7 @@ const useSession = () => {
 		}
 	}
 
-	const setBeforeStartMqttSession = (userId: string, sensorId: string, sessionTopic: string, sessionCreatedAt: Date) => {
+	const setupSession = (userId: string, sensorId: string, sessionTopic: string, sessionCreatedAt: Date) => {
 		idUser.value = userId
 		idSensor.value = sensorId
 		topic.value = sessionTopic
@@ -281,64 +279,6 @@ const useSession = () => {
 
 		return socket
 	}
-
-	// *************************** [METHOD]  MQTT
-	const connectToMQTT = (mqttInfo: MqttCredentials) => {
-		const options = {
-			username: mqttInfo.username,
-			password: mqttInfo.password,
-			protocol: "ws" as MqttProtocol,
-			port: 9001,
-		}
-
-		topic.value = mqttInfo.topic
-		mqttClient.value = mqtt.connect(`${import.meta.env.VITE_APP_MQTT_URL}`, options)
-
-		mqttClient.value.on("connect", () => {
-			console.log("Connecté au broker MQTT")
-			mqttClient.value.subscribe(topic.value, (err: any) => {
-				if (!err) {
-					console.log(`Abonné au topic ${topic.value}`)
-				} else {
-					console.error("Erreur lors de l'abonnement au topic:", err)
-				}
-			})
-		})
-
-		mqttClient.value.on("message", (topic: string, message: Buffer) => {
-			try {
-				console.log("📨 [MQTT] Message reçu sur le topic:", topic)
-				const messageString = message.toString()
-				console.log("📨 [MQTT] Contenu du message:", messageString)
-				const parsedMessage = JSON.parse(messageString)
-
-				const { timestamp, value } = parsedMessage
-				console.log("📨 [MQTT] Décodage du message:", parsedMessage)
-
-				// Convertir le timestamp UNIX en objet Date
-				const date = new Date(Math.floor(timestamp / 1000))
-
-				console.log("📊 [MQTT] Données extraites:", {
-					date: date.toISOString(),
-					value,
-				})
-
-				// Vérifier si la valeur est bien convertible en nombre flottant
-				if (!isNaN(value)) {
-					// Mettre à jour le graphique
-					updateChart(date, parseFloat(value))
-					updateTransmissionSpeed(date)
-				}
-			} catch (error) {
-				console.error(`Erreur lors du traitement du message sur ${topic}: ${message.toString()}`, error)
-			}
-		})
-
-		mqttClient.value.on("error", (err: any) => {
-			console.error("Erreur MQTT:", err)
-		})
-	}
-
 	// *************************** [METHOD]  GRAPH SESSION (both realtime and non realtime)
 
 	const updateChartWithNewValues = (newLabels: string[], newData: { x: Date; y: number }[]) => {

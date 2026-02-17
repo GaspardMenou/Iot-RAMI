@@ -30,10 +30,7 @@ interface CreateSessionOnServerRequestBody extends CreateClientSideSessionReques
 }
 
 // Answer format
-interface MqttCredentials {
-	url: string
-	username: string
-	password: string
+interface StartSessionResponse {
 	topic: string
 }
 
@@ -41,4 +38,4 @@ interface CreateServorSessionResponse {
 	message: string
 }
 
-export type { Session, CreateClientSideSessionRequestBody, CreateSessionOnServerRequestBody, MqttCredentials, CreateServorSessionResponse }
+export type { Session, CreateClientSideSessionRequestBody, CreateSessionOnServerRequestBody, StartSessionResponse, CreateServorSessionResponse }
