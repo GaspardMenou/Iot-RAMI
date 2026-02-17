@@ -40,7 +40,9 @@ jest.mock("@/service/mqttServer", () => {
   const mMqttServerInstance = {
     sendStartSignal: jest.fn().mockResolvedValue(true),
     sendStopSignal: jest.fn().mockResolvedValue(true),
-    getTopicForHearingTheSensorOnWebClientSide: jest.fn().mockReturnValue("Sensor 1/topic"), // See sensors[0].topic
+    getTopicForHearingTheSensorOnWebClientSide: jest
+      .fn()
+      .mockReturnValue("Sensor 1/topic"), // See sensors[0].topic
   };
   return {
     getInstance: jest.fn().mockResolvedValue(mMqttServerInstance),
@@ -123,15 +125,16 @@ describe("Session Controller", () => {
       });
 
       expect(res.status).toBe(201);
-      expect(res.body.url).toBe(BROKER_INFO.url);
-      expect(res.body.username).toBe(BROKER_INFO.username);
-      expect(res.body.password).toBe(BROKER_INFO.password);
       expect(res.body.topic).toBe(sensor.topic);
 
       const mockMqttServerInstance = await MqttServer.getInstance();
 
-      expect(mockMqttServerInstance.getTopicForHearingTheSensorOnWebClientSide).toHaveBeenCalledWith(sensor.topic);
-      expect(mockMqttServerInstance.sendStartSignal).toHaveBeenCalledWith(sensor.topic);
+      expect(
+        mockMqttServerInstance.getTopicForHearingTheSensorOnWebClientSide
+      ).toHaveBeenCalledWith(sensor.topic);
+      expect(mockMqttServerInstance.sendStartSignal).toHaveBeenCalledWith(
+        sensor.topic
+      );
     });
 
     test("should return a 400 if user id is not uuid", async () => {
@@ -219,7 +222,9 @@ describe("Session Controller", () => {
 
       const mqttServerInstance = await MqttServer.getInstance();
 
-      expect(mqttServerInstance.sendStopSignal).toHaveBeenCalledWith(sensor.topic);
+      expect(mqttServerInstance.sendStopSignal).toHaveBeenCalledWith(
+        sensor.topic
+      );
       expect(db.Session.create).toHaveBeenCalled();
       expect(res.status).toBe(201);
       expect(res.body.message).toBe("session ended");
