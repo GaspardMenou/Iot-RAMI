@@ -2,6 +2,7 @@ import { ref, computed } from "vue"
 import type { Sensor } from "#/sensor"
 import { useAxios } from "@/composables/useAxios.composable"
 import { EventTypes, UserFields, handleEvent } from "@/composables/useUser.composable"
+import { io } from "socket.io-client"
 
 /******************************************* ROUTES PATHS & INTERFACE **********************************************/
 
@@ -146,12 +147,23 @@ export const useSensor = (sensorName: string | undefined) => {
 		handleEvent("emit", EventTypes.USER_REQUEST_SESSION_BY_SENSOR, { idUser: localStorage.getItem(UserFields.ID), idSensor })
 	}
 
+	const listenToSensorStatus = () => {
+		const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000")
+		socket.on("sensor-status", (data: { sensorName: string; status: SensorState }) => {
+			if (data.sensorName === sensorName) {
+				status.value = data.status
+			}
+		})
+		return socket
+	}
+
 	return {
 		status,
 		statusClass,
 		checkSensorStatus,
 		fetchSensors,
 		handleSensorSelect,
+		listenToSensorStatus,
 		sensors,
 		selectedSensor,
 		calculateDuration,

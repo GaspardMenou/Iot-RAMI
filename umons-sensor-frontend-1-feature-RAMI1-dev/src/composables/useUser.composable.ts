@@ -119,6 +119,18 @@ const validatePassword = (password: string, fieldName: string, errors: Record<st
 	} else if (password.length > 255) {
 		errors[fieldName] = "Password too long. Maximum 255 characters allowed."
 		return false
+	} else if (!password.match(/[A-Z]/)) {
+		errors[fieldName] = "Password must contain at least one uppercase letter."
+		return false
+	} else if (!password.match(/[a-z]/)) {
+		errors[fieldName] = "Password must contain at least one lowercase letter."
+		return false
+	} else if (!password.match(/[0-9]/)) {
+		errors[fieldName] = "Password must contain at least one digit."
+		return false
+	} else if (!password.match(/[@$!%*?&]/)) {
+		errors[fieldName] = "Password must contain at least one special character (@, $, !, %, *, ?, &)."
+		return false
 	}
 	return true
 }
@@ -228,7 +240,7 @@ const useUser = () => {
 		}
 	}
 
-	const validateForm = (formData: Record<string, any>, formFields: any[]): { valid: boolean; errors: Record<string, string> } => {
+	const validateForm = (formData: Record<string, any>, formFields: any[], formName: string): { valid: boolean; errors: Record<string, string> } => {
 		const errors: Record<string, string> = {}
 		let valid = true
 
@@ -248,12 +260,23 @@ const useUser = () => {
 					if (!validateEmail(formData[field.name], field.name, errors)) valid = false
 					break
 				case UserFields.PASSWORD:
+					if (formName === "login") {
+						if (!formData[field.name]) {
+							errors[field.name] = "Password is required."
+							valid = false
+						}
+					} else {
+						if (!validatePassword(formData[field.name], field.name, errors)) valid = false
+					}
+					break
 				case UserFields.NEW_PASSWORD:
 					if (!validatePassword(formData[field.name], field.name, errors)) valid = false
 					break
 				case UserFields.CONFIRM_PASSWORD:
+					if (!validateConfirmPassword(formData[UserFields.PASSWORD], formData[field.name], field.name, errors)) valid = false
+					break
 				case UserFields.CONFIRM_NEW_PASSWORD:
-					if (!validateConfirmPassword(formData[field.name], formData[field.name], field.name, errors)) valid = false
+					if (!validateConfirmPassword(formData[UserFields.NEW_PASSWORD], formData[field.name], field.name, errors)) valid = false
 					break
 				default:
 					break

@@ -7,6 +7,7 @@ import {
   BROKER_INFO,
 } from "@/utils/mqttConstant";
 import { createSensorData } from "@/controllers/sensorData";
+import SocketService from "@/service/socketService";
 // Model import
 import db from "@db/index";
 import { Sensor as SensorType } from "@/types/sensor";
@@ -32,11 +33,16 @@ class MqttServer {
   private handleMessageReceivedFromSensorBound =
     this.handleMessageReceivedFromSensor.bind(this);
   private handleErrorBound = this.handleErrorMqtt.bind(this);
+  private socketService: SocketService | undefined;
+  private sensorTimeouts: Map<string, NodeJS.Timeout> = new Map()
 
   // ------------------------ SINGLETON IMPLEMENTATION
   // Private constructor to prevent direct class instantiation (BUT WE DO NOT NEED IT !!)
   private constructor() {
     return;
+  }
+  public setSocketService(socketService: SocketService) {
+    this.socketService = socketService;
   }
 
   /**
@@ -169,7 +175,7 @@ class MqttServer {
    * @return {Promise<void>}
    */
   private async handleConnect() {
-    this.reconnectAttemps = 0; 
+    this.reconnectAttemps = 0;
     if (Sensor !== undefined) {
       await this.initializeSensorsAndSubscribeToTheirTopic();
     }
@@ -226,7 +232,17 @@ class MqttServer {
               "💾 [DB] Donnée sauvegardée pour le capteur:",
               sensorId
             );
-
+            const sensorName = this.getSensorNameUsingTopic(topic);
+            if (sensorName) {
+              this.socketService?.emitSensorStatus(sensorName, "online");
+              // Annuler le timer précédent s'il existe
+              clearTimeout(this.sensorTimeouts.get(sensorName));
+              // Créer un nouveau timer
+              const timeout = setTimeout(() => {
+                this.socketService?.emitSensorStatus(sensorName, "offline");
+              }, 30000);
+              this.sensorTimeouts.set(sensorName, timeout);
+            }
             // Tentative de publication Kafka (mais on ne bloque pas si ça échoue)
             try {
               const kafkaService = await KafkaService.getInstance();
@@ -582,6 +598,10 @@ class MqttServer {
   private getSensorIdUsingTopic(topic: string): string | undefined {
     const sensor = this.sensorsMap.get(topic);
     return sensor ? sensor.id : undefined;
+  }
+  private getSensorNameUsingTopic(topic: string): string | undefined {
+    const sensor = this.sensorsMap.get(topic);
+    return sensor ? sensor.name : undefined;
   }
 
   /**

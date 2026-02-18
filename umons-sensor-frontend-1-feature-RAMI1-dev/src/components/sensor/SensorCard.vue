@@ -22,9 +22,11 @@
 </template>
 
 <script lang="ts">
-	import { computed, defineComponent, onMounted } from "vue"
+	import { computed, defineComponent, onMounted, onUnmounted } from "vue"
 	import { EventTypes, handleEvent } from "@/composables/useUser.composable"
 	import { useSensor, SensorState } from "@/composables/useSensor.composable"
+	import { io } from "socket.io-client"
+import { on } from "events";
 
 	export default defineComponent({
 		name: "SensorCard",
@@ -46,7 +48,7 @@
 			},
 		},
 		setup(props) {
-			const { status, statusClass, checkSensorStatus } = useSensor(props.sensor.name)
+			const { status, statusClass, checkSensorStatus, listenToSensorStatus } = useSensor(props.sensor.name)
 
 			const isSelected = computed(() => props.selectedSensorId === props.sensor.id)
 
@@ -72,6 +74,10 @@
 
 			onMounted(() => {
 				checkSensorStatus()
+				const socket = listenToSensorStatus()
+				onUnmounted(() => {
+					socket.disconnect()
+				})
 			})
 
 			return {

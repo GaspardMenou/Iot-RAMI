@@ -53,6 +53,10 @@ class SocketService {
       await this.startKafkaConsumer(); // Retry connection
     }
   }
+  public emitSensorStatus(sensorName: string, status: string) {
+    this.io.emit("sensor-status", { sensorName, status });
+    console.log(`Emitted sensor status for sensor ${sensorName}:`, status);
+  }
 }
 
 export default SocketService;

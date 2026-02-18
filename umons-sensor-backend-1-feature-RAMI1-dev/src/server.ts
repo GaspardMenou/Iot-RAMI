@@ -1,6 +1,7 @@
 import app from "@/app";
 import http from "http";
 import SocketService from "@/service/socketService";
+import MqttServer from "@/service/mqttServer";
 
 const normalizePort = (val: string) => {
   const port = parseInt(val, 10);
@@ -43,7 +44,10 @@ const server = http.createServer(app);
 server.timeout = 1000 * 60 * 10; // 10 minutes
 const socketService = new SocketService(server);
 socketService.initialize();
-socketService.startKafkaConsumer()
+socketService.startKafkaConsumer();
+MqttServer.getInstance().then((mqttServer) => {
+  mqttServer.setSocketService(socketService);
+});
 server.on("error", errorHandler);
 server.on("listening", () => {
   const address = server.address();

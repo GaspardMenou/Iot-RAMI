@@ -117,7 +117,7 @@
 				const { validateForm, submitForm } = useUser()
 				this.errors = {}
 
-				const userFormValidity = validateForm(this.formData, this.formFields)
+				const userFormValidity = validateForm(this.formData, this.formFields, this.formName)
 
 				if (!userFormValidity.valid) {
 					this.errors = userFormValidity.errors
