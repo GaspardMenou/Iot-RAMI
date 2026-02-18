@@ -37,5 +37,4 @@
 		border-radius: 10px;
 		text-align: center;
 	}
-
 </style>
