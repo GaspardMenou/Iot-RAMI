@@ -22,6 +22,7 @@ jest.mock("@db/index", () => ({
     findAll: jest.fn(),
     findByPk: jest.fn(),
     destroy: jest.fn(),
+    update: jest.fn()
   },
 }));
 
@@ -118,7 +119,9 @@ describe("Session Controller", () => {
         id: sensor.id,
         topic: sensor.topic,
       });
-
+      db.Session.create.mockResolvedValue({
+        id: "bc9d5577-c636-402c-a682-dc533f31dfce",
+      });
       const res = await request.post(`${baseUri}/new`).send({
         idUser: user.id,
         idSensor: sensor.id,
@@ -216,7 +219,7 @@ describe("Session Controller", () => {
         id: sensor.id,
         topic: sensor.topic,
       });
-      db.Session.create.mockResolvedValue({});
+      db.Session.update.mockResolvedValue([1]);
 
       const res = await request.post(`${baseUri}/new/on/server`).send(body);
 
