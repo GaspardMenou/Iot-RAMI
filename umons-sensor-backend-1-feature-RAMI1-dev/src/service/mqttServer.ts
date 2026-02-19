@@ -34,7 +34,7 @@ class MqttServer {
     this.handleMessageReceivedFromSensor.bind(this);
   private handleErrorBound = this.handleErrorMqtt.bind(this);
   private socketService: SocketService | undefined;
-  private sensorTimeouts: Map<string, NodeJS.Timeout> = new Map()
+  private sensorTimeouts: Map<string, NodeJS.Timeout> = new Map();
 
   // ------------------------ SINGLETON IMPLEMENTATION
   // Private constructor to prevent direct class instantiation (BUT WE DO NOT NEED IT !!)
@@ -77,10 +77,7 @@ class MqttServer {
       };
 
       // Créer le client MQTT
-      this.mqttClient = mqtt.connect(
-        `mqtt://${BROKER_INFO.url}`,
-        connectOptions
-      );
+      this.mqttClient = mqtt.connect(`${BROKER_INFO.url}`, connectOptions);
 
       // Attacher les handlers AVANT la connexion
       this.mqttClient.on("connect", () => {

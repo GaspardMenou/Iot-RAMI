@@ -12,8 +12,6 @@ import {
 
 // Model import
 import db from "@db/index";
-import { BROKER_INFO } from "@/utils/mqttConstant";
-import { UUID } from "sequelize";
 const DB: any = db;
 const { User, Sensor, Session } = DB;
 // --- end of model import
@@ -110,7 +108,6 @@ const createSessionOnClientSide = async (req: Request, res: Response) => {
       endedAt,
     });
     return res.status(201).json({
-      url: BROKER_INFO.url,
       topic: topicForHearingFromSensor,
       sessionId: session.id,
     }); // Send the topic to the user so that he can subscribe to the channel
