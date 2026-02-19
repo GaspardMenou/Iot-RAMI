@@ -41,7 +41,7 @@ RUN npm install
 
 COPY . .
 
-RUN echo "{" > ./src/db/config.json  && echo "  \"$NODE_ENV\": { " >> ./src/db/config.json  && echo "    \"username\": \"$DB_USER\", " >> ./src/db/config.json  && echo "    \"password\": \"$DB_PASSWORD\", " >> ./src/db/config.json  && echo "    \"database\": \"$DB_NAME\", " >> ./src/db/config.json  && echo "    \"host\": \"$DB_HOST\", " >> ./src/db/config.json  && echo "    \"dialect\": \"$DB_DIALECT\", " >> ./src/db/config.json  && echo "    \"migrations-path\": \"../src/db/migrations\" " >> ./src/db/config.json  && echo "  } " >> ./src/db/config.json  && echo "}" >> ./src/db/config.json
+#RUN echo "{" > ./src/db/config.json  && echo "  \"$NODE_ENV\": { " >> ./src/db/config.json  && echo "    \"username\": \"$DB_USER\", " >> ./src/db/config.json  && echo "    \"password\": \"$DB_PASSWORD\", " >> ./src/db/config.json  && echo "    \"database\": \"$DB_NAME\", " >> ./src/db/config.json  && echo "    \"host\": \"$DB_HOST\", " >> ./src/db/config.json  && echo "    \"dialect\": \"$DB_DIALECT\", " >> ./src/db/config.json  && echo "    \"migrations-path\": \"../src/db/migrations\" " >> ./src/db/config.json  && echo "  } " >> ./src/db/config.json  && echo "}" >> ./src/db/config.json
 
 RUN npm run build
 
