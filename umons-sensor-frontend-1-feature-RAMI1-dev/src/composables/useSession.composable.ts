@@ -201,6 +201,8 @@ const useSession = () => {
 			// This retrieve the sensor topic on which you can get the values
 			setupSession(clientSideSession.idUser, clientSideSession.idSensor, data.topic, new Date())
 			connectToWebSocket(data.topic)
+			const sessionId = data.sessionId
+			idSession.value = sessionId
 		} catch (error) {
 			console.error("Erreur lors de la récupération du topic du capteur:", error)
 		}
@@ -229,6 +231,7 @@ const useSession = () => {
 			idSensor: idSensor.value,
 			createdAt: createdAt.value.toISOString(),
 			endedAt: endedAt.value.toISOString(),
+			idSession: idSession.value,
 		}
 
 		try {

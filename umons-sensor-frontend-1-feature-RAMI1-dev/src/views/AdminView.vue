@@ -22,6 +22,7 @@
 	import ViewTitle from "@/components/ViewTitle.vue"
 	import AdminSensorAccess from "@/components/AdminSensorAccess.vue"
 	import AdminMeasurementTypeRequest from "@/components/AdminMeasurementTypeRequest.vue"
+	import AdminActiveSessions from "@/components/AdminActiveSessions.vue"
 
 	export default defineComponent({
 		name: "AdminView",
@@ -32,6 +33,7 @@
 			AdminSensorAccess,
 			AdminRoleComponent,
 			AdminMeasurementTypeRequest,
+			AdminActiveSessions,
 		},
 		data() {
 			return {
@@ -42,6 +44,7 @@
 					{ name: "AdminRoleComponent", label: "Modify role" },
 					{ name: "AdminSensorAccess", label: "Sensor access" },
 					{ name: "AdminSensorRequest", label: "Sensor creation" },
+					{ name: "AdminActiveSessions", label: "Active sessions" },
 					{ name: "AdminMeasurementTypeRequest", label: "Measurement type creation" },
 				],
 			}

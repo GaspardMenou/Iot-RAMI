@@ -27,11 +27,13 @@ interface CreateClientSideSessionRequestBody {
 interface CreateSessionOnServerRequestBody extends CreateClientSideSessionRequestBody {
 	[SessionFields.CREATED_AT]: string
 	[SessionFields.ENDED_AT]: string
+	idSession: string
 }
 
 // Answer format
 interface StartSessionResponse {
 	topic: string
+	sessionId: string
 }
 
 interface CreateServorSessionResponse {

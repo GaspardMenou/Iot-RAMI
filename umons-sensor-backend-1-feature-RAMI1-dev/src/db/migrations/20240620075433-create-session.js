@@ -34,8 +34,8 @@ module.exports = {
         },
         endedAt: {
           type: Sequelize.DATE,
-          allowNull: false,
-          defaultValue: Sequelize.NOW,
+          allowNull: true,
+          defaultValue: null,
         },
       },
       {

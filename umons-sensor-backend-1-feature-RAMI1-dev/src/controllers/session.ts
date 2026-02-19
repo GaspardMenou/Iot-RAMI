@@ -13,6 +13,7 @@ import {
 // Model import
 import db from "@db/index";
 import { BROKER_INFO } from "@/utils/mqttConstant";
+import { UUID } from "sequelize";
 const DB: any = db;
 const { User, Sensor, Session } = DB;
 // --- end of model import
@@ -100,14 +101,21 @@ const createSessionOnClientSide = async (req: Request, res: Response) => {
       mqttServerInstance.getTopicForHearingTheSensorOnWebClientSide(
         topicFromDB
       );
-
+    const endedAt = null;
     await mqttServerInstance.sendStartSignal(topicFromDB);
-
+    const session = await Session.create({
+      idUser,
+      idSensor,
+      createdAt: new Date(),
+      endedAt,
+    });
     return res.status(201).json({
       url: BROKER_INFO.url,
       topic: topicForHearingFromSensor,
+      sessionId: session.id,
     }); // Send the topic to the user so that he can subscribe to the channel
   } catch (error) {
+    console.error("❌ [createSessionOnClientSide]", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -143,12 +151,16 @@ const createSessionOnServerSide = async (req: Request, res: Response) => {
     const mqttServerInstance: MqttServer = await MqttServer.getInstance();
     await mqttServerInstance.sendStopSignal(sensor.topic);
 
-    await Session.create({
-      idUser,
-      idSensor,
-      createdAt,
-      endedAt,
-    });
+    await Session.update(
+      {
+        endedAt: new Date(),
+      },
+      {
+        where: {
+          id: req.body.idSession,
+        },
+      }
+    );
 
     return res.status(201).json({ message: "session ended" });
   } catch (error) {
@@ -160,6 +172,20 @@ const createSessionOnServerSide = async (req: Request, res: Response) => {
 const getAllSessions = async (_: Request, res: Response) => {
   try {
     const sessions = await Session.findAll();
+    return res.status(200).json(sessions);
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Get all active sessions
+const getAllActiveSessions = async (_: Request, res: Response) => {
+  try {
+    const sessions = await Session.findAll({
+      where: {
+        endedAt: null, // Assuming that an active session has a null endedAt
+      },
+    });
     return res.status(200).json(sessions);
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
@@ -270,4 +296,5 @@ export {
   getSessionData,
   deleteSessionAndItsCorrespondingData,
   deleteAllSessions,
+  getAllActiveSessions,
 };

@@ -7,6 +7,7 @@ import {
   getSessionData,
   deleteSessionAndItsCorrespondingData,
   deleteAllSessions,
+  getAllActiveSessions,
 } from "@controllers/session";
 
 const router = express.Router();
@@ -14,6 +15,7 @@ const router = express.Router();
 router.post("/new", createSessionOnClientSide);
 router.post("/new/on/server", createSessionOnServerSide);
 router.get("/", getAllSessions);
+router.get("/active", getAllActiveSessions);
 router.get("/:id", getSessionById);
 router.delete("/:id", deleteSessionAndItsCorrespondingData);
 router.delete("/", deleteAllSessions);
