@@ -29,7 +29,7 @@
 <template>
 	<div class="admin-active-sessions">
 		<h2>Active Sessions</h2>
-		<table>
+		<table class="session-table">
 			<thead>
 				<tr>
 					<th>Session ID</th>
@@ -49,3 +49,49 @@
 		</table>
 	</div>
 </template>
+
+<style lang="scss" scoped>
+	.session-table {
+		width: 100%;
+		border-collapse: collapse;
+
+		th {
+			background-color: var(--color-background);
+			font-weight: bold;
+			cursor: pointer;
+		}
+
+		td,
+		th {
+			padding: 10px;
+			border: 1px solid var(--color-shadow);
+		}
+
+		tbody tr:hover {
+			background-color: var(--color-secondary-hover);
+		}
+
+		button {
+			padding: 5px 10px;
+			border: none;
+			color: var(--color-text-second);
+			cursor: pointer;
+
+			&.accept {
+				background-color: var(--color-primary);
+
+				&:hover {
+					background-color: var(--color-primary-hover);
+				}
+			}
+
+			&.reject {
+				background-color: var(--color-danger);
+
+				&:hover {
+					background-color: var(--color-danger-hover);
+				}
+			}
+		}
+	}
+</style>
