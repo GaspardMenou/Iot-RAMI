@@ -34,6 +34,7 @@
 				<tr>
 					<th>Session ID</th>
 					<th>User ID</th>
+					<th>Sensor ID</th>
 					<th>Start Time</th>
 				</tr>
 			</thead>
@@ -43,7 +44,9 @@
 					:key="session.id">
 					<td>{{ session.id }}</td>
 					<td>{{ session.idUser }}</td>
+					<td>{{ session.idSensor }}</td>
 					<td>{{ new Date(session.createdAt).toLocaleString() }}</td>
+
 				</tr>
 			</tbody>
 		</table>
@@ -58,7 +61,6 @@
 		th {
 			background-color: var(--color-background);
 			font-weight: bold;
-			cursor: pointer;
 		}
 
 		td,

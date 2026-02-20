@@ -2,7 +2,6 @@ enum SessionFields {
 	ID = "id",
 	ID_USER = "idUser",
 	ID_SENSOR = "idSensor",
-	TOPIC = "topic",
 	CREATED_AT = "createdAt",
 	ENDED_AT = "endedAt",
 }
@@ -11,7 +10,6 @@ interface Session {
 	[SessionFields.ID]: string
 	[SessionFields.ID_USER]: string
 	[SessionFields.ID_SENSOR]: string
-	[SessionFields.TOPIC]: string
 	[SessionFields.CREATED_AT]: string
 	[SessionFields.ENDED_AT]?: string // Optional as the session might be ongoing
 }
