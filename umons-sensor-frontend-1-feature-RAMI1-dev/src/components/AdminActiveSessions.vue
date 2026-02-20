@@ -70,28 +70,5 @@
 		tbody tr:hover {
 			background-color: var(--color-secondary-hover);
 		}
-
-		button {
-			padding: 5px 10px;
-			border: none;
-			color: var(--color-text-second);
-			cursor: pointer;
-
-			&.accept {
-				background-color: var(--color-primary);
-
-				&:hover {
-					background-color: var(--color-primary-hover);
-				}
-			}
-
-			&.reject {
-				background-color: var(--color-danger);
-
-				&:hover {
-					background-color: var(--color-danger-hover);
-				}
-			}
-		}
 	}
 </style>
