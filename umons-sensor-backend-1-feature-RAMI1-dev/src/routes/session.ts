@@ -5,6 +5,7 @@ import {
   getAllSessions,
   getSessionById,
   getSessionData,
+  exportSessionAsCsv,
   deleteSessionAndItsCorrespondingData,
   deleteAllSessions,
   getAllActiveSessions,
@@ -20,6 +21,7 @@ router.get("/:id", getSessionById);
 router.delete("/:id", deleteSessionAndItsCorrespondingData);
 router.delete("/", deleteAllSessions);
 // Depend at least on two models
+router.get("/:id/export/csv", exportSessionAsCsv);
 router.get("/:id/data", getSessionData);
 
 export { router as sessionRoutes };

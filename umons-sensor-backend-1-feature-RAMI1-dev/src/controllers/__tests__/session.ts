@@ -24,6 +24,9 @@ jest.mock("@db/index", () => ({
     destroy: jest.fn(),
     update: jest.fn()
   },
+  sensordata: {
+    findAll: jest.fn(),
+  },
 }));
 
 jest.mock("mqtt", () => {
@@ -409,6 +412,58 @@ describe("Session Controller", () => {
       const res = await request.delete(baseUri);
 
       expect(res.status).toBe(204);
+    });
+  });
+
+  describe("GET /:id/export/csv", () => {
+    test("should return 200 and a CSV with correct headers", async () => {
+      const session = {
+        id: "session1",
+        idUser: users[0].id,
+        idSensor: sensors[0].id,
+        dataValues: {
+          id: "session1",
+          idSensor: sensors[0].id,
+          createdAt: new Date("2024-01-01T00:00:00Z"),
+          endedAt: new Date("2024-01-01T01:00:00Z"),
+        },
+        createdAt: new Date("2024-01-01T00:00:00Z"),
+        endedAt: new Date("2024-01-01T01:00:00Z"),
+      };
+      db.Session.findByPk.mockResolvedValue(session);
+      db.Sensor.findByPk.mockResolvedValue({
+        ...sensors[0],
+        dataValues: { id: sensors[0].id, name: sensors[0].name, topic: sensors[0].topic },
+      });
+      db.sensordata.findAll.mockResolvedValue([
+        { time: new Date("2024-01-01T00:00:01Z"), value: 1.5 },
+      ]);
+
+      const res = await request.get(`${baseUri}/session1/export/csv`);
+
+      expect(res.status).toBe(200);
+      expect(res.headers["content-type"]).toMatch(/text\/csv/);
+      expect(res.text).toContain("# session_id,session1");
+      expect(res.text).toContain("time,value");
+    });
+
+    test("should return 404 if session not found", async () => {
+      db.Session.findByPk.mockResolvedValue(null);
+      const res = await request.get(`${baseUri}/nonexistent-id/export/csv`);
+      expect(res.status).toBe(404);
+      expect(res.body.codeError).toBe("session.not.found");
+    });
+
+    test("should return 404 if sensor not found", async () => {
+      db.Session.findByPk.mockResolvedValue({
+        id: "session1",
+        idSensor: sensors[0].id,
+        dataValues: { id: "session1", idSensor: sensors[0].id, createdAt: new Date(), endedAt: new Date() },
+      });
+      db.Sensor.findByPk.mockResolvedValue(null);
+      const res = await request.get(`${baseUri}/session1/export/csv`);
+      expect(res.status).toBe(404);
+      expect(res.body.codeError).toBe("sensor.not.found");
     });
   });
 

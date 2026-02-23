@@ -12,6 +12,7 @@ enum SessionControllerPaths {
 	GET_USER_SESSIONS = "users/:userId/sessions",
 	GET_USER_SESSIONS_ON_A_SENSOR = "users/:userId/sessions/on/sensor/:sensorId",
 	GET_SENSOR_SESSIONS = "sensors/:sensorId/sessions",
+	EXPORT_SESSION_CSV = "sessions/:id/export/csv",
 }
 
 const isValidDate = (date: any): date is Date => {
@@ -40,6 +41,10 @@ const getURLForFetchingSensorSessions = (idSensor: string | null): string => {
 const getURLForFetchingUserSessionsOnASensor = (idUser: string, idSensor: string) => {
 	const firstReplacement = getCorrectUrl(SessionControllerPaths.GET_USER_SESSIONS_ON_A_SENSOR, ":sensorId", idSensor)
 	return firstReplacement.replace(":userId", idUser)
+}
+
+const getURLForExportingSessionAsCsv = (idSession: string): string => {
+	return getCorrectUrl(SessionControllerPaths.EXPORT_SESSION_CSV, ":id", idSession)
 }
 
 const useDistributionSessionBySensor = () => {
@@ -338,6 +343,21 @@ const useSession = () => {
 		lastMessageTime.value = currentTime
 	}
 
+	const exportSessionToCsv = async (sessionId: string) => {
+		try {
+			const url = getURLForExportingSessionAsCsv(sessionId)
+			const response = await axios.get(url, { responseType: 'blob' })
+			const blobUrl = URL.createObjectURL(response.data)
+			const link = document.createElement('a')
+			link.href = blobUrl
+			link.download = `session-${sessionId}.csv`
+			link.click()
+			URL.revokeObjectURL(blobUrl)
+		} catch (error) {
+			console.error("Error exporting session to CSV:", error)
+		}
+	}
+
 	return {
 		idUser,
 		idSensor,
@@ -353,6 +373,7 @@ const useSession = () => {
 		selectedSession,
 		handleSessionSelect,
 		registerOrRemoveEventHandlers,
+		exportSessionToCsv,
 	}
 }
 export { useDistributionSessionBySensor, useSession }
