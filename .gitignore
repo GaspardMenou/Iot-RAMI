@@ -1,6 +1,10 @@
 env
+.env.*
 .DS_Store
 .claude/
 CLAUDE.md
 .mcp.json
 .mcp
+_bmad
+_bmad/
+_bmad-output/

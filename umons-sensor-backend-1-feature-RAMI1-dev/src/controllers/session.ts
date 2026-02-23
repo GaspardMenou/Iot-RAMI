@@ -285,12 +285,55 @@ const getSessionData = async (req: Request, res: Response) => {
   }
 };
 
+// Prevents CSV injection: values starting with formula chars are prefixed with a single quote
+const sanitizeCsvField = (value: string): string => {
+  if (/^[=+\-@\t\r]/.test(value)) {
+    return `'${value}`;
+  }
+  return value;
+};
+
+const exportSessionAsCsv = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const session = await Session.findByPk(id);
+    if (!session) {
+      return res.status(404).json(new NotFoundException("Session not found", "session.not.found"));
+    }
+    const sensor = await Sensor.findByPk(session.idSensor);
+    if (!sensor) {
+      return res.status(404).json(new NotFoundException("Sensor not found", "sensor.not.found"));
+    }
+    const sensorData = await getSensorDataWithinTimeRange(
+      sensor.dataValues.id,
+      session.dataValues.createdAt,
+      session.dataValues.endedAt
+    );
+    const lines: string[] = [
+      `# session_id,${session.dataValues.id}`,
+      `# sensor_id,${sensor.dataValues.id}`,
+      `# sensor_name,${sanitizeCsvField(sensor.dataValues.name)}`,
+      `# sensor_topic,${sanitizeCsvField(sensor.dataValues.topic)}`,
+      `# start_time,${new Date(session.dataValues.createdAt).toISOString()}`,
+      `# end_time,${session.dataValues.endedAt ? new Date(session.dataValues.endedAt).toISOString() : ""}`,
+      `time,value`,
+      ...sensorData.map((row: any) => `${new Date(row.time).toISOString()},${row.value}`),
+    ];
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="session-${id}.csv"`);
+    return res.status(200).send(lines.join("\n"));
+  } catch (error) {
+    return handleDealingWithSensorDataError(res, error);
+  }
+};
+
 export {
   createSessionOnClientSide,
   createSessionOnServerSide,
   getAllSessions,
   getSessionById,
   getSessionData,
+  exportSessionAsCsv,
   deleteSessionAndItsCorrespondingData,
   deleteAllSessions,
   getAllActiveSessions,
