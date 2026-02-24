@@ -58,7 +58,7 @@ const char *MQTT_PASSWORD PROGMEM = "KUvhSswNgi..7w4";
 const int MQTT_PORT = 8883;
 const char *MQTT_TOPIC = "pysimulator-esp32-ecg-topic";
 const char *MQTT_TOPIC_TO_SPEAK_ON = "esp32-dht22-topic/sensor";
-const char *MQTT_TOPIC_TO_LISTEN_ON = "esp32-dht22-ecg-topic/server";
+const char *MQTT_TOPIC_TO_LISTEN_ON = "esp32-dht22-topic/server";
 
 /****** Settings; PROGREM would be useless here *******/
 const unsigned int NUMBER_OF_VALUES_PER_SECOND = 100;

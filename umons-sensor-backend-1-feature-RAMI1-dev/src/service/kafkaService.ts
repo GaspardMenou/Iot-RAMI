@@ -6,6 +6,7 @@ class KafkaService {
   private producer!: Producer;
   private consumer!: Consumer;
   private isKafkaConnected = false;
+  private mapTopicCallbacks: Map<string, (data: any) => void> = new Map();
 
   private constructor() {
     // Constructeur privé pour empêcher l'instanciation directe}
@@ -78,31 +79,39 @@ class KafkaService {
       throw error;
     }
   }
+  public registerTopic(topic: string, callback: (data: any) => void): void {
+    this.mapTopicCallbacks.set(topic, callback);
+    console.log("🔖 Registered Kafka topic callback:", topic);
+  }
 
-  public async subscribeTopic(
-    topic: string,
-    callback: (data: any) => void
-  ): Promise<void> {
+  public async startConsuming(): Promise<void> {
     try {
-      await this.consumer.subscribe({ topic });
-      console.log("📥 Subscribed to Kafka topic:", topic);
-
+      for (const topic of this.mapTopicCallbacks.keys()) {
+        await this.consumer.subscribe({ topic });
+      }
       await this.consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
-          const data = JSON.parse(message.value?.toString() || "");
-          console.log("📨 Received Kafka message:", {
-            topic,
-            partition,
-            data,
-          });
-          callback(data);
+          const callback = this.mapTopicCallbacks.get(topic);
+          if (callback) {
+            const data = JSON.parse(message.value?.toString() || "");
+            console.log("📨 Received Kafka message:", {
+              topic,
+              partition,
+              data,
+            });
+            callback(data);
+          } else {
+            console.warn("⚠️ No callback registered for topic:", topic);
+          }
         },
       });
+      console.log("✅ Kafka Consumer started consuming");
     } catch (error) {
-      console.error("❌ Error subscribing to Kafka topic:", error);
+      console.error("❌ Error starting Kafka consumer:", error);
       throw error;
     }
   }
+
   public isConnected(): boolean {
     return this.isKafkaConnected;
   }

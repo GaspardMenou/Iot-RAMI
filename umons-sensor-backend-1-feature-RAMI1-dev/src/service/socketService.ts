@@ -43,10 +43,11 @@ class SocketService {
       if (!kakfaService) {
         throw new Error("Kafka unavailable");
       }
-      await kakfaService.subscribeTopic("sensor-data", (data) => {
+      kakfaService.registerTopic("sensor-data", (data) => {
         this.sendDataToRoom(data.topic, data);
       });
-      console.log("Kafka consumer started")
+      await kakfaService.startConsuming();
+      console.log("Kafka consumer started");
     } catch (error) {
       console.error("Error starting Kafka consumer:", error);
       await new Promise((resolve) => setTimeout(resolve, 5000)); // Retry after 5 seconds
