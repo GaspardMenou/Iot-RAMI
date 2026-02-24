@@ -20,6 +20,13 @@ module.exports = {
           name: "pysimulator-lora-bpm",
           topic: "pysimulator-lora-bpm-topic",
         },
+        {
+          createdAt: "2024-07-01T08:10:00.937Z",
+          updatedAt: "2024-07-01T08:10:00.937Z",
+          id: "a978833e-97e1-4e6f-886e-27098798349a",
+          name: "esp32-dht22",
+          topic: "esp32-dht22-topic",
+        },
       ],
       {}
     );

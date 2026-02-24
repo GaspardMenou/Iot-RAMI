@@ -15,8 +15,8 @@
 
 /****** WiFi Connection Details and root certificate *******/
 // PROGMEM beacause these settings are used only once at the beginning
-const char *SSID PROGMEM = "NAME";
-const char *PASSWORD PROGMEM = "PWD";
+const char *SSID PROGMEM = "NETGEAR36";
+const char *PASSWORD PROGMEM = "giftedcar426";
 const char *ROOT_CA PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
@@ -57,8 +57,8 @@ const char *MQTT_USERNAME PROGMEM = "sensorsOverHiveMQ";
 const char *MQTT_PASSWORD PROGMEM = "KUvhSswNgi..7w4";
 const int MQTT_PORT = 8883;
 const char *MQTT_TOPIC = "pysimulator-esp32-ecg-topic";
-const char *MQTT_TOPIC_TO_SPEAK_ON = "pysimulator-esp32-ecg-topic/sensor";
-const char *MQTT_TOPIC_TO_LISTEN_ON = "pysimulator-esp32-ecg-topic/server";
+const char *MQTT_TOPIC_TO_SPEAK_ON = "esp32-dht22-topic/sensor";
+const char *MQTT_TOPIC_TO_LISTEN_ON = "esp32-dht22-ecg-topic/server";
 
 /****** Settings; PROGREM would be useless here *******/
 const unsigned int NUMBER_OF_VALUES_PER_SECOND = 100;

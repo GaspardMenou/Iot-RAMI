@@ -1,5 +1,6 @@
 #include "SpecificConstants.hpp"
 #include "MQTTCommonOperations.hpp"
+#include "DHT.h"
 
 /**** esp32 sensor pin Settings *******/
 const int pin_lo_minus = 2;
@@ -10,6 +11,10 @@ const int analog_pin = 34;
 const float MIN_RANDOM_VALUE = 0.0;
 const float MAX_RANDOM_VALUE = 5.0;
 
+#define DHTPIN 17
+#define DHTTYPE DHT22
+
+DHT dht(DHTPIN, DHTTYPE);   
 
 /**** Secure WiFi Connectivity Initialisation *****/
 WiFiClientSecure espClient;
@@ -53,7 +58,7 @@ void setup() {
     pinMode(sdn ,OUTPUT);
     pinMode(analog_pin, INPUT);
     digitalWrite(sdn, HIGH);
-
+    dht.begin();
     setup_wifi(SSID, PASSWORD);
     setCACertForTLS(espClient, ROOT_CA);      // enable this line and the the "certificate" code for secure connection
     
@@ -80,10 +85,15 @@ void loop() {
     if (currentMillis - previousMillis >= 1000) {
         previousMillis = currentMillis;
         if (allow_to_publish) {
+            float h = dht.readHumidity();
+            //Lis le taux d'humidite en %
+            float t = dht.readTemperature();
+            //Lis la température en degré celsius
+            float f = dht.readTemperature(true);
             float testValue = generateRandomValue();
             Serial.print("Sending value: ");
-            Serial.println(testValue);
-            publishValue(client, MQTT_TOPIC_TO_SPEAK_ON, testValue, true);
+            Serial.println(t);
+            publishValue(client, MQTT_TOPIC_TO_SPEAK_ON, t, true);
         }
     }
 }
