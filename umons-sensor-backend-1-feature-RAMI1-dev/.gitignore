@@ -1,5 +1,5 @@
 .idea/
-
+.env.development
 dist/
 node_modules/
 
