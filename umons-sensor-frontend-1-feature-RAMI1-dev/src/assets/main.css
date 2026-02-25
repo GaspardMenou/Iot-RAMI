@@ -16,28 +16,14 @@ a,
 button {
     background-color: var(--color-secondary);
     color: var(--color-text-second);
-    padding: 1.5vh 1vw;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    width: 100%;
-    font-size: 125%;
-    margin: 2vh 0;
     font-family: 'EB Garamond', serif;
-
 }
 
 button:hover {
     background-color: var(--color-secondary-hover);
-    color: var(--color-text-second);
-    padding: 1.5vh 1vw;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 125%;
-    margin: 2vh 0;
-    font-family: 'EB Garamond', serif;
 }
 
 
@@ -58,18 +44,18 @@ button:hover {
   body {
     font-family: var(--font-family-base);
     font-size: var(--font-size-base);
-    color: #333;
+    color: var(--color-text);
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-family-base);
-    color: #333;
+    color: var(--color-text);
   }
-  
+
   p, .user-detail {
     font-family: var(--font-family-base);
     font-size: var(--font-size-base);
-    color: #333;
+    color: var(--color-text);
   }
   
   .user-detail {

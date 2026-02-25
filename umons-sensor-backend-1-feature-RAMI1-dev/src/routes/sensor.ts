@@ -6,10 +6,14 @@ import {
   updateSensor,
   getSensorSessions,
   getSensorTopic,
+  getDiscoveredSensors,
 } from "@controllers/sensor";
 //import { auth, authAdmin } from "@middlewares/auth";
 
 const router = express.Router();
+
+// Must be before /:id? to avoid being caught as an id param
+router.get("/discovered", getDiscoveredSensors);
 
 router
   .route("/:id?")

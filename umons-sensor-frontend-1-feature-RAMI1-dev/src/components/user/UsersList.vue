@@ -74,13 +74,13 @@
 
 <style scoped>
 	.users-list-view {
-		background-color: #f8f7f1;
+		background-color: var(--color-surface);
 		border-radius: 10px;
-		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 2px 5px var(--color-shadow);
 		padding: 20px;
-		width: 100%; /* Takes the full width of the parent container */
-		max-height: 410px; /* Set the maximum height to make it less tall */
-		overflow-y: auto; /* Enable vertical scrolling if content exceeds max-height */
+		width: 100%;
+		max-height: 410px;
+		overflow-y: auto;
 		margin: auto;
 	}
 
@@ -92,16 +92,16 @@
 	}
 
 	.header h2 {
-		font-size: 1.5em;
+		font-size: 1.2em;
 		font-weight: bold;
 		margin: 0;
-		color: #333;
+		color: var(--color-text);
 	}
 
 	.header hr {
 		width: 100%;
 		border: none;
-		border-top: 1px solid #ddd;
+		border-top: 1px solid var(--color-border);
 		margin: 10px 0;
 	}
 

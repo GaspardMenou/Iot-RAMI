@@ -51,9 +51,9 @@
 
 <style scoped>
 	.sensors-list-view {
-		background-color: #f8f7f1; /* Couleur de fond similaire à l'image */
+		background-color: var(--color-surface);
 		border-radius: 10px;
-		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 2px 5px var(--color-shadow);
 		padding: 20px;
 	}
 
@@ -65,16 +65,16 @@
 	}
 
 	.header h2 {
-		font-size: 1.5em;
+		font-size: 1.2em;
 		font-weight: bold;
 		margin: 0;
-		color: #333;
+		color: var(--color-text);
 	}
 
 	.header hr {
 		width: 100%;
 		border: none;
-		border-top: 1px solid #ddd;
+		border-top: 1px solid var(--color-border);
 		margin: 10px 0;
 	}
 

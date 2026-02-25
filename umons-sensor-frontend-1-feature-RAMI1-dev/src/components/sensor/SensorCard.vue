@@ -25,8 +25,9 @@
 	import { computed, defineComponent, onMounted, onUnmounted } from "vue"
 	import { EventTypes, handleEvent } from "@/composables/useUser.composable"
 	import { useSensor, SensorState } from "@/composables/useSensor.composable"
+	import { useRouter } from "vue-router"
 	import { io } from "socket.io-client"
-import { on } from "events";
+	import { on } from "events";
 
 	export default defineComponent({
 		name: "SensorCard",
@@ -46,8 +47,14 @@ import { on } from "events";
 			tooltipText: {
 				type: String,
 			},
+			isForNavigation: {
+				type: Boolean,
+				default: false,
+			},
 		},
 		setup(props) {
+			const router = useRouter()
+
 			const { status, statusClass, checkSensorStatus, listenToSensorStatus } = useSensor(props.sensor.name)
 
 			const isSelected = computed(() => props.selectedSensorId === props.sensor.id)
@@ -63,7 +70,10 @@ import { on } from "events";
 			}
 
 			const handleCardClick = () => {
-				if (props.isForRealTimeSession) {
+				if (props.isForNavigation) {
+					router.push({ name: "SensorDetail", params: { id: props.sensor.id } })
+					return
+				} else if (props.isForRealTimeSession) {
 					if (status.value === SensorState.ONLINE) {
 						selectSensor()
 					}
@@ -96,21 +106,23 @@ import { on } from "events";
 <style scoped>
 	.sensor-card {
 		display: flex;
-		border: 1px solid #ccc;
-		padding: 20px;
-		margin-bottom: 15px;
-		background-color: #fff;
+		border: 1px solid var(--color-border);
+		padding: 16px;
+		margin-bottom: 10px;
+		background-color: var(--color-surface);
 		border-radius: 10px;
-		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 2px 5px var(--color-shadow);
+		cursor: pointer;
+		transition: border-color 0.2s;
+	}
+
+	.sensor-card:hover {
+		border-color: var(--color-primary);
 	}
 
 	.sensor-card--selected {
-		border-color: #007bff;
-		background-color: #e7f1ff;
-	}
-
-	.on-clickable {
-		cursor: not-allowed;
+		border-color: var(--color-primary);
+		background-color: rgba(14, 165, 233, 0.1);
 	}
 
 	.sensor-status-section {
@@ -119,7 +131,7 @@ import { on } from "events";
 		align-items: center;
 		justify-content: center;
 		padding-right: 15px;
-		border-right: 1px solid #ccc;
+		border-right: 1px solid var(--color-border);
 	}
 
 	.sensor-info-section {
@@ -130,41 +142,36 @@ import { on } from "events";
 	}
 
 	.sensor-name {
-		font-size: 1.2em;
+		font-size: 1.1em;
 		font-weight: bold;
+		color: var(--color-text);
 	}
 
 	.sensor-topic {
-		font-size: 1em;
-		color: #555;
+		font-size: 0.9em;
+		color: var(--color-text-muted);
 	}
 
 	.sensor-status {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: 8px;
 		cursor: pointer;
 	}
 
+	.status-text {
+		font-size: 0.85em;
+		color: var(--color-text-muted);
+	}
+
 	.status-indicator {
-		width: 15px;
-		height: 15px;
+		width: 12px;
+		height: 12px;
 		border-radius: 50%;
 	}
 
-	.status-online .status-indicator {
-		background-color: green;
-	}
-
-	.status-publishing .status-indicator {
-		background-color: orange;
-	}
-
-	.status-offline .status-indicator {
-		background-color: red;
-	}
-
-	.status-error .status-indicator {
-		background-color: black;
-	}
+	.status-online .status-indicator { background-color: var(--color-success); }
+	.status-publishing .status-indicator { background-color: var(--color-warning); }
+	.status-offline .status-indicator { background-color: var(--color-danger); }
+	.status-error .status-indicator { background-color: var(--color-text-muted); }
 </style>

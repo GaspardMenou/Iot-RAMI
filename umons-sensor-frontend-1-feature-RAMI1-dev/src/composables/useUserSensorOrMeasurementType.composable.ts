@@ -6,9 +6,10 @@ import type { UserMeasurementTypeRequest, UserMeasurementTypeUpdateResponse } fr
 const useUserSensorOrMeasurementType = () => {
 	const { axios } = useAxios()
 	const handleErrors = (e: any) => {
-		const { message, status } = e.response.data
-		const messageClean = "Error " + status + " - " + message
-		return { data: null, error: messageClean }
+		const httpStatus: number = e.response?.status
+		const { message, status } = e.response?.data ?? {}
+		const messageClean = "Error " + (status ?? httpStatus) + " - " + message
+		return { data: null, error: messageClean, httpStatus }
 	}
 	const getAllUserSensorAccess = async () => {
 		const token = localStorage.getItem("token")

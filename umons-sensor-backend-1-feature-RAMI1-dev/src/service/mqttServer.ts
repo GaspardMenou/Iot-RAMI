@@ -23,6 +23,13 @@ const { Sensor } = DB;
  * MqttServer class responsible for managing MQTT connections, subscriptions,
  * and message handling for sensor communication.
  */
+interface DiscoveredSensorInfo {
+  baseTopic: string;
+  firstSeenAt: Date;
+  lastSeenAt: Date;
+  count: number;
+}
+
 class MqttServer {
   private reconnectAttemps = 0;
   private static instance: MqttServer | undefined;
@@ -35,6 +42,7 @@ class MqttServer {
   private handleErrorBound = this.handleErrorMqtt.bind(this);
   private socketService: SocketService | undefined;
   private sensorTimeouts: Map<string, NodeJS.Timeout> = new Map();
+  private discoveredTopics: Map<string, DiscoveredSensorInfo> = new Map();
 
   // ------------------------ SINGLETON IMPLEMENTATION
   // Private constructor to prevent direct class instantiation (BUT WE DO NOT NEED IT !!)
@@ -176,6 +184,8 @@ class MqttServer {
     if (Sensor !== undefined) {
       await this.initializeSensorsAndSubscribeToTheirTopic();
     }
+    // Wildcard subscription to catch messages from unknown (undiscovered) sensors
+    await this.subscribeTopic("#");
   }
 
   /**
@@ -202,6 +212,9 @@ class MqttServer {
     message: Buffer
   ) {
     try {
+      // Ignore topics that aren't sensor data topics (e.g. command echoes on /server)
+      if (!topic.endsWith(TOPICS.HEARING_THE_SENSOR)) return;
+
       const messageString = message.toString();
       console.log("🔍 [MQTT] Message reçu:", messageString);
 
@@ -259,6 +272,23 @@ class MqttServer {
           } catch (dbError) {
             console.error("❌ [DB] Erreur de sauvegarde:", dbError);
             throw dbError;
+          }
+        } else {
+          // Auto-discover: capteur inconnu détecté
+          const suffix = TOPICS.HEARING_THE_SENSOR;
+          const baseTopic = topic.slice(0, topic.length - suffix.length);
+          const existing = this.discoveredTopics.get(baseTopic);
+          if (existing) {
+            existing.lastSeenAt = new Date();
+            existing.count++;
+          } else {
+            this.discoveredTopics.set(baseTopic, {
+              baseTopic,
+              firstSeenAt: new Date(),
+              lastSeenAt: new Date(),
+              count: 1,
+            });
+            console.log(`🔍 [AutoDiscover] Nouveau capteur détecté: ${baseTopic}`);
           }
         }
       }
@@ -637,21 +667,36 @@ class MqttServer {
     });
   }
 
+  // ----------------------- AUTO-DISCOVER PUBLIC METHODS --------------------------
+
+  public getDiscoveredTopics(): DiscoveredSensorInfo[] {
+    return Array.from(this.discoveredTopics.values());
+  }
+
+  public removeDiscoveredTopic(baseTopic: string): void {
+    this.discoveredTopics.delete(baseTopic);
+  }
+
+  public addSensorToSensorsMap(id: string, name: string, topic: string): void {
+    const topicDuplication = this.getTopicForHearingTheSensor(topic);
+    this.sensorsMap.set(topicDuplication, new SensorOverMqtt(id, name, topic));
+  }
+
   /**
    * Initializes the sensors from the database and subscribes to their topics.
    *
    * @return {Promise<void>}
    */
   private async initializeSensorsAndSubscribeToTheirTopic() {
-    // Sensors fetch from database
+    // Populate sensorsMap from DB for identification
+    // No individual subscriptions needed — wildcard "#" handles all incoming messages
     const sensors = await Sensor.findAll();
     if (sensors !== undefined && sensors.length > 0) {
-      sensors.forEach(async (sensor: SensorType) => {
-        const idSensor = sensor.id;
-        const name = sensor.name;
-        const topicFromDB = sensor.topic;
-        await this.addInSensorsMapAndSubItsTopic(
-          new SensorOverMqtt(idSensor, name, topicFromDB)
+      sensors.forEach((sensor: SensorType) => {
+        const topicDuplication = this.getTopicForHearingTheSensor(sensor.topic);
+        this.sensorsMap.set(
+          topicDuplication,
+          new SensorOverMqtt(sensor.id, sensor.name, sensor.topic)
         );
       });
     }

@@ -44,17 +44,21 @@
 	export default defineComponent({
 		name: "NavBar",
 		data(): DataComponent {
-			return {
-				items: reactive<MenuItem[]>([
-					{ path: "/home", name: "Dashboard" },
-					{ path: "/user", name: "User" },
-					{ path: "/user/update", name: "Update your profile" },
-					{ path: "/session/new", name: "New session" },
-					{ path: "/admin", name: "Admin" },
-					{ path: "/users/all", name: "All users" },
-					{ path: "/sensors", name: "All sensors" },
-				]),
+			const role = localStorage.getItem("role")
+			const isAdmin = role === "admin"
+
+			const items: MenuItem[] = [
+				{ path: "/home", name: "Dashboard" },
+				{ path: "/sensors", name: "Mes capteurs" },
+				{ path: "/user", name: "Mon profil" },
+			]
+
+			if (isAdmin) {
+				items.push({ path: "/users/all", name: "Tous les utilisateurs" })
+				items.push({ path: "/admin", name: "Administration" })
 			}
+
+			return { items: reactive(items) }
 		},
 		methods: {
 			isActive(path: string): boolean {
@@ -62,7 +66,6 @@
 			},
 			logout() {
 				cleanUserLocalStorage()
-				alert("You have been logged out")
 				location.href = "/"
 			},
 		},
@@ -71,61 +74,83 @@
 
 <style scoped>
 	.sidebar {
-		width: 250px;
-		background-color: #f8f9fa;
-		border-right: 1px solid #dee2e6;
-		padding: 20px;
+		width: 240px;
+		min-width: 240px;
+		background-color: var(--color-sidebar-bg);
+		display: flex;
+		flex-direction: column;
+		padding: 1.5rem 1rem;
 		box-sizing: border-box;
 	}
 
 	.sidebar-header {
-		margin-bottom: 20px;
+		margin-bottom: 2rem;
+		padding: 0 0.5rem;
 	}
 
 	.sidebar-header h2 {
 		margin: 0;
-		font-size: 1.5rem;
+		font-size: 1.4rem;
+		font-weight: 700;
+		color: var(--color-sidebar-text-active);
+		letter-spacing: 0.05em;
+	}
+
+	.sidebar-nav {
+		flex: 1;
 	}
 
 	.sidebar-nav ul {
 		list-style: none;
 		padding: 0;
 		margin: 0;
-	}
-
-	.sidebar-nav ul li {
-		margin-bottom: 10px;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
 	}
 
 	.sidebar-nav ul li a {
 		text-decoration: none;
-		color: #000;
+		color: var(--color-sidebar-text);
 		display: block;
-		padding: 5px 0;
+		padding: 0.6rem 0.75rem;
+		border-radius: 8px;
+		font-size: 0.95rem;
+		transition: background-color 0.15s, color 0.15s;
 	}
 
 	.sidebar-nav ul li a:hover {
-		background-color: #ffffff;
+		background-color: var(--color-sidebar-hover);
+		color: var(--color-sidebar-text-active);
 	}
 
 	.sidebar-nav ul li a.active-link {
-		background-color: #ffffff;
-		font-weight: bold;
+		background-color: var(--color-primary);
+		color: var(--color-sidebar-text-active);
+		font-weight: 600;
 	}
 
 	.sidebar-footer {
-		margin-top: 20px;
+		margin-top: 1.5rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--color-border);
 	}
 
 	.logout-button {
 		width: 100%;
-		padding: 10px;
-		background-color: #e0e0e0;
-		border: none;
+		padding: 0.6rem;
+		background-color: transparent;
+		border: 1px solid var(--color-secondary-hover);
+		border-radius: 8px;
 		cursor: pointer;
+		color: var(--color-sidebar-text);
+		font-size: 0.9rem;
+		transition: background-color 0.15s, color 0.15s;
 	}
 
 	.logout-button:hover {
-		background-color: #d4d4d4;
+		background-color: var(--color-danger);
+		border-color: var(--color-danger);
+		color: white;
 	}
 </style>

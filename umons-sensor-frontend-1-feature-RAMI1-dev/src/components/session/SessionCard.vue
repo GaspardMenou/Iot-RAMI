@@ -1,8 +1,19 @@
 <template>
 	<div class="session-container">
-		<p>{{ formatHumanReadableDate(session.createdAt) }}</p>
-		<p v-if="session.endedAt">Durée: {{ calculateDuration(session.createdAt, session.endedAt) }}</p>
-		<button @click.stop="exportSessionToCsv(session.id)">Export CSV</button>
+		<div class="session-info">
+			<span class="session-date">{{ formatHumanReadableDate(session.createdAt) }}</span>
+			<span
+				v-if="session.endedAt"
+				class="session-duration">{{ calculateDuration(session.createdAt, session.endedAt) }}</span>
+			<span
+				v-else
+				class="session-active">En cours</span>
+		</div>
+		<button
+			class="btn-export"
+			@click.stop="exportSessionToCsv(session.id)">
+			Export CSV
+		</button>
 	</div>
 </template>
 
@@ -31,34 +42,54 @@
 	})
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 	.session-container {
-		padding: 5px;
-		margin-bottom: 10px;
-		border-radius: 0px;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		padding: 0.25rem 0;
 	}
-	button {
-		margin-top: 10px;
-		padding: 6px 14px;
-		font-size: 0.85em;
+
+	.session-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		min-width: 0;
+	}
+
+	.session-date {
+		font-size: 0.78rem;
+		color: var(--color-text);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.session-duration {
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.session-active {
+		font-size: 0.75rem;
+		color: var(--color-success);
 		font-weight: 600;
-		letter-spacing: 0.03em;
+	}
+
+	.btn-export {
+		padding: 4px 10px;
+		font-size: 0.75rem;
+		font-weight: 600;
 		border: none;
 		border-radius: 6px;
-		background-color: #007bff;
+		background-color: var(--color-primary);
 		color: white;
 		cursor: pointer;
-		transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-		box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+		align-self: flex-start;
+		transition: background-color 0.2s;
+	}
 
-		&:hover {
-			background-color: #0069d9;
-			box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
-		}
-
-		&:active {
-			transform: translateY(1px);
-			box-shadow: 0 1px 2px rgba(0, 123, 255, 0.3);
-		}
+	.btn-export:hover {
+		background-color: var(--color-primary-hover);
 	}
 </style>

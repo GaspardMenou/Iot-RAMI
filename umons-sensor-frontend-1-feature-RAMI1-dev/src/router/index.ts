@@ -28,6 +28,15 @@ const router = createRouter({
 				requiresAuth: true,
 			},
 		},
+		{
+			path: "/sensor/:id",
+			name: "SensorDetail",
+			component: () => import("@/views/sensor/SensorDetailView.vue"),
+			meta: {
+				requiresAuth: true,
+			},
+			props: true,
+		},
 		/*******	USER	*********/
 		{
 			path: "/user",
@@ -66,12 +75,13 @@ const router = createRouter({
 			},
 		},
 		{
-			path: "/session/new",
+			path: "/sensor/:id/new",
 			name: "newsession",
-			component: () => import("@/components/session/RealTimeSession.vue"),
+			component: () => import("@/views/sensor/SensorSessionView.vue"),
 			meta: {
 				requiresAuth: true,
 			},
+			props: true,
 		},
 	],
 })
@@ -99,12 +109,10 @@ router.beforeEach(async (to, from, next) => {
 	}
 	if (to.name === "admin") {
 		const res = await canAccessAdminPanel(token)
-		if (!res) {
-			alert("You are not allowed to access this page")
+		if (!res || !res.canAccess) {
 			return next("/")
 		}
-		alert(res.message)
-		return res.canAccess ? next() : next("/")
+		return next()
 	}
 	// If the token is valid, continue
 	return next()

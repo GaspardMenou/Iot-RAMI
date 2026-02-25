@@ -58,7 +58,7 @@
 
 			const chartOptions: ChartOptions<"line"> = {
 				responsive: true,
-				maintainAspectRatio: true,
+				maintainAspectRatio: false,
 				elements: {
 					line: {
 						tension: 0.4,
@@ -198,7 +198,7 @@
 <style scoped>
 	.graph-container {
 		margin-top: 20px;
-		background-color: #fff;
+		background-color: var(--color-surface);
 		padding: 20px;
 		border-radius: 10px;
 		width: 100%; /* Ajout d'une largeur maximale pour le conteneur */
@@ -209,9 +209,9 @@
 	}
 
 	.chart-wrapper {
-		height: 70%; /* Assurez-vous que le wrapper prend toute la hauteur disponible */
-		width: 100%; /* Ajout d'une largeur maximale pour le wrapper */
-		box-sizing: border-box; /* Assurez-vous que le padding est inclus dans la hauteur et la largeur */
+		height: 400px;
+		width: 100%;
+		box-sizing: border-box;
 	}
 
 	.chart-controls {
@@ -221,17 +221,20 @@
 	}
 
 	.chart-controls button {
-		background-color: #007bff;
-		border: none;
-		color: white;
-		padding: 5px 10px;
-		margin: 0 5px;
+		background-color: var(--color-surface-secondary);
+		border: 1px solid var(--color-border);
+		color: var(--color-text);
+		padding: 5px 12px;
+		margin: 0 4px;
 		font-size: 14px;
-		border-radius: 5px;
+		border-radius: 6px;
 		cursor: pointer;
+		transition: background-color 0.2s;
 	}
 
 	.chart-controls button:hover {
-		background-color: #0056b3;
+		background-color: var(--color-primary);
+		color: white;
+		border-color: var(--color-primary);
 	}
 </style>

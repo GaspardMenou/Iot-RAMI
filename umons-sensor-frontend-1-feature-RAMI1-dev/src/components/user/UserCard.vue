@@ -46,26 +46,26 @@
 	.user-card {
 		display: flex;
 		align-items: center;
-		border: 1px solid #ddd;
+		border: 1px solid var(--color-border);
 		padding: 15px 20px;
 		margin-bottom: 10px;
-		background-color: #fff;
+		background-color: var(--color-surface);
 		border-radius: 8px;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 1px 3px var(--color-shadow);
 		cursor: pointer;
-		transition: transform 0.2s, box-shadow 0.2s;
-		width: 100%; /* Ensures the card takes up full width of the container */
+		transition: border-color 0.2s, box-shadow 0.2s;
+		width: 100%;
 		justify-content: space-between;
 	}
 
 	.user-card:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		border-color: var(--color-primary);
+		box-shadow: 0 4px 6px var(--color-shadow);
 	}
 
 	.user-card--selected {
-		border-color: #007bff;
-		background-color: #e7f1ff;
+		border-color: var(--color-primary);
+		background-color: rgba(14, 165, 233, 0.1);
 	}
 
 	.user-info-section {
@@ -91,7 +91,7 @@
 		transform: translateY(-50%);
 		width: 1px;
 		height: 60%;
-		background-color: #ddd;
+		background-color: var(--color-border);
 	}
 
 	.user-info-section .user-detail:first-child::before {

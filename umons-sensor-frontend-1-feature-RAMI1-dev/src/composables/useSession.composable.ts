@@ -369,6 +369,7 @@ const useSession = () => {
 		startSessionOnClientSide,
 		createSessionOnServerSide,
 		fetchDataAndUpdateChart,
+		fetchAllSessionsOfSensor,
 		sessions,
 		selectedSession,
 		handleSessionSelect,

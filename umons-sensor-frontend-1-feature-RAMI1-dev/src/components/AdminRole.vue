@@ -76,7 +76,6 @@
 				} else {
 					const result = await useUser().updateRole(token as string, { email: email, role: role })
 					if (result.valid) {
-						alert("Role updated")
 						await this.refreshUsers(token as string)
 					} else {
 						alert(result.error)
@@ -85,7 +84,11 @@
 			},
 			async refreshUsers(token: string) {
 				const result = await useUser().getAllUsers(token)
-				result ? (this.users = result) : alert("Error while fetching users")
+				if (result) {
+					this.users = result
+				} else {
+					console.error("Error while fetching users")
+				}
 			},
 		},
 		async mounted() {

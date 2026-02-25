@@ -33,8 +33,9 @@
 <style scoped>
 	.sessions-by-sensor {
 		padding: 20px;
-		background-color: #f5f5f5;
+		background-color: var(--color-surface);
 		border-radius: 10px;
 		text-align: center;
+		color: var(--color-text);
 	}
 </style>

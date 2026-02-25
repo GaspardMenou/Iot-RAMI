@@ -52,8 +52,9 @@
 				})
 			},
 			async submitUpdateUserAccess(userSensor: UserSensorAccess, accessApi: string) {
-				const { error, data } = await useUserSensorOrMeasurementType().updateUserSensorAccess(userSensor.User.email, userSensor.Sensor.name, accessApi)
-				error ? alert(error) : alert(data)
+				const { error, httpStatus } = await useUserSensorOrMeasurementType().updateUserSensorAccess(userSensor.User.email, userSensor.Sensor.name, accessApi)
+				if (error && httpStatus && [401, 403].includes(httpStatus)) alert(error)
+				else if (error) console.error(error)
 				this.usersSensor = useUserSensorOrMeasurementTypeStore().getUserSensorAccess()
 			},
 			beautifulDate(date: string) {
@@ -84,6 +85,7 @@
 					<option value="all">Show All</option>
 				</select>
 			</form>
+			<div class="table-wrapper">
 			<table class="user-table">
 				<thead>
 					<tr>
@@ -112,13 +114,21 @@
 					</tr>
 				</tbody>
 			</table>
+		</div>
 		</section>
 	</div>
 </template>
 
 <style lang="scss" scoped>
+	.table-wrapper {
+		width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
 	.user-table {
 		width: 100%;
+		min-width: 500px;
 		border-collapse: collapse;
 
 		th {

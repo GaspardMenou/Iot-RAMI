@@ -366,9 +366,8 @@ const useUser = () => {
 		alert(error.message)
 	}
 
-	const handleResponse = (response: loginReturn, alertMessage: string, locationPath: string) => {
+	const handleResponse = (response: loginReturn, _alertMessage: string, locationPath: string) => {
 		if (response.valid) {
-			alert(alertMessage)
 			location.href = locationPath // redirect to home page
 		} else {
 			errorHandler(response.error) // display error message

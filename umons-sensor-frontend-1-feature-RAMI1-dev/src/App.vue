@@ -16,11 +16,13 @@
 	.app-container {
 		display: flex;
 		height: 100vh;
+		background: var(--color-background);
 	}
 
 	.content {
 		flex: 1;
-		padding: 20px;
+		padding: 1.5rem 2rem;
 		overflow-y: auto;
+		background: var(--color-background);
 	}
 </style>
