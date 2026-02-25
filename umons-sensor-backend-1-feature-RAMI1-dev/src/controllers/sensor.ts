@@ -126,6 +126,17 @@ const createSensor = async (req: Request, res: Response) => {
   }
 };
 
+const getSensorStatus = async (req: Request, res: Response) => {
+  const { sensorName } = req.params;
+  try {
+    const mqttInstance = await MqttServer.getInstance();
+    const status = mqttInstance.getSensorStatus(sensorName);
+    return res.status(200).json({ message: status });
+  } catch (error) {
+    return res.status(500).json(new ServerErrorException("Server error", "server.error"));
+  }
+};
+
 const getDiscoveredSensors = async (_: Request, res: Response) => {
   try {
     const mqttInstance = await MqttServer.getInstance();
@@ -416,4 +427,5 @@ export {
   getSensorSessions,
   getSensorTopic,
   getDiscoveredSensors,
+  getSensorStatus,
 };

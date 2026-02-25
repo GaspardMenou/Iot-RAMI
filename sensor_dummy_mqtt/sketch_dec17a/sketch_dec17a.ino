@@ -78,6 +78,7 @@ float generateRandomValue() {
 void loop() {
     if (!client.connected()) {
         reconnect(client, MQTT_USERNAME, MQTT_PASSWORD, MQTT_TOPIC_TO_LISTEN_ON);
+        sendPing(client, MQTT_TOPIC_TO_SPEAK_ON);
     }
     client.loop();
 
@@ -91,9 +92,13 @@ void loop() {
             //Lis la température en degré celsius
             float f = dht.readTemperature(true);
             float testValue = generateRandomValue();
+
+            const char* types[] = {"humidity", "temperature"};
+            float values[] = {h, t};
             Serial.print("Sending value: ");
             Serial.println(t);
-            publishValue(client, MQTT_TOPIC_TO_SPEAK_ON, t, true);
+            publishMeasures(client, MQTT_TOPIC_TO_SPEAK_ON, types, values,2, true);
+
         }
     }
 }

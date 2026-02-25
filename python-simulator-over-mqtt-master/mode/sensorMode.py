@@ -1,6 +1,7 @@
 import json
 import random
 import time
+import datetime
 from constants import MqttAppConstants
 from mode.mode import Mode
 
@@ -10,7 +11,8 @@ class SensorMode(Mode):
         self.mqtt_service.client.on_message = self.on_message_for_sensor
         # Interaction with user
         number_of_values_per_second = self.ask_for_integer("How many data per second do you want to send: ")
-        self.publishing_function_mode = self.ask_for_value_mode()
+        #self.publishing_function_mode = self.ask_for_value_mode()
+        self.measurement_type_list = self.ask_for_measurement_type()
         # end of interaction with user
         # sensor attribute
         self.time_sleep_beetween_two_values = 1/number_of_values_per_second
@@ -44,7 +46,14 @@ class SensorMode(Mode):
         else:
             return self.publish_random_value
 
-
+    def ask_for_measurement_type(self):
+        measurement_list = []
+        measurement_type = input("What is the measurement type of the values you want to send? (e.g. temperature, humidity, etc.): ").strip().lower()
+        while measurement_type != "n":
+            measurement_list.append(measurement_type)
+            measurement_type = input("What is the measurement type of the values you want to send? (e.g. temperature, humidity, etc.) (type n to stop): ").strip().lower()
+        return measurement_list
+            
     def run(self):
         self.mqtt_service.subscribe_topic(self.topic_for_hearing_from_server) # As the sensor, I want to listen to my servor, sub here
         print("Sensor mode activated. Waiting for user commands.")
@@ -52,7 +61,8 @@ class SensorMode(Mode):
         self.publish_message(self.topic_for_hearing_from_sensor, MqttAppConstants.MSG_CMD, MqttAppConstants.COMMAND_PING) # I tell the server that I am ready to receive commands and send values
         while True:
             if self.allow_to_publish:
-                self.publishing_function_mode(self.topic_for_hearing_from_sensor) #  # speak on the another one (You can also send non ordered value)
+                self.publish_measures(self.topic_for_hearing_from_sensor) #  # speak on the another one (You can also send non ordered value)
+                time.sleep(self.time_sleep_beetween_two_values)
     
     def publish_value(self, topic, value):
         self.publish_message(topic, MqttAppConstants.MSG_VALUE, value)
@@ -60,6 +70,21 @@ class SensorMode(Mode):
     def publish_answer_to_server_command(self, topic, answer):
         self.publish_message(topic, MqttAppConstants.MSG_ANS, answer)
 
+    def publish_measures(self, topic):
+        timestamp = time.time()
+        microseconds_timestamp = int(time.time() * 1e6) # BECAUSE WE WANT MICROSECONDS whereas time.time() return is 1720733625.1637602 seconds
+        timestamp_readable = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S.%f')
+        
+        message = json.dumps({
+            "timestamp": microseconds_timestamp,
+            "measures":[
+                {"measureType": mt , "value": random.randint(1, 100)/100} for mt in self.measurement_type_list
+            ]
+        })
+        self.mqtt_service.client.publish(topic, message)
+        print(">>>>[{}]: sending {} at {}".format(topic, message, timestamp_readable))
+        
+    
     def interact_with_received_command(self, message):
 
         received_message = message.payload.decode()

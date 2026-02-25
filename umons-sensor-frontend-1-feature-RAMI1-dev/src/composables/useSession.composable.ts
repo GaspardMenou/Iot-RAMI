@@ -269,16 +269,15 @@ const useSession = () => {
 		socket.emit("join-session", { topic, token })
 		socket.on("new-data", (data: any) => {
 			try {
-				const { timestamp, value } = data
-
+				const { timestamp, measures } = data
 				const date = new Date(Math.floor(timestamp / 1000))
-				if (!isNaN(value)) {
-					updateChart(date, parseFloat(value))
-					updateTransmissionSpeed(date)
-					console.log("📨 [WebSocket] Données extraites:", {
-						date: date.toISOString(),
-						value,
+				if (Array.isArray(measures)) {
+					measures.forEach((measure: { measureType: string; value: number }) => {
+						if (!isNaN(measure.value)) {
+							updateChart(date, parseFloat(String(measure.value)), measure.measureType)
+						}
 					})
+					updateTransmissionSpeed(date)
 				}
 			} catch (error) {
 				console.error("Error processing WebSocket data:", error)
@@ -304,16 +303,36 @@ const useSession = () => {
 		}
 	}
 
-	const updateChart = (label: Date, value: number) => {
-		const newLabels = [...chartData.value.labels, label.toISOString()]
-		const newData = [...chartData.value.datasets[0].data, { x: label, y: value }]
+	const DATASET_COLORS = [
+		{ bg: "rgba(75, 192, 192, 0.5)", border: "rgba(75, 192, 192, 1)" },
+		{ bg: "rgba(255, 99, 132, 0.5)", border: "rgba(255, 99, 132, 1)" },
+		{ bg: "rgba(54, 162, 235, 0.5)", border: "rgba(54, 162, 235, 1)" },
+		{ bg: "rgba(255, 206, 86, 0.5)", border: "rgba(255, 206, 86, 1)" },
+	]
 
-		if (newLabels.length > 100) {
-			newLabels.shift()
-			newData.shift()
+	const updateChart = (label: Date, value: number, measureType: string) => {
+		const datasets = [...chartData.value.datasets]
+		const newLabels = [...chartData.value.labels, label.toISOString()]
+
+		let datasetIndex = datasets.findIndex((d) => d.label === measureType)
+		if (datasetIndex === -1) {
+			const color = DATASET_COLORS[datasets.length % DATASET_COLORS.length]
+			datasets.push({
+				label: measureType,
+				backgroundColor: color.bg,
+				borderColor: color.border,
+				fill: false,
+				data: [],
+			})
+			datasetIndex = datasets.length - 1
 		}
 
-		updateChartWithNewValues(newLabels, newData)
+		const newData = [...datasets[datasetIndex].data, { x: label, y: value }]
+		if (newData.length > 100) newData.shift()
+		if (newLabels.length > 100) newLabels.shift()
+
+		datasets[datasetIndex] = { ...datasets[datasetIndex], data: newData }
+		chartData.value = { labels: newLabels, datasets }
 	}
 
 	const fetchDataAndUpdateChart = async (idSession: string) => {

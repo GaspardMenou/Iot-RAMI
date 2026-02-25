@@ -29,6 +29,7 @@ const char* MSG_TIMESTAMP = "timestamp";
 const char* MSG_CMD = "cmd";
 const char* MSG_ANS = "ans";
 const char* MSG_VALUE = "value";
+const char* MSG_MEASURE = "measures";
 
 /****** NTP Client Settings; PROGREM because these settings are configured only once at the beginning *******/
 const char* NTP_SERVER PROGMEM = "pool.ntp.org";
@@ -123,6 +124,45 @@ void publishValue(PubSubClient& client, const char* topic, const float& value, c
     DynamicJsonDocument doc(1024);
     doc[MSG_TIMESTAMP] = timestamp_buffer;
     doc[MSG_VALUE] = value;
+
+    char json_buffer[512];
+    serializeJson(doc, json_buffer);
+
+    publishJSONMessage(client, topic, json_buffer, retained);
+}
+void sendPing(PubSubClient& client, const char* topic,const bool& retained){
+        long long timestamp_buffer = getCurrentMicrosecondTimestampLong();
+    if (timestamp_buffer < 0) {
+        return;
+    }
+
+    DynamicJsonDocument doc(1024);
+    doc[MSG_TIMESTAMP] = timestamp_buffer;
+    doc[MSG_CMD] = COMMAND_PING;
+
+    char json_buffer[512];
+    serializeJson(doc, json_buffer);
+
+    publishJSONMessage(client, topic, json_buffer, retained);
+}
+
+
+void publishMeasures(PubSubClient& client, const char* topic, const char* measureTypes[], const float measures[],int count, const bool& retained){
+    long long timestamp_buffer = getCurrentMicrosecondTimestampLong();
+    if (timestamp_buffer < 0) {
+        return;
+    }
+    DynamicJsonDocument doc(1024);
+
+    JsonArray array = doc.createNestedArray(MSG_MEASURE);  // crée le []
+
+    for (int i = 0; i < count; i++) {
+        JsonObject obj = array.createNestedObject();  // ajoute un {} dans le []
+        obj["measureType"] = measureTypes[i];
+        obj["value"] = measures[i];
+    }
+    
+    doc[MSG_TIMESTAMP] = timestamp_buffer;
 
     char json_buffer[512];
     serializeJson(doc, json_buffer);

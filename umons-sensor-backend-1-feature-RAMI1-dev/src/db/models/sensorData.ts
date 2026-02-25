@@ -36,6 +36,7 @@ const defineSensorDataModel = (
       idMeasurementType: {
         type: DataTypes.UUID,
         allowNull: false,
+        primaryKey: true,
       },
     },
     {

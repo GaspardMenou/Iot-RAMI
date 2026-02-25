@@ -22,6 +22,7 @@ module.exports = {
         idMeasurementType: {
           type: Sequelize.UUID,
           allowNull: false,
+          primaryKey: true,
         },
       },
       {

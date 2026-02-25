@@ -267,6 +267,7 @@ class MqttServer {
               clearTimeout(this.sensorTimeouts.get(sensorName));
               const timeout = setTimeout(() => {
                 this.socketService?.emitSensorStatus(sensorName, "offline");
+                this.sensorTimeouts.delete(sensorName);
               }, 30000);
               this.sensorTimeouts.set(sensorName, timeout);
             }
@@ -305,6 +306,7 @@ class MqttServer {
           // Créer un nouveau timer
           const timeout = setTimeout(() => {
             this.socketService?.emitSensorStatus(sensorName, "offline");
+            this.sensorTimeouts.delete(sensorName);
           }, 30000);
           this.sensorTimeouts.set(sensorName, timeout);
         } else {
@@ -713,6 +715,10 @@ class MqttServer {
   public addSensorToSensorsMap(id: string, name: string, topic: string): void {
     const topicDuplication = this.getTopicForHearingTheSensor(topic);
     this.sensorsMap.set(topicDuplication, new SensorOverMqtt(id, name, topic));
+  }
+
+  public getSensorStatus(sensorName: string): "online" | "offline" {
+    return this.sensorTimeouts.has(sensorName) ? "online" : "offline";
   }
 
   /**

@@ -12,7 +12,7 @@ import { io } from "socket.io-client"
  */
 
 enum SensorAPIEndpoint {
-	GET_SENSOR_STATUS = "connexion/online/:sensorName",
+	GET_SENSOR_STATUS = "/sensors/connexion/online/:sensorName",
 	GET_ALL_SENSOR = "/sensors",
 }
 
