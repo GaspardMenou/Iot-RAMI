@@ -1,148 +1,123 @@
-This is the front-end of an experimental project for the University of Mons. It is a Vue website that allows to manage
-sensors and their data.
+# UMONS — Sensor Frontend
 
-# Umons sensor frontend
+SPA Vue 3 pour la visualisation et la gestion des capteurs IoT du projet RAMI 1.0 (Université de Mons).
 
-- [Installation](#installation)
-- [Install Node.js using NVM (Node Version Manager) is recommended.](#--install-nodejs-using-nvm-node-version-manager-is-recommended)
-- [Development](#development)
-- [Production](#production)
-- [Linter](#linter)
-- [Husky](#husky)
-- [Environment variables](#environment-variables)
-- [How to contribute](#how-to-contribute)
-- [Continuous Integration (CI) with Gitlab](#continuous-integration-ci-with-gitlab)
-- [Contributors](#contributors)
+---
+
+## Stack technique
+
+| Technologie | Rôle |
+|-------------|------|
+| Vue 3 + Vite | Framework SPA |
+| Pinia | Gestion d'état |
+| Vue Router | Navigation + guards d'auth |
+| Chart.js + vue-chartjs | Graphiques ECG / multi-mesures temps réel |
+| Socket.io client | Réception des données en temps réel (WebSocket) |
+| Axios | Appels REST vers le backend |
+| Vitest | Tests unitaires |
+| ESLint + Prettier | Qualité de code |
+
+---
+
+## Prérequis
+
+- Node.js LTS (≥ 18)
+- npm
+- Backend démarré sur le port 3000
+
+---
 
 ## Installation
-
-### Clone the repository
-
-```bash
-git clone <repository>
-```
-
-### Install Node.js and npm
-
-- You can find the installation instructions for Node.js on the official
-  website: [Node.js](https://nodejs.org/en/download/)
-- Use the LTS version.
-- Install Node.js using NVM (Node Version Manager) is recommended.
-
-### Install the dependencies with npm (first time only or when dependencies change)
 
 ```bash
 npm install
 ```
 
-## Development
-
-### Launch the development server and the database
-
-To do this see the readme of the [backend repository](https://gitlab.ig.umons.ac.be/rami/umons-sensor-backend).
-
-### Start the server in development mode
-
-Create a `.env.dev` file in the root directory of the project and add the following environment variables:
+Créer un fichier `.env.dev` à la racine du projet :
 
 ```bash
 VITE_APP_BACK_URL=http://localhost:3000/api/v1
-VITE_APP_TITLE=umons-sensor-backend (pre-prod)
+VITE_APP_TITLE=RAMI 1.0
+VITE_APP_ENV=dev
+VITE_SOCKET_URL=http://localhost:3000
 ```
-
-Warning : make sure that the `VITE_APP_BACK_URL` variable is the same as the `NODE_PORT` variable in the `.env.dev` file
-of the backend.
-
-Then run the following command:
-
-```bash
-VITE_APP_ENV=dev npm run command dev
-```
-
-You can name the `.env.dev` file as you want, but you have to change the `VITE_APP_ENV` variable accordingly.
-
-- The server will be available at http://localhost:8080
-- The API will be available at http://localhost:3000
-- The database will be available at http://localhost:5432
-
-### Test with Vitest
-
-```bash 
-npm run test
-```
-
-```bash
- npm run test -- --coverage
-```
-
-## Production
-
-### Build the frontend
-
-```bash
-cd frontend
-npm run build
-```
-
-- Host the files in the `dist` folder on a web server.
-
-## Linter
-
-```bash
-npm run lint
-```
-
-- We use [ESLint](https://eslint.org/) to lint the frontend and [Prettier](https://prettier.io/) to format the code.
-- The configuration is in the `.eslintrc.cjs` file and `prettier.json` file.
-
-## Husky
-
-- Husky is a tool that allows you to run scripts when you commit or push your code
-- The scripts are defined in the directory `.husky`
-- You can find more information about Husky here: [Husky](https://typicode.github.io/husky/#/)
-- There is a pre-commit hook that runs the linting
-
-## Environment variables
-
-- The environment variables are in the `.env` file.
-- The environment variables are prefixed with `VITE_` to be accessible in the frontend.
-- The environment variables are :
-    - `VITE_API_URL` : the URL of the API
 
 ---
 
-## How to contribute
+## Démarrage
 
-This [documentation](./CONTRIBUTING.md) has been moved.
+```bash
+VITE_APP_ENV=dev npm run dev   # Démarre sur :8080
+```
 
----
-
-## Continuous Integration (CI) with Gitlab
-
-- We use Gitlab to manage the project
-- We use Gitlab CI to run the tests and the linting
-- You can find more information about Gitlab CI here: [Gitlab CI](https://docs.gitlab.com/ee/ci/)
-- The configuration of the CI is in the file `.gitlab-ci.yml`
-- The CI is run when you push your code on the remote repository
-- The CI is run on the branch `develop` and on `main`
-- The CI is run on the following stages:
-    - `lint`
-    - `test`
-    - `build`
-    - `docker-build`
+Le frontend sera disponible sur http://localhost:8080
 
 ---
 
-## Contributors
+## Commandes utiles
 
-- Thomas Pont
-- Lilian Soler
+```bash
+VITE_APP_ENV=dev npm run dev   # Serveur de développement
+npm run build                  # Build de production (type-check inclus)
+npm run test                   # Tests Vitest (jsdom)
+npm run test:coverage          # Tests avec couverture
+npm run lint                   # ESLint --fix
+```
 
+---
 
+## Architecture
 
+### Composables (`src/composables/`)
 
+Les composables sont la couche métier principale :
 
+| Composable | Rôle |
+|------------|------|
+| `useUser` | Authentification, gestion des rôles (admin/operator) |
+| `useSession` | Sessions de mesure, connexion WebSocket, mise à jour du graphique |
+| `useSensor` | Liste des capteurs, statut en ligne, auto-discover |
+| `useMeasurement` | Types de mesures disponibles |
+| `useChart` | Configuration Chart.js |
+| `useAxios` | Instance Axios configurée avec le token JWT |
 
+### Flux de données temps réel
 
+1. Le composable `useSession` se connecte au backend via **Socket.io**
+2. Il envoie un événement `join-session` avec le JWT et le topic MQTT du capteur
+3. Il écoute l'événement `new-data` et met à jour le graphique dynamiquement
+4. Le graphique affiche un **dataset par type de mesure** (temperature, humidity, ecg...)
 
+### Rôles utilisateurs
 
+- **Admin** : accès complet (CRUD capteurs, tous les utilisateurs, toutes les sessions)
+- **Operator** : accès limité aux capteurs et sessions qui lui sont assignés
+
+---
+
+## Variables d'environnement
+
+| Variable | Description | Exemple |
+|----------|-------------|---------|
+| `VITE_APP_BACK_URL` | URL de l'API backend | `http://localhost:3000/api/v1` |
+| `VITE_APP_TITLE` | Titre de l'application | `RAMI 1.0` |
+| `VITE_APP_ENV` | Environnement (sélectionne le fichier `.env.<ENV>`) | `dev` |
+| `VITE_SOCKET_URL` | URL du serveur Socket.io | `http://localhost:3000` |
+
+---
+
+## Tests
+
+```bash
+npm run test             # Tous les tests
+npm run test:coverage    # Avec couverture (rapport dans /coverage)
+```
+
+---
+
+## CI/CD
+
+Pipeline GitHub Actions :
+1. **lint** — ESLint
+2. **test** — Vitest
+3. **build** — `npm run build`

@@ -1,93 +1,116 @@
-OS: Linux
-Arduino version: 2.3.2
-Version: 22.04 LTS - Jammy (Ubuntu)
+# sensors-over-mqtt
 
-# Récupréation du projet depuis gitlab
+Code Arduino/ESP32 pour les capteurs du projet RAMI 1.0 (Université de Mons).
+Les capteurs se connectent à un broker MQTT (HiveMQ cloud) et publient leurs données vers le backend Node.js.
 
-1. Cloner ce dépôt sur votre machine locale :
-```bash
-    git clone https://gitlab.ig.umons.ac.be/rami-1/sensors-over-mqtt.git
-    cd sensors-over-mqtt
+---
+
+## Structure du dépôt
+
+| Dossier | Description |
+|---------|-------------|
+| `esp32-mqtt/` | Sketches pour l'ESP32 (ECG AD8232, DHT22, etc.) |
+| `sensor_dummy_mqtt/sketch_dec17a/` | Sketch actif — ESP32 + DHT22 (température + humidité) |
+| `all-microcontrollers/` | Fichiers communs à tous les microcontrôleurs (`MQTTCommonOperations`) |
+| `lora-mqtt/` | Sketches pour les modules LoRa |
+
+---
+
+## Prérequis
+
+### 1. Arduino IDE
+Version 2.0 ou supérieure : https://docs.arduino.cc/software/ide-v2/tutorials/getting-started/ide-v2-downloading-and-installing/
+
+### 2. Board ESP32
+Dans Arduino IDE → **Outils → Type de carte → Gestionnaire de cartes**, chercher `esp32` et installer le package **ESP32 by Espressif Systems**.
+Choisir ensuite le board **ESP32 Dev Module**.
+
+### 3. Librairies à installer
+Dans Arduino IDE → **Outils → Gérer les bibliothèques** :
+
+| Librairie | Auteur |
+|-----------|--------|
+| PubSubClient | Nick O'Leary |
+| ArduinoJson | Benoit Blanchon |
+| DHT sensor library | Adafruit |
+| Adafruit Unified Sensor | Adafruit |
+| NTPClient | Fabrice Weinberg |
+
+---
+
+## Format des messages MQTT
+
+### Publication de données (capteur → broker)
+Le capteur publie sur `<topic>/sensor` au format multi-mesures :
+```json
+{
+  "timestamp": 1234567890123456,
+  "measures": [
+    { "measureType": "temperature", "value": 22.5 },
+    { "measureType": "humidity",    "value": 58.3 }
+  ]
+}
 ```
 
-# L'IDE Arduino
-Si vous souhaitez prendre en main Arduino, je vous conseille vivement de commencer par manipuler le fichier .ino du dossier suivant:
-du dossier suivant:
-```bash
-sensors-over-mqtt/esp32-mqtt/only_esp32_sending_constants_over_mqtt/only_esp32_sending_constants_over_mqtt.ino
+### PING (capteur → broker)
+Envoyé à la connexion et toutes les 20 secondes pour signaler que le capteur est en ligne :
+```json
+{ "cmd": "ping" }
 ```
 
-## Téléchargement d'Arduino
+### Commandes reçues (broker → capteur)
+Le capteur écoute sur `<topic>/server` :
 
-Vous devez installer une version supérieure à la version 2.0. Voici le lien de téléchargement:
-https://docs.arduino.cc/software/ide-v2/tutorials/getting-started/ide-v2-downloading-and-installing/
+| Commande | Effet |
+|----------|-------|
+| `{ "cmd": "ping" }` | Réponse `pong` ou `pong.publishing` |
+| `{ "cmd": "start" }` | Commence à publier les données |
+| `{ "cmd": "stop" }` | Arrête de publier |
 
-## Utilisation d'Arduino
-### Prérequis pour la manipulation d'Arduino
+---
 
-Pour utiliser Arduino, il y a certains points à garder en tête.
-- Premièrement, le fichier .ino utilise du C++. Arduino impose que le fichier .ino soit dans le dossier portant le nom du fichier.
-- Deuxièmement, rappelons que l'IDE permet de compiler et d'envoyer du code compilé sur le microcontrôleur de notre choix. Voici ce que cela implique :
+## Utiliser un sketch
 
-#### 1. Utilisation du langage compilé (C++)
+### Sketch actif : `sensor_dummy_mqtt/sketch_dec17a`
+ESP32 + capteur DHT22 (température + humidité), connecté à HiveMQ via TLS.
 
-**Librairies** : Arduino utilise le langage C++ pour programmer les microcontrôleurs. Cela signifie que vous devrez importer les bibliothèques nécessaires à votre projet.
+**Pins DHT22 :**
+- Data → pin 17
 
-> **[UNE FOIS] Import** : Vous allez devoir installer les librairies nécessaires via le gestionnaire de bibliothèques de l'IDE Arduino.
+**Configuration** (`SpecificConstants.cpp`) :
+- Renseigner le SSID et mot de passe WiFi
+- Le broker HiveMQ et les topics sont déjà configurés
 
-![Illustration téléchargement des libraries](images/arduino_utilisation_libraries.jpeg)
+**Compilation :** Le dossier contient déjà tous les fichiers nécessaires (`MQTTCommonOperations.hpp/cpp` + `SpecificConstants.hpp/cpp` + `sketch_dec17a.ino`). Ouvrir directement `sketch_dec17a.ino` dans Arduino IDE.
 
-#### 2. Envoi du code sur du matériel
+---
 
-**Les Boards** : On définit le "board" afin que l'IDE Arduino assure que le code est correctement compilé et téléversé, en tenant compte des spécificités matérielles et des ressources disponibles.
+## Conseils généraux
 
-> **[A CHAQUE CHANGEMENT DE MICROCONTROLEUR] Choisir un board** : Vous allez devoir choisir le board correspondant à votre microcontrôleur.
+1. **Vérifier les pins** avant de compiler — ils doivent correspondre au câblage physique.
+2. **Compiler et flasher** via le bouton ▶ dans Arduino IDE.
+3. **Serial Monitor** (bauds : 115200) pour voir les logs en temps réel.
+4. **Serial Plotter** pour visualiser les valeurs graphiquement.
 
-![Illustration changement board](images/arduino_utilisation_boards_select.png)
+> L'ESP32 ne supporte que le WiFi 2.4 GHz. Privilégier un partage de connexion mobile si le réseau local est en 5 GHz.
 
-![Illustration choix](images/arduino_utilisation_boards_chose.png)
+---
 
-### Conseils généraux pour la manipulation d'Arduino
+## Problèmes fréquents
 
-1) VÉRIFIER le positionnement des pins, si nécessaire. Ils doivent correspondre à ceux indiqués dans votre code !!!
-2) Compiler et Flasher sur la carte, NB: POUR LA COMPILATION, VOIR LA PARTIE "3. L'utilisation du fichier.ino" dans le fichier
-README.md correspondant au microcontroller que vous souhaitez utiliser !
-
-![Illustration compilation et flashage](images/arduino_conseils_flasher.png)
-
-3) Voir les données
-- Serial plotter (affiche le graphique des valeurs envoyées et/ou recensées)
-- Serial monitor (affiche les print du programme)
-
-![Illustration utlisation de serial plotter et monitor](images/arduino_conseils_serial_monitor_and_plotter.png)
-
-> Attention, le nombre de bauds doit correspondre à celui indiqué dans le fichier correspondant (sinon vous verrez des caractères bizarres)
-
-
-## Problèmes que vous pourriez rencontrer et solutions
-
-### Absence de Serial
-- Installer python3 (version supérieure à 3.6) puis pyserial
+### Erreur de port (`Port does not exist`)
 ```bash
-sudo apt update
-sudo apt install python3
-sudo apt install python3-serial
+sudo chmod 666 /dev/ttyUSB0   # Linux
 ```
-		     
-### Ports does not exits (alors que vous avez branché votre esp/lora)
-- Changer les permissions concernant le port: (Relancer la commande si l'erreur s'affiche à nouveau)
+Sur macOS, vérifier dans **Outils → Port** que le bon port est sélectionné (`/dev/cu.usbserial-...`).
+
+### Flashage qui s'arrête / caractères bizarres dans le monitor
+Maintenir les boutons **RST** et **BOOT** au moment où `Connecting...` apparaît dans la console, puis relâcher.
+
+### Absence de Serial (Linux)
 ```bash
-sudo chmod 666 /dev/ttyUSB0
+sudo apt install python3 python3-serial
 ```
 
-### Parfois, le flashage s'arrête subitement ou alors le monitor affiche des caractères bizzares meme si les bauds sont correctes... (lisez cette solution en entier avant de l'essayer)
-/!\ Il faut etre précis
-- Téléverser le code
-- AVANT que connecting n'apparaisse, vous devez appuyer et maintenur les deux boutons (généralement RST et BOOT) le temps que le flashage reprenne
-- relacher les deux boutons
-
-
-### Impossibilité de connecter les microcontroleurs au wifi
-1) Les microcontrôleurs comme l'esp32 et la lora ne se connectent pas à n'importe quel réseau wifi (ils n'en ont pas la capacité), **Priviligiez le partage de connnexion**
-
-Compléter le fichier avec les erreurs que vous rencontrez !!!
+### L'ESP32 ne se connecte pas au WiFi
+L'ESP32 ne supporte que le **WiFi 2.4 GHz**. Vérifier que le réseau n'est pas en 5 GHz uniquement.

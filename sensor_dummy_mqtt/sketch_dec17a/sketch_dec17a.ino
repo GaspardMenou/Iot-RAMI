@@ -74,16 +74,21 @@ float generateRandomValue() {
     return MIN_RANDOM_VALUE + static_cast<float>(random(1000)) / 1000.0 * (MAX_RANDOM_VALUE - MIN_RANDOM_VALUE);
 }
 
-// Modify the loop() function
+unsigned long previousPingMillis = 0;
+const long PING_INTERVAL = 20000;
+
 void loop() {
     if (!client.connected()) {
         reconnect(client, MQTT_USERNAME, MQTT_PASSWORD, MQTT_TOPIC_TO_LISTEN_ON);
         sendPing(client, MQTT_TOPIC_TO_SPEAK_ON);
+        previousPingMillis = millis();
     }
     client.loop();
 
-    unsigned long currentMillis = millis(); 
-    if (currentMillis - previousMillis >= 1000) {
+    unsigned long currentMillis = millis();
+
+    if (currentMillis - previousPingMillis >= PING_INTERVAL) {
+        previousPingMillis = currentMillis;
         sendPing(client, MQTT_TOPIC_TO_SPEAK_ON);
     }
 
@@ -91,17 +96,17 @@ void loop() {
         previousMillis = currentMillis;
         if (allow_to_publish) {
             float h = dht.readHumidity();
-            //Lis le taux d'humidite en %
             float t = dht.readTemperature();
-            //Lis la température en degré celsius
-            float f = dht.readTemperature(true);
+            if (isnan(h) || isnan(t)) {
+                Serial.println("DHT read failed!");
+                return;
+            }
             const char* types[] = {"humidity", "temperature"};
             float values[] = {h, t};
             Serial.print("Sending value: ");
             Serial.println(h);
             Serial.println(t);
-            publishMeasures(client, MQTT_TOPIC_TO_SPEAK_ON, types, values,2, true);
-
+            publishMeasures(client, MQTT_TOPIC_TO_SPEAK_ON, types, values, 2, true);
         }
     }
 }
