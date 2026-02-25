@@ -49,6 +49,7 @@ class SensorMode(Mode):
         self.mqtt_service.subscribe_topic(self.topic_for_hearing_from_server) # As the sensor, I want to listen to my servor, sub here
         print("Sensor mode activated. Waiting for user commands.")
         self.mqtt_service.client.loop_start()
+        self.publish_message(self.topic_for_hearing_from_sensor, MqttAppConstants.MSG_CMD, MqttAppConstants.COMMAND_PING) # I tell the server that I am ready to receive commands and send values
         while True:
             if self.allow_to_publish:
                 self.publishing_function_mode(self.topic_for_hearing_from_sensor) #  # speak on the another one (You can also send non ordered value)

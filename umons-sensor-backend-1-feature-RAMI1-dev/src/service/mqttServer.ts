@@ -14,6 +14,7 @@ import { Sensor as SensorType } from "@/types/sensor";
 import { BrokerInfo } from "@/types/mqttConstants";
 import SensorOverMqtt from "@/service/sensorsOverMqtt";
 import KafkaService from "@/service/kafkaService";
+import { parse } from "path";
 const DB: any = db;
 const { Sensor } = DB;
 
@@ -273,10 +274,23 @@ class MqttServer {
             console.error("❌ [DB] Erreur de sauvegarde:", dbError);
             throw dbError;
           }
+        }
+      }
+      if (parsedMessage.cmd === COMMANDS.PING) {
+        // Auto-discover: capteur inconnu détecté
+        const suffix = TOPICS.HEARING_THE_SENSOR;
+        const baseTopic = topic.slice(0, topic.length - suffix.length);
+        const sensorName = this.getSensorNameUsingTopic(topic);
+        if (sensorName) {
+          this.socketService?.emitSensorStatus(sensorName, "online");
+          // Annuler le timer précédent s'il existe
+          clearTimeout(this.sensorTimeouts.get(sensorName));
+          // Créer un nouveau timer
+          const timeout = setTimeout(() => {
+            this.socketService?.emitSensorStatus(sensorName, "offline");
+          }, 30000);
+          this.sensorTimeouts.set(sensorName, timeout);
         } else {
-          // Auto-discover: capteur inconnu détecté
-          const suffix = TOPICS.HEARING_THE_SENSOR;
-          const baseTopic = topic.slice(0, topic.length - suffix.length);
           const existing = this.discoveredTopics.get(baseTopic);
           if (existing) {
             existing.lastSeenAt = new Date();
@@ -288,7 +302,9 @@ class MqttServer {
               lastSeenAt: new Date(),
               count: 1,
             });
-            console.log(`🔍 [AutoDiscover] Nouveau capteur détecté: ${baseTopic}`);
+            console.log(
+              `🔍 [AutoDiscover] Nouveau capteur détecté: ${baseTopic}`
+            );
           }
         }
       }

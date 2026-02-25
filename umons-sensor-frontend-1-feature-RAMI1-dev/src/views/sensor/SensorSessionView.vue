@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { defineComponent, onMounted, provide, ref } from "vue"
+	import { defineComponent, onMounted, onUnmounted, provide, ref } from "vue"
 	import { useSession } from "@/composables/useSession.composable"
 	import { useSensor } from "@/composables/useSensor.composable"
 	import { UserFields } from "@/composables/useUser.composable"
@@ -29,6 +29,9 @@
 
 				idUser.value = localStorage.getItem(UserFields.ID) || ""
 				idSensor.value = props.id
+			})
+			onUnmounted(async () => {
+				endSession()
 			})
 
 			const startSession = async () => {
