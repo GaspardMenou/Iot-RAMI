@@ -84,6 +84,10 @@ void loop() {
 
     unsigned long currentMillis = millis(); 
     if (currentMillis - previousMillis >= 1000) {
+        sendPing(client, MQTT_TOPIC_TO_SPEAK_ON);
+    }
+
+    if (currentMillis - previousMillis >= 1000) {
         previousMillis = currentMillis;
         if (allow_to_publish) {
             float h = dht.readHumidity();
@@ -91,11 +95,10 @@ void loop() {
             float t = dht.readTemperature();
             //Lis la température en degré celsius
             float f = dht.readTemperature(true);
-            float testValue = generateRandomValue();
-
             const char* types[] = {"humidity", "temperature"};
             float values[] = {h, t};
             Serial.print("Sending value: ");
+            Serial.println(h);
             Serial.println(t);
             publishMeasures(client, MQTT_TOPIC_TO_SPEAK_ON, types, values,2, true);
 

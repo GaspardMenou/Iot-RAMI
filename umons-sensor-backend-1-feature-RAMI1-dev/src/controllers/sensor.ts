@@ -133,7 +133,9 @@ const getSensorStatus = async (req: Request, res: Response) => {
     const status = mqttInstance.getSensorStatus(sensorName);
     return res.status(200).json({ message: status });
   } catch (error) {
-    return res.status(500).json(new ServerErrorException("Server error", "server.error"));
+    return res
+      .status(500)
+      .json(new ServerErrorException("Server error", "server.error"));
   }
 };
 
