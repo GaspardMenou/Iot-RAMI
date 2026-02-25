@@ -33,6 +33,10 @@ const defineSensorDataModel = (
         type: DataTypes.FLOAT,
         allowNull: false,
       },
+      idMeasurementType: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
     },
     {
       timestamps: false,
@@ -42,6 +46,10 @@ const defineSensorDataModel = (
   SensorData.associate = (models: any) => {
     SensorData.belongsTo(models.Sensor, {
       foreignKey: "idSensor",
+      targetKey: "id",
+    });
+    SensorData.belongsTo(models.MeasurementType, {
+      foreignKey: "idMeasurementType",
       targetKey: "id",
     });
   };

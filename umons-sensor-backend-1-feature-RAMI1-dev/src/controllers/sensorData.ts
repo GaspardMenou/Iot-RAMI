@@ -82,7 +82,8 @@ const buildSensorDataWhereClause = (
 const createSensorData = async (
   idSensor: string,
   time: number,
-  value: number
+  value: number,
+  idMeasurementType: string
 ) => {
   const MINIMUM_TIME_IN_MICROSECONDS = 1704067200000000; // Corresponding to 2024-01-01T00:00:00.000Z en microsecondes
 
@@ -124,6 +125,7 @@ const createSensorData = async (
       idSensor: idSensor,
       time: timestamp,
       value: value,
+      idMeasurementType: idMeasurementType,
     });
     console.log(
       `✅ [DB] Donnée insérée avec succès pour le capteur ${idSensor} à ${timestamp} avec une valeur de ${value}`

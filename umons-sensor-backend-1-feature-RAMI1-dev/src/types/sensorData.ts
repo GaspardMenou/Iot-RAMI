@@ -4,12 +4,14 @@ interface SensorDataCreation {
   time: Date;
   idSensor: string;
   value: number;
+  idMeasurementType: string;
 }
 
 interface SensorData {
   time: Date;
   idSensor: string;
   value: number;
+  idMeasurementType: string;
 }
 
 type SensorDataModel = Model<SensorData, SensorDataCreation>;

@@ -14,9 +14,8 @@ import { Sensor as SensorType } from "@/types/sensor";
 import { BrokerInfo } from "@/types/mqttConstants";
 import SensorOverMqtt from "@/service/sensorsOverMqtt";
 import KafkaService from "@/service/kafkaService";
-import { parse } from "path";
 const DB: any = db;
-const { Sensor } = DB;
+const { Sensor, MeasurementType } = DB;
 
 // --- end of model import
 
@@ -44,7 +43,7 @@ class MqttServer {
   private socketService: SocketService | undefined;
   private sensorTimeouts: Map<string, NodeJS.Timeout> = new Map();
   private discoveredTopics: Map<string, DiscoveredSensorInfo> = new Map();
-
+  private measurementTypesMap: Map<string, string> = new Map(); // Map pour stocker les types de mesure (idMeasurementType -> name)
   // ------------------------ SINGLETON IMPLEMENTATION
   // Private constructor to prevent direct class instantiation (BUT WE DO NOT NEED IT !!)
   private constructor() {
@@ -184,6 +183,7 @@ class MqttServer {
     this.reconnectAttemps = 0;
     if (Sensor !== undefined) {
       await this.initializeSensorsAndSubscribeToTheirTopic();
+      await this.initializeMeasurementTypesMap();
     }
     // Wildcard subscription to catch messages from unknown (undiscovered) sensors
     await this.subscribeTopic("#");
@@ -227,40 +227,57 @@ class MqttServer {
         return;
       }
 
-      // Si c'est une donnée de capteur
-      if (parsedMessage.value !== undefined) {
+      // Si c'est une donnée de capteur (nouveau format avec measures[])
+      if (parsedMessage.measures !== undefined) {
+        if (!Array.isArray(parsedMessage.measures)) {
+          console.warn(
+            "⚠️ [MQTT] Format invalide: 'measures' doit être un tableau"
+          );
+          return;
+        }
+
         const sensorId = this.getSensorIdUsingTopic(topic);
 
         if (sensorId) {
           try {
-            // Sauvegarde en base de données
-            await createSensorData(
-              sensorId,
-              parsedMessage.timestamp,
-              parseFloat(parsedMessage.value)
-            );
-            console.log(
-              "💾 [DB] Donnée sauvegardée pour le capteur:",
-              sensorId
-            );
+            for (const measure of parsedMessage.measures) {
+              const idMeasurementType = this.measurementTypesMap.get(
+                measure.measureType
+              );
+              if (!idMeasurementType) {
+                console.warn(
+                  `⚠️ [MQTT] Type de mesure inconnu: ${measure.measureType}`
+                );
+                continue;
+              }
+              await createSensorData(
+                sensorId,
+                parsedMessage.timestamp,
+                parseFloat(measure.value),
+                idMeasurementType
+              );
+              console.log(
+                `💾 [DB] Donnée sauvegardée — capteur: ${sensorId}, type: ${measure.measureType}`
+              );
+            }
+
             const sensorName = this.getSensorNameUsingTopic(topic);
             if (sensorName) {
               this.socketService?.emitSensorStatus(sensorName, "online");
-              // Annuler le timer précédent s'il existe
               clearTimeout(this.sensorTimeouts.get(sensorName));
-              // Créer un nouveau timer
               const timeout = setTimeout(() => {
                 this.socketService?.emitSensorStatus(sensorName, "offline");
               }, 30000);
               this.sensorTimeouts.set(sensorName, timeout);
             }
-            // Tentative de publication Kafka (mais on ne bloque pas si ça échoue)
+
+            // Tentative de publication Kafka (non bloquante)
             try {
               const kafkaService = await KafkaService.getInstance();
               await kafkaService.publishSensorData("sensor-data", {
                 sensorId,
                 timestamp: parsedMessage.timestamp,
-                value: parseFloat(parsedMessage.value),
+                measures: parsedMessage.measures,
                 topic,
               });
               console.log("📨 [Kafka] Donnée publiée avec succès");
@@ -714,6 +731,15 @@ class MqttServer {
           topicDuplication,
           new SensorOverMqtt(sensor.id, sensor.name, sensor.topic)
         );
+      });
+    }
+  }
+
+  private async initializeMeasurementTypesMap() {
+    const measurementTypes = await MeasurementType.findAll();
+    if (measurementTypes !== undefined && measurementTypes.length > 0) {
+      measurementTypes.forEach((mt: any) => {
+        this.measurementTypesMap.set(mt.dataValues.name, mt.dataValues.id);
       });
     }
   }

@@ -19,6 +19,10 @@ module.exports = {
           type: Sequelize.FLOAT,
           allowNull: false,
         },
+        idMeasurementType: {
+          type: Sequelize.UUID,
+          allowNull: false,
+        },
       },
       {
         timestamps: false,

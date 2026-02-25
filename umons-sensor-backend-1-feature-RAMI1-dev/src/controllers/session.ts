@@ -298,11 +298,15 @@ const exportSessionAsCsv = async (req: Request, res: Response) => {
   try {
     const session = await Session.findByPk(id);
     if (!session) {
-      return res.status(404).json(new NotFoundException("Session not found", "session.not.found"));
+      return res
+        .status(404)
+        .json(new NotFoundException("Session not found", "session.not.found"));
     }
     const sensor = await Sensor.findByPk(session.idSensor);
     if (!sensor) {
-      return res.status(404).json(new NotFoundException("Sensor not found", "sensor.not.found"));
+      return res
+        .status(404)
+        .json(new NotFoundException("Sensor not found", "sensor.not.found"));
     }
     const sensorData = await getSensorDataWithinTimeRange(
       sensor.dataValues.id,
@@ -315,12 +319,21 @@ const exportSessionAsCsv = async (req: Request, res: Response) => {
       `# sensor_name,${sanitizeCsvField(sensor.dataValues.name)}`,
       `# sensor_topic,${sanitizeCsvField(sensor.dataValues.topic)}`,
       `# start_time,${new Date(session.dataValues.createdAt).toISOString()}`,
-      `# end_time,${session.dataValues.endedAt ? new Date(session.dataValues.endedAt).toISOString() : ""}`,
+      `# end_time,${
+        session.dataValues.endedAt
+          ? new Date(session.dataValues.endedAt).toISOString()
+          : ""
+      }`,
       `time,value`,
-      ...sensorData.map((row: any) => `${new Date(row.time).toISOString()},${row.value}`),
+      ...sensorData.map(
+        (row: any) => `${new Date(row.time).toISOString()},${row.value}`
+      ),
     ];
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename="session-${id}.csv"`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="session-${id}.csv"`
+    );
     return res.status(200).send(lines.join("\n"));
   } catch (error) {
     return handleDealingWithSensorDataError(res, error);
