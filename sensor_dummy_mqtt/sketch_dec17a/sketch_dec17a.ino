@@ -43,9 +43,13 @@ void callback(char *topic, byte *payload, unsigned int length) {
         Serial.println(error.c_str());
         return;
     }
-
-    String received_command = doc[MSG_CMD];
-    interactWithReceivedCommand(client, received_command, MQTT_TOPIC_TO_SPEAK_ON, allow_to_publish);
+    if (doc.containsKey(MSG_CMD)) {
+        String received_command = doc[MSG_CMD];
+        interactWithReceivedCommand(client, received_command, MQTT_TOPIC_TO_SPEAK_ON, allow_to_publish);
+    } else if (doc.containsKey(MSG_ANS)) {
+        String received_answer = doc[MSG_ANS];
+        interactWithAnswerCommand(client, received_answer, MQTT_TOPIC_TO_SPEAK_ON, allow_to_publish);
+    }
 }
 
 /**** MAIN PROGRAM *****/
@@ -75,17 +79,26 @@ float generateRandomValue() {
 }
 
 unsigned long previousPingMillis = 0;
+unsigned long previousStartMillis = 0;
 const long PING_INTERVAL = 20000;
+const long START_INTERVAL = 30000;
+
+
 
 void loop() {
     if (!client.connected()) {
         reconnect(client, MQTT_USERNAME, MQTT_PASSWORD, MQTT_TOPIC_TO_LISTEN_ON);
         sendPing(client, MQTT_TOPIC_TO_SPEAK_ON);
+        sendStart(client, MQTT_TOPIC_TO_SPEAK_ON);
         previousPingMillis = millis();
+        previousStartMillis = millis();
     }
     client.loop();
-
     unsigned long currentMillis = millis();
+    if (!allow_to_publish && currentMillis - previousStartMillis >= START_INTERVAL){
+        previousStartMillis = millis();
+        sendStart(client, MQTT_TOPIC_TO_SPEAK_ON);
+    }
 
     if (currentMillis - previousPingMillis >= PING_INTERVAL) {
         previousPingMillis = currentMillis;
