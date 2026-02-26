@@ -1,0 +1,32 @@
+{
+  "name": "fog-service",
+  "version": "1.0.0",
+  "description": "Fog service - MQTT to Kafka bridge",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "kafkajs": "^2.2.4",
+    "mqtt": "^5.15.0",
+    "pretier": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.1",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "eslint": "^10.0.2",
+    "eslint-config-prettier": "^10.1.8",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.8.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
