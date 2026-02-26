@@ -74,6 +74,11 @@ class MqttFog {
     const timeout = setTimeout(() => {
       this.sensorTimeouts.delete(topic);
       console.log(`⚠️ [Sensor Timeout] Sensor ${topic} is offline`);
+      if (this.buffer.has(topic)) {
+        this.handleStop(topic).catch((e) =>
+          console.error("❌ [Sensor Timeout] Erreur handleStop:", e),
+        );
+      }
     }, 30000);
     this.sensorTimeouts.set(topic, timeout);
   }
