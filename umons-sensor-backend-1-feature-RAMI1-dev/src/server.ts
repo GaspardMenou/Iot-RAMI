@@ -45,9 +45,10 @@ server.timeout = 1000 * 60 * 10; // 10 minutes
 const socketService = new SocketService(server);
 socketService.initialize();
 socketService.startKafkaConsumer();
-MqttServer.getInstance().then((mqttServer) => {
-  mqttServer.setSocketService(socketService);
-});
+// MQTT désactivé côté cloud — le fog service gère la connexion MQTT
+// MqttServer.getInstance().then((mqttServer) => {
+//   mqttServer.setSocketService(socketService);
+// });
 server.on("error", errorHandler);
 server.on("listening", () => {
   const address = server.address();

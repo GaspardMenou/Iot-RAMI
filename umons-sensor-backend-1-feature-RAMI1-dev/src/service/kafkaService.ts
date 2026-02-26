@@ -1,9 +1,8 @@
-import { Kafka, Producer, Consumer } from "kafkajs";
+import { Kafka, Consumer } from "kafkajs";
 import { envs } from "@/utils/env";
 class KafkaService {
   private static instance: KafkaService | undefined;
   private kafka!: Kafka;
-  private producer!: Producer;
   private consumer!: Consumer;
   private isKafkaConnected = false;
   private mapTopicCallbacks: Map<string, (data: any) => void> = new Map();
@@ -39,7 +38,6 @@ class KafkaService {
         },
       });
 
-      this.producer = this.kafka.producer();
       this.consumer = this.kafka.consumer({ groupId: "sensor-group" });
       console.log("✅ [Kafka] Connexion établie");
     } catch (error) {
@@ -50,9 +48,6 @@ class KafkaService {
 
   private async connect(): Promise<void> {
     try {
-      await this.producer.connect();
-      console.log("✅ Kafka Producer connected successfully");
-
       await this.consumer.connect();
       console.log("✅ Kafka Consumer connected successfully");
 
@@ -64,21 +59,6 @@ class KafkaService {
     }
   }
 
-  public async publishSensorData(topic: string, data: any): Promise<void> {
-    try {
-      await this.producer.send({
-        topic,
-        messages: [{ value: JSON.stringify(data) }],
-      });
-      console.log("📤 Published to Kafka:", {
-        topic,
-        data,
-      });
-    } catch (error) {
-      console.error("❌ Error publishing to Kafka:", error);
-      throw error;
-    }
-  }
   public registerTopic(topic: string, callback: (data: any) => void): void {
     this.mapTopicCallbacks.set(topic, callback);
     console.log("🔖 Registered Kafka topic callback:", topic);
@@ -117,9 +97,6 @@ class KafkaService {
   }
   public async disconnect(): Promise<void> {
     try {
-      await this.producer.disconnect();
-      console.log("👋 Kafka Producer disconnected");
-
       await this.consumer.disconnect();
       console.log("👋 Kafka Consumer disconnected");
       this.isKafkaConnected = false;
