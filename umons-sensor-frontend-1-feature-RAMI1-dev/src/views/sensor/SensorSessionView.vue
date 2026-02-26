@@ -5,8 +5,6 @@
 	import { UserFields } from "@/composables/useUser.composable"
 	import SensorCard from "@/components/sensor/SensorCard.vue"
 	import Graph from "@/components/session/Graph.vue"
-	import type { CreateClientSideSessionRequestBody } from "#/session"
-
 	export default defineComponent({
 		name: "SensorSessionView",
 		components: { SensorCard, Graph },
@@ -14,7 +12,7 @@
 			id: { type: String, required: true },
 		},
 		setup(props) {
-			const { idUser, idSensor, chartData, timeSinceLastValue, transmissionSpeed, startSessionOnClientSide, createSessionOnServerSide } = useSession()
+			const { idUser, idSensor, chartData, timeSinceLastValue, transmissionSpeed, startSessionOnClientSide, createSessionOnServerSide, checkAndJoinActiveSession } = useSession()
 			const { fetchSensors, sensors } = useSensor(undefined)
 
 			const isSessionActive = ref(false)
@@ -29,30 +27,24 @@
 
 				idUser.value = localStorage.getItem(UserFields.ID) || ""
 				idSensor.value = props.id
+
+				const sensorTopic = (sensor.value?.topic ?? "") + "/sensor"
+				const alreadyActive = await checkAndJoinActiveSession(props.id, sensorTopic, idUser.value)
+				if (alreadyActive) isSessionActive.value = true
 			})
 			onUnmounted(async () => {
 				endSession()
 			})
 
-			const startSession = async () => {
-				try {
-					await startSessionOnClientSide({
-						idUser: idUser.value,
-						idSensor: idSensor.value,
-					} as CreateClientSideSessionRequestBody)
-					isSessionActive.value = true
-				} catch (error) {
-					console.error("Erreur lors du démarrage de la session:", error)
-				}
+			const startSession = () => {
+				const sensorTopic = (sensor.value?.topic ?? "") + "/sensor"
+				startSessionOnClientSide(sensorTopic, idUser.value, idSensor.value)
+				isSessionActive.value = true
 			}
 
-			const endSession = async () => {
-				try {
-					await createSessionOnServerSide()
-					isSessionActive.value = false
-				} catch (error) {
-					console.error("Erreur lors de la fin de la session:", error)
-				}
+			const endSession = () => {
+				createSessionOnServerSide()
+				isSessionActive.value = false
 			}
 
 			return {

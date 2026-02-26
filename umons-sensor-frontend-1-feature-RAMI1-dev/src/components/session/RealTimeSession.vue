@@ -90,7 +90,7 @@
 	import SensorsList from "@/components/sensor/SensorsList.vue"
 	import { EventTypes, UserFields, handleEvent } from "@/composables/useUser.composable"
 	import { useSession } from "@/composables/useSession.composable"
-	import type { CreateClientSideSessionRequestBody } from "#/session"
+	import { useSensor } from "@/composables/useSensor.composable"
 
 	export default defineComponent({
 		name: "CreateSession",
@@ -99,7 +99,8 @@
 			SensorsList,
 		},
 		setup() {
-			const { idUser, idSensor, chartData, timeSinceLastValue, transmissionSpeed, startSessionOnClientSide, createSessionOnServerSide } = useSession()
+			const { idUser, idSensor, chartData, timeSinceLastValue, transmissionSpeed, startSessionOnClientSide, createSessionOnServerSide, checkAndJoinActiveSession } = useSession()
+			const { fetchSensors, sensors } = useSensor(undefined)
 
 			const activeStep = ref(1)
 			const selectedSensorName = ref("")
@@ -107,17 +108,23 @@
 			provide("title", "Current session chart")
 			provide("chartData", chartData)
 
-			const sensorSelectedCallback = (sensorId: string) => {
-				const storedId = localStorage.getItem(UserFields.ID)
-
-				if (storedId !== null) {
-					idUser.value = storedId
-				}
+			const sensorSelectedCallback = async (sensorId: string) => {
+				const storedId = localStorage.getItem(UserFields.ID) ?? ""
+				idUser.value = storedId
 				idSensor.value = sensorId
-				nextStep()
+
+				const sensor = sensors.value.find(s => s.id === sensorId)
+				const sensorTopic = (sensor?.topic ?? "") + "/sensor"
+				const alreadyActive = await checkAndJoinActiveSession(sensorId, sensorTopic, storedId)
+				if (alreadyActive) {
+					activeStep.value = 3
+				} else {
+					nextStep()
+				}
 			}
 
-			onMounted(() => {
+			onMounted(async () => {
+				await fetchSensors()
 				handleEvent("on", EventTypes.SENSOR_SELECTED_FOR_CREATING_SESSION, sensorSelectedCallback)
 			})
 
@@ -139,25 +146,15 @@
 				}
 			}
 
-			const startSession = async () => {
-				try {
-					await startSessionOnClientSide({
-						idUser: idUser.value,
-						idSensor: idSensor.value,
-					} as CreateClientSideSessionRequestBody)
-					nextStep()
-				} catch (error) {
-					console.error("Erreur lors du démarrage de la session:", error)
-				}
+			const startSession = () => {
+				const sensor = sensors.value.find(s => s.id === idSensor.value)
+				const sensorTopic = (sensor?.topic ?? "") + "/sensor"
+				startSessionOnClientSide(sensorTopic, idUser.value, idSensor.value)
+				nextStep()
 			}
 
-			const endCurrentSession = async () => {
-				try {
-					await createSessionOnServerSide()
-					console.log("Session terminée avec succès")
-				} catch (error) {
-					console.error("Erreur lors de la tentative de fin de la session:", error)
-				}
+			const endCurrentSession = () => {
+				createSessionOnServerSide()
 			}
 
 			return {

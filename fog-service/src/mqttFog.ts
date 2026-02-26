@@ -7,7 +7,7 @@ class MqttFog {
   private mqttClient!: MqttClient;
   private kafkaService!: KafkaService;
   private buffer = new Map<string, any[]>();
-  private flushIntervalMs = 5000; // Intervalle de flush en millisecondes
+  private flushIntervalMs = 1000; // Intervalle de flush en millisecondes
   private flushMaxSize = 10;
   private sensorTimeouts: Map<string, NodeJS.Timeout> = new Map();
 

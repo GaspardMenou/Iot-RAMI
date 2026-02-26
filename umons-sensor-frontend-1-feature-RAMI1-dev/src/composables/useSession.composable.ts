@@ -1,13 +1,14 @@
 import { ref } from "vue"
 import { useAxios } from "@/composables/useAxios.composable"
 import { io } from "socket.io-client"
-import type { CreateClientSideSessionRequestBody, CreateSessionOnServerRequestBody, StartSessionResponse, CreateServorSessionResponse, Session } from "#/session"
+import type { Session } from "#/session"
 import { UserFields, EventTypes, handleEvent } from "@/composables/useUser.composable"
 import type { ChartData } from "chart.js"
 
 enum SessionControllerPaths {
 	START_SESSION_ON_CLIENT_SIDE = "sessions/new",
 	COMPLETE_SESSION_ON_SERVER_SIDE = "sessions/new/on/server",
+	GET_ACTIVE_SESSIONS = "sessions/active",
 	SESSION_DATA = "sessions/:id/data", // id must be replaced by that of the session
 	GET_USER_SESSIONS = "users/:userId/sessions",
 	GET_USER_SESSIONS_ON_A_SENSOR = "users/:userId/sessions/on/sensor/:sensorId",
@@ -200,53 +201,29 @@ const useSession = () => {
 
 	// *************************** [METHOD]  SESSION
 
-	const startSessionOnClientSide = async (clientSideSession: CreateClientSideSessionRequestBody) => {
+	const startSessionOnClientSide = (sensorTopic: string, userId: string, sensorId: string) => {
+		setupSession(userId, sensorId, sensorTopic, new Date())
+		connectToWebSocket(sensorTopic)
+	}
+
+	const checkAndJoinActiveSession = async (sensorId: string, sensorTopic: string, userId: string): Promise<boolean> => {
 		try {
-			const { data } = (await axios.post<StartSessionResponse>(SessionControllerPaths.START_SESSION_ON_CLIENT_SIDE, { ...clientSideSession })) as { data: StartSessionResponse }
-			// This retrieve the sensor topic on which you can get the values
-			setupSession(clientSideSession.idUser, clientSideSession.idSensor, data.topic, new Date())
-			connectToWebSocket(data.topic)
-			const sessionId = data.sessionId
-			idSession.value = sessionId
+			const { data } = await axios.get(SessionControllerPaths.GET_ACTIVE_SESSIONS)
+			const activeSession = data.find((s: any) => s.idSensor === sensorId)
+			if (activeSession) {
+				startSessionOnClientSide(sensorTopic, userId, sensorId)
+				return true
+			}
+			return false
 		} catch (error) {
-			console.error("Erreur lors de la récupération du topic du capteur:", error)
+			console.error("Erreur vérification session active:", error)
+			return false
 		}
 	}
 
-	const createSessionOnServerSide = async () => {
-		endedAt.value = new Date()
-
-		if (!createdAt.value || !endedAt.value) {
-			console.error("Les valeurs createdAt et endedAt doivent être non nulles.")
-			return
-		}
-
-		if (!isValidDate(createdAt.value) || !isValidDate(endedAt.value)) {
-			console.error("Les valeurs createdAt et endedAt doivent être des dates valides.")
-			return
-		}
-
-		if (createdAt.value > endedAt.value) {
-			console.error("La date de fin doit arriver APRES la date de début !!!")
-			return
-		}
-
-		const sessionData: CreateSessionOnServerRequestBody = {
-			idUser: idUser.value,
-			idSensor: idSensor.value,
-			createdAt: createdAt.value.toISOString(),
-			endedAt: endedAt.value.toISOString(),
-			idSession: idSession.value,
-		}
-
-		try {
-			const { data } = (await axios.post<CreateServorSessionResponse>(SessionControllerPaths.COMPLETE_SESSION_ON_SERVER_SIDE, sessionData)) as unknown as { data: CreateServorSessionResponse }
-
-			socketClient.value?.disconnect()
-			cleanAfterSession()
-		} catch (error) {
-			console.error("Erreur lors de la tentative de fin de la session:", error)
-		}
+	const createSessionOnServerSide = () => {
+		socketClient.value?.disconnect()
+		cleanAfterSession()
 	}
 
 	const setupSession = (userId: string, sensorId: string, sessionTopic: string, sessionCreatedAt: Date) => {
@@ -269,16 +246,18 @@ const useSession = () => {
 		socket.emit("join-session", { topic, token })
 		socket.on("new-data", (data: any) => {
 			try {
-				const { timestamp, measures } = data
-				const date = new Date(Math.floor(timestamp / 1000))
-				if (Array.isArray(measures)) {
-					measures.forEach((measure: { measureType: string; value: number }) => {
-						if (!isNaN(measure.value)) {
-							updateChart(date, parseFloat(String(measure.value)), measure.measureType)
-						}
-					})
-					updateTransmissionSpeed(date)
-				}
+				if (!Array.isArray(data.measures)) return
+				data.measures.forEach((entry: any) => {
+					const date = new Date(Math.floor(entry.timestamp / 1000))
+					if (Array.isArray(entry.measures)) {
+						entry.measures.forEach((measure: { measureType: string; value: number }) => {
+							if (!isNaN(measure.value)) {
+								updateChart(date, parseFloat(String(measure.value)), measure.measureType)
+							}
+						})
+						updateTransmissionSpeed(date)
+					}
+				})
 			} catch (error) {
 				console.error("Error processing WebSocket data:", error)
 			}
@@ -387,6 +366,7 @@ const useSession = () => {
 		transmissionSpeed,
 		startSessionOnClientSide,
 		createSessionOnServerSide,
+		checkAndJoinActiveSession,
 		fetchDataAndUpdateChart,
 		fetchAllSessionsOfSensor,
 		sessions,

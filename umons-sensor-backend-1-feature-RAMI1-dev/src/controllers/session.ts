@@ -118,24 +118,24 @@ const createSessionOnClientSide = async (req: Request, res: Response) => {
 };
 
 const createSessionOnServerSide = async (req: Request, res: Response) => {
-  const { idUser, idSensor, createdAt, endedAt } = req.body;
+  const { idUser, idSensor } = req.body;
 
-  if (!isUuid(idUser)) {
+  if (idUser && !isUuid(idUser)) {
     return res
       .status(400)
       .json(new BadRequestException("user id is not uuid", "user.id.not.uuid"));
   }
 
   try {
-    // Vérifier que l'utilisateur existe
-    const user = await User.findByPk(idUser);
-    if (!user) {
-      return res
-        .status(404)
-        .json(new BadRequestException("User not found", "user.not.found"));
+    if (idUser) {
+      const user = await User.findByPk(idUser);
+      if (!user) {
+        return res
+          .status(404)
+          .json(new BadRequestException("User not found", "user.not.found"));
+      }
     }
 
-    // Vérifier que le capteur existe
     const sensor = await Sensor.findByPk(idSensor);
     if (!sensor) {
       return res
@@ -143,20 +143,9 @@ const createSessionOnServerSide = async (req: Request, res: Response) => {
         .json(new NotFoundException("Sensor not found", "sensor.not.found"));
     }
 
-    // ================== CREATION DE SESSION
-
-    const mqttServerInstance: MqttServer = await MqttServer.getInstance();
-    await mqttServerInstance.sendStopSignal(sensor.topic);
-
     await Session.update(
-      {
-        endedAt: new Date(),
-      },
-      {
-        where: {
-          id: req.body.idSession,
-        },
-      }
+      { endedAt: new Date() },
+      { where: { id: req.body.idSession } }
     );
 
     return res.status(201).json({ message: "session ended" });
