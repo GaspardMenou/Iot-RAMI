@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { defineComponent, onMounted, computed } from "vue"
+	import { defineComponent, onMounted, computed, ref } from "vue"
 	import { useRouter } from "vue-router"
 	import { useSensor } from "@/composables/useSensor.composable"
 	import { useSession } from "@/composables/useSession.composable"
+	import { useAxios } from "@/composables/useAxios.composable"
 	import SensorCard from "@/components/sensor/SensorCard.vue"
 	import SessionCard from "@/components/session/SessionCard.vue"
 	import type { Sensor } from "#/sensor"
@@ -15,23 +16,31 @@
 		},
 		setup(props) {
 			const router = useRouter()
+			const { axios } = useAxios()
 			const { fetchSensors, sensors } = useSensor(undefined)
 			const { sessions, fetchAllSessionsOfSensor } = useSession()
+			const hasActiveSession = ref(false)
 
 			onMounted(async () => {
 				await fetchSensors()
 				await fetchAllSessionsOfSensor(props.id)
+				try {
+					const { data } = await axios.get("sessions/active")
+					hasActiveSession.value = data.some((s: any) => s.idSensor === props.id)
+				} catch {
+					hasActiveSession.value = false
+				}
 			})
 
 			const sensor = computed(() => {
 				return sensors.value.find((s: Sensor) => s.id === props.id)
 			})
 
-			const goToNewSession = () => {
+			const goToSession = () => {
 				router.push({ name: "newsession", params: { id: props.id } })
 			}
 
-			return { sensor, sessions, goToNewSession }
+			return { sensor, sessions, goToSession, hasActiveSession }
 		},
 	})
 </script>
@@ -46,8 +55,9 @@
 					:is-for-navigation="false" />
 				<button
 					class="btn-new-session"
-					@click="goToNewSession">
-					+ Nouvelle session
+					:class="{ 'btn-active-session': hasActiveSession }"
+					@click="goToSession">
+					{{ hasActiveSession ? "Voir la session actuelle" : "+ Nouvelle session" }}
 				</button>
 			</div>
 
@@ -130,6 +140,14 @@
 
 	.btn-new-session:hover {
 		background-color: var(--color-success-hover);
+	}
+
+	.btn-active-session {
+		background-color: var(--color-primary);
+	}
+
+	.btn-active-session:hover {
+		background-color: var(--color-primary-hover, var(--color-primary));
 	}
 
 	/* Sessions */

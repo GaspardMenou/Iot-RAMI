@@ -24,12 +24,12 @@
 			</div>
 		</div>
 
-		<!-- Étape 2 : Initialisation de la session -->
+		<!-- Étape 2 : En attente de session -->
 		<div
 			class="step"
 			:class="{ active: activeStep === 2 }">
 			<h2 @click="toggleStep(2)">
-				<span>Étape 2: Initialisation de la session</span>
+				<span>Étape 2: En attente de session</span>
 				<span
 					class="arrow"
 					:class="{ down: activeStep === 2 }"
@@ -39,12 +39,7 @@
 			<div
 				class="step-content"
 				v-if="activeStep === 2">
-				<p>Instructions : Assurez-vous que le capteur est correctement configuré et prêt à l'emploi.</p>
-				<button
-					@click="startSession"
-					class="submit-button">
-					Commencer la session
-				</button>
+				<p>Aucune session active détectée pour ce capteur. La session démarrera automatiquement dès que le capteur commencera à publier.</p>
 			</div>
 		</div>
 
@@ -74,11 +69,7 @@
 						<p>Vitesse de transmission : {{ transmissionSpeed.toFixed(3) }} valeurs/seconde</p>
 					</div>
 				</div>
-				<button
-					@click="endCurrentSession"
-					class="stop-button">
-					Arrêter la session
-				</button>
+				<span class="badge-active">Session en cours</span>
 			</div>
 		</div>
 	</div>
@@ -88,7 +79,7 @@
 	import { ref, provide, defineComponent, onMounted, onUnmounted } from "vue"
 	import Graph from "@/components/session/Graph.vue"
 	import SensorsList from "@/components/sensor/SensorsList.vue"
-	import { EventTypes, UserFields, handleEvent } from "@/composables/useUser.composable"
+	import { EventTypes, handleEvent } from "@/composables/useUser.composable"
 	import { useSession } from "@/composables/useSession.composable"
 	import { useSensor } from "@/composables/useSensor.composable"
 
@@ -99,7 +90,7 @@
 			SensorsList,
 		},
 		setup() {
-			const { idUser, idSensor, chartData, timeSinceLastValue, transmissionSpeed, startSessionOnClientSide, createSessionOnServerSide, checkAndJoinActiveSession } = useSession()
+			const { idSensor, chartData, timeSinceLastValue, transmissionSpeed, checkAndJoinActiveSession } = useSession()
 			const { fetchSensors, sensors } = useSensor(undefined)
 
 			const activeStep = ref(1)
@@ -109,13 +100,10 @@
 			provide("chartData", chartData)
 
 			const sensorSelectedCallback = async (sensorId: string) => {
-				const storedId = localStorage.getItem(UserFields.ID) ?? ""
-				idUser.value = storedId
 				idSensor.value = sensorId
-
 				const sensor = sensors.value.find(s => s.id === sensorId)
 				const sensorTopic = (sensor?.topic ?? "") + "/sensor"
-				const alreadyActive = await checkAndJoinActiveSession(sensorId, sensorTopic, storedId)
+				const alreadyActive = await checkAndJoinActiveSession(sensorId, sensorTopic)
 				if (alreadyActive) {
 					activeStep.value = 3
 				} else {
@@ -146,25 +134,12 @@
 				}
 			}
 
-			const startSession = () => {
-				const sensor = sensors.value.find(s => s.id === idSensor.value)
-				const sensorTopic = (sensor?.topic ?? "") + "/sensor"
-				startSessionOnClientSide(sensorTopic, idUser.value, idSensor.value)
-				nextStep()
-			}
-
-			const endCurrentSession = () => {
-				createSessionOnServerSide()
-			}
-
 			return {
 				activeStep,
 				selectedSensorName,
 				chartData,
 				timeSinceLastValue,
 				transmissionSpeed,
-				startSession,
-				endCurrentSession,
 				toggleStep,
 			}
 		},
@@ -218,32 +193,14 @@
 		margin-top: 10px;
 	}
 
-	.submit-button {
+	.badge-active {
 		display: inline-block;
-		padding: 10px 20px;
+		padding: 6px 14px;
 		background-color: #4caf50;
 		color: white;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-	}
-
-	.submit-button:hover {
-		background-color: #45a049;
-	}
-
-	.stop-button {
-		display: inline-block;
-		padding: 10px 20px;
-		background-color: #f44336;
-		color: white;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-	}
-
-	.stop-button:hover {
-		background-color: #e53935;
+		border-radius: 20px;
+		font-size: 0.85rem;
+		font-weight: 600;
 	}
 
 	.slider-container {

@@ -76,10 +76,6 @@ const defineUserModel = (sequelize: Sequelize, DataTypes: any): UserStatic => {
       sourceKey: "id",
     });
 
-    User.hasMany(models.Session, {
-      foreignKey: "idUser",
-      sourceKey: "id",
-    });
   };
 
   return User;

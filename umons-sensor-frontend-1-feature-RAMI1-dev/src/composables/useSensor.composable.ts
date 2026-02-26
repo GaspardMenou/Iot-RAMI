@@ -144,7 +144,7 @@ export const useSensor = (sensorName: string | undefined) => {
 
 	// *************************** [METHOD] DEALING WITH GOOG FORMAT
 	const throwUserRequestSessionBySensor = (idSensor: string) => {
-		handleEvent("emit", EventTypes.USER_REQUEST_SESSION_BY_SENSOR, { idUser: localStorage.getItem(UserFields.ID), idSensor })
+		handleEvent("emit", EventTypes.USER_REQUEST_SESSION_BY_SENSOR, { idSensor })
 	}
 
 	const listenToSensorStatus = () => {

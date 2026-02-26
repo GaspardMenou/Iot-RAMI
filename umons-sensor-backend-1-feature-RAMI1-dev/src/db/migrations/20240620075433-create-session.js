@@ -11,14 +11,6 @@ module.exports = {
           defaultValue: Sequelize.UUIDV4,
           allowNull: false,
         },
-        idUser: {
-          type: Sequelize.UUID,
-          allowNull: true,
-          references: {
-            model: "Users",
-            key: "id",
-          },
-        },
         idFog: {
           type: Sequelize.STRING,
           allowNull: true,

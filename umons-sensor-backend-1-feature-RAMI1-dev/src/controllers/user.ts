@@ -565,7 +565,7 @@ const getUserSessions = async (req: Request, res: Response) => {
         .json(new BadRequestException("User not found !", "user.not.found"));
     }
 
-    const whereClause: any = { idUser: id };
+    const whereClause: any = {};
 
     if (idSensor) {
       whereClause.idSensor = idSensor;

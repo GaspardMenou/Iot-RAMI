@@ -24,10 +24,6 @@
 				try {
 					const { axios } = useAxios()
 					await axios.post("sessions/new/on/server", {
-						idUser: session.idUser,
-						idSensor: session.idSensor,
-						createdAt: session.createdAt,
-						endedAt: new Date().toISOString(),
 						idSession: session.id,
 					})
 					await this.fetchActiveSessions()
@@ -56,7 +52,6 @@
 				<thead>
 					<tr>
 						<th>Session ID</th>
-						<th>User ID</th>
 						<th>Sensor ID</th>
 						<th>Démarré le</th>
 						<th>Action</th>
@@ -67,7 +62,6 @@
 						v-for="session in activeSessions"
 						:key="session.id">
 						<td class="id-cell">{{ session.id }}</td>
-						<td class="id-cell">{{ session.idUser }}</td>
 						<td class="id-cell">{{ session.idSensor }}</td>
 						<td>{{ new Date(session.createdAt).toLocaleString() }}</td>
 						<td>

@@ -17,10 +17,6 @@ const defineSessionDataModel = (
         defaultValue: DataTypes.UUIDV4,
         allowNull: false,
       },
-      idUser: {
-        type: DataTypes.UUID,
-        allowNull: true,
-      },
       idFog: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -46,11 +42,6 @@ const defineSessionDataModel = (
   );
 
   Session.associate = (models: any) => {
-    Session.belongsTo(models.User, {
-      foreignKey: "idUser",
-      targetKey: "id",
-    });
-
     Session.belongsTo(models.Sensor, {
       foreignKey: "idSensor",
       targetKey: "id",

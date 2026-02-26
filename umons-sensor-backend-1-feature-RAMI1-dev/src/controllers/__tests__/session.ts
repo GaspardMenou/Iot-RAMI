@@ -3,17 +3,12 @@ import superTest from "supertest";
 import app from "@/app";
 // Model(s) import
 import db from "@db/index";
-import { Role, Sex } from "@/types/user";
-import { BROKER_INFO } from "@/utils/mqttConstant";
 import MqttServer from "@/service/mqttServer";
 const DB: any = db;
-const { User: UserModel, Sensor: SensorModel } = DB; //Session: SessionModel
+const { Sensor: SensorModel } = DB;
 // --- End of model(s) import
 
 jest.mock("@db/index", () => ({
-  User: {
-    findByPk: jest.fn(),
-  },
   Sensor: {
     findByPk: jest.fn(),
   },
@@ -73,51 +68,15 @@ const sensors: Sensor[] = [
   },
 ];
 
-interface UserTmp {
-  id: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  sex: Sex | string;
-  email: string;
-  password: string;
-  role: Role | string;
-}
-
-const users: UserTmp[] = [
-  {
-    id: "bc9d5577-c636-402c-a682-dc533f31dfce",
-    firstName: "test",
-    lastName: "test",
-    dateOfBirth: "2000-01-01",
-    sex: "male",
-    email: "test@test.com",
-    password: "hashedPassword",
-    role: Role.REGULAR,
-  },
-  {
-    id: "ad9d5576-d548-402c-a682-dc533f31dfce",
-    firstName: "test",
-    lastName: "test",
-    dateOfBirth: "2000-01-01",
-    sex: "male",
-    email: "test@test.com",
-    password: "hasedPassword",
-    role: Role.REGULAR,
-  },
-];
-
 describe("Session Controller", () => {
   afterAll(() => {
     jest.clearAllMocks();
   });
 
   describe("POST /new", () => {
-    test("should return 201 and the topic when user and sensor are valid", async () => {
+    test("should return 201 and the topic when sensor is valid", async () => {
       const sensor = sensors[0];
-      const user = users[0];
 
-      db.User.findByPk.mockResolvedValue({ id: user.id });
       db.Sensor.findByPk.mockResolvedValue({
         id: sensor.id,
         topic: sensor.topic,
@@ -126,7 +85,6 @@ describe("Session Controller", () => {
         id: "bc9d5577-c636-402c-a682-dc533f31dfce",
       });
       const res = await request.post(`${baseUri}/new`).send({
-        idUser: user.id,
         idSensor: sensor.id,
       });
 
@@ -143,20 +101,8 @@ describe("Session Controller", () => {
       );
     });
 
-    test("should return a 400 if user id is not uuid", async () => {
-      const body = { idUser: "salut", idSensor: sensors[0].id };
-
-      const result = await superTest(app)
-        .post(baseUri + "/new")
-        .send(body);
-
-      expect(result.status).toBe(400);
-      expect(result.body.message).toBe("user id is not uuid");
-      expect(result.body.codeError).toBe("user.id.not.uuid");
-    });
-
     test("should return a 400 if sensor id is not uuid", async () => {
-      const body = { idUser: users[0].id, idSensor: "salut" };
+      const body = { idSensor: "salut" };
 
       const result = await superTest(app)
         .post(baseUri + "/new")
@@ -167,29 +113,8 @@ describe("Session Controller", () => {
       expect(result.body.codeError).toBe("sensor.id.not.uuid");
     });
 
-    test("should return a 404 if no user is found", async () => {
-      const body = { idUser: users[0].id, idSensor: sensors[0].id };
-
-      const findByPkMock = jest.fn();
-      findByPkMock.mockResolvedValue(null);
-      UserModel.findByPk = findByPkMock;
-
-      const result = await superTest(app)
-        .post(baseUri + "/new")
-        .send(body);
-
-      expect(result.status).toBe(404);
-      expect(result.body.message).toBe("User not found");
-      expect(result.body.codeError).toBe("user.not.found");
-    });
-
     test("should return a 404 if no sensor is found", async () => {
-      const body = { idUser: users[0].id, idSensor: sensors[0].id };
-
-      // Mocking UserModel.findByPk
-      const findUserByPkMock = jest.fn();
-      findUserByPkMock.mockResolvedValue(users[0]);
-      UserModel.findByPk = findUserByPkMock;
+      const body = { idSensor: sensors[0].id };
 
       // Mocking SensorModel.findByPk
       const findSensorByPkMock = jest.fn();
@@ -208,92 +133,17 @@ describe("Session Controller", () => {
 
   describe("POST /new/on/server", () => {
     test("should return 201 when session is ended successfully", async () => {
-      const sensor = sensors[0];
-      const user = users[0];
       const body = {
-        idUser: user.id,
-        idSensor: sensor.id,
-        createdAt: new Date(),
-        endedAt: new Date(),
+        idSession: "bc9d5577-c636-402c-a682-dc533f31dfce",
       };
 
-      db.User.findByPk.mockResolvedValue({ id: user.id });
-      db.Sensor.findByPk.mockResolvedValue({
-        id: sensor.id,
-        topic: sensor.topic,
-      });
       db.Session.update.mockResolvedValue([1]);
 
       const res = await request.post(`${baseUri}/new/on/server`).send(body);
 
-      const mqttServerInstance = await MqttServer.getInstance();
-
-      expect(mqttServerInstance.sendStopSignal).toHaveBeenCalledWith(
-        sensor.topic
-      );
-      expect(db.Session.create).toHaveBeenCalled();
+      expect(db.Session.update).toHaveBeenCalled();
       expect(res.status).toBe(201);
       expect(res.body.message).toBe("session ended");
-    });
-
-    test("should return a 400 if user id is not uuid", async () => {
-      const body = { idUser: "salut", idSensor: sensors[0].id };
-
-      const result = await superTest(app)
-        .post(baseUri + "/new/on/server")
-        .send(body);
-
-      expect(result.status).toBe(400);
-      expect(result.body.message).toBe("user id is not uuid");
-      expect(result.body.codeError).toBe("user.id.not.uuid");
-    });
-
-    test("should return a 404 if no user is found", async () => {
-      const body = {
-        idUser: users[0].id,
-        idSensor: sensors[0].id,
-        createdAt: new Date().toISOString(),
-        endedAt: new Date().toISOString(),
-      };
-
-      const findByPkMock = jest.fn();
-      findByPkMock.mockResolvedValue(null);
-      UserModel.findByPk = findByPkMock;
-
-      const result = await superTest(app)
-        .post(baseUri + "/new/on/server")
-        .send(body);
-
-      expect(result.status).toBe(404);
-      expect(result.body.message).toBe("User not found");
-      expect(result.body.codeError).toBe("user.not.found");
-    });
-
-    test("should return a 404 if no sensor is found", async () => {
-      const body = {
-        idUser: users[0].id,
-        idSensor: sensors[0].id,
-        createdAt: new Date().toISOString(),
-        endedAt: new Date().toISOString(),
-      };
-
-      // Mocking UserModel.findByPk
-      const findUserByPkMock = jest.fn();
-      findUserByPkMock.mockResolvedValue(users[0]);
-      UserModel.findByPk = findUserByPkMock;
-
-      // Mocking SensorModel.findByPk
-      const findSensorByPkMock = jest.fn();
-      findSensorByPkMock.mockResolvedValue(null);
-      SensorModel.findByPk = findSensorByPkMock;
-
-      const result = await superTest(app)
-        .post(baseUri + "/new/on/server")
-        .send(body);
-
-      expect(result.status).toBe(404);
-      expect(result.body.message).toBe("Sensor not found");
-      expect(result.body.codeError).toBe("sensor.not.found");
     });
   });
 
@@ -302,14 +152,12 @@ describe("Session Controller", () => {
       const sessions = [
         {
           id: "session1",
-          idUser: users[0].id,
           idSensor: sensors[0].id,
           createdAt: new Date().toISOString(),
           endedAt: new Date().toISOString(),
         },
         {
           id: "session2",
-          idUser: users[1].id,
           idSensor: sensors[1].id,
           createdAt: new Date().toISOString(),
           endedAt: new Date().toISOString(),
@@ -329,7 +177,6 @@ describe("Session Controller", () => {
     test("should return 200 and session by ID", async () => {
       const session = {
         id: "session1",
-        idUser: users[0].id,
         idSensor: sensors[0].id,
         createdAt: new Date().toISOString(),
         endedAt: new Date().toISOString(),
@@ -358,7 +205,6 @@ describe("Session Controller", () => {
     test("should return 200 and number of deleted rows", async () => {
       const session = {
         id: "session1",
-        idUser: users[0].id,
         idSensor: sensors[0].id,
         createdAt: new Date().toISOString(),
         endedAt: new Date().toISOString(),
@@ -388,7 +234,6 @@ describe("Session Controller", () => {
     test("should return 404 if sensor not found", async () => {
       const session = {
         id: "session1",
-        idUser: users[0].id,
         idSensor: sensors[0].id,
         createdAt: new Date().toISOString(),
         endedAt: new Date().toISOString(),
@@ -419,7 +264,6 @@ describe("Session Controller", () => {
     test("should return 200 and a CSV with correct headers", async () => {
       const session = {
         id: "session1",
-        idUser: users[0].id,
         idSensor: sensors[0].id,
         dataValues: {
           id: "session1",
@@ -471,7 +315,6 @@ describe("Session Controller", () => {
     test("should return 200 and sensor data within time range", async () => {
       const session = {
         id: "session1",
-        idUser: users[0].id,
         idSensor: sensors[0].id,
         createdAt: new Date().toISOString(),
         endedAt: new Date().toISOString(),
@@ -506,7 +349,6 @@ describe("Session Controller", () => {
     test("should return 404 if sensor not found", async () => {
       const session = {
         id: "session1",
-        idUser: users[0].id,
         idSensor: sensors[0].id,
         createdAt: new Date().toISOString(),
         endedAt: new Date().toISOString(),

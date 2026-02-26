@@ -117,7 +117,6 @@ const useSession = () => {
 	const selectedSession = ref<string | null>(null)
 
 	// *************************** [ATTRIBUTE]  SESSION
-	const idUser = ref("")
 	const idSensor = ref("")
 	const idSession = ref("")
 	const createdAt = ref<Date | null>(null)
@@ -201,17 +200,17 @@ const useSession = () => {
 
 	// *************************** [METHOD]  SESSION
 
-	const startSessionOnClientSide = (sensorTopic: string, userId: string, sensorId: string) => {
-		setupSession(userId, sensorId, sensorTopic, new Date())
+	const startSessionOnClientSide = (sensorTopic: string, sensorId: string) => {
+		setupSession(sensorId, sensorTopic, new Date())
 		connectToWebSocket(sensorTopic)
 	}
 
-	const checkAndJoinActiveSession = async (sensorId: string, sensorTopic: string, userId: string): Promise<boolean> => {
+	const checkAndJoinActiveSession = async (sensorId: string, sensorTopic: string): Promise<boolean> => {
 		try {
 			const { data } = await axios.get(SessionControllerPaths.GET_ACTIVE_SESSIONS)
 			const activeSession = data.find((s: any) => s.idSensor === sensorId)
 			if (activeSession) {
-				startSessionOnClientSide(sensorTopic, userId, sensorId)
+				startSessionOnClientSide(sensorTopic, sensorId)
 				return true
 			}
 			return false
@@ -226,8 +225,7 @@ const useSession = () => {
 		cleanAfterSession()
 	}
 
-	const setupSession = (userId: string, sensorId: string, sessionTopic: string, sessionCreatedAt: Date) => {
-		idUser.value = userId
+	const setupSession = (sensorId: string, sessionTopic: string, sessionCreatedAt: Date) => {
 		idSensor.value = sensorId
 		topic.value = sessionTopic
 		createdAt.value = sessionCreatedAt
@@ -357,7 +355,6 @@ const useSession = () => {
 	}
 
 	return {
-		idUser,
 		idSensor,
 		idSession,
 		topic,
