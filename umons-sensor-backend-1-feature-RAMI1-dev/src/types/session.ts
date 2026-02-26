@@ -8,7 +8,8 @@ So, as long as the session is not stopped on the browser side, it is not saved i
 
 interface SessionCreation {
   id: string;
-  idUser: string;
+  idUser?: string;
+  idFog?: string;
   idSensor: string;
   createdAt: Date;
   endedAt: Date;
@@ -16,7 +17,8 @@ interface SessionCreation {
 
 interface Session {
   id: string;
-  idUser: string;
+  idUser?: string;
+  idFog?: string;
   idSensor: string;
   createdAt: Date;
   updatedAt: Date;

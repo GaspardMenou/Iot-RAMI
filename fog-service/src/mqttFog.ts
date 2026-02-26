@@ -77,14 +77,30 @@ class MqttFog {
     }, 30000);
     this.sensorTimeouts.set(topic, timeout);
   }
-  private handleStart(topic: string): void {
+  private async handleStart(topic: string): Promise<void> {
     if (!this.buffer.has(topic)) {
       this.buffer.set(topic, []);
+    }
+    try {
+      await this.kafkaService.publishBatchSensorData("sensor-data", [
+        { type: "start", sensorTopic: topic, timestamp: Date.now() },
+      ]);
+      console.log(`▶️ [Kafka] START envoyé pour ${topic}`);
+    } catch (error) {
+      console.error(`❌ [handleStart] Erreur Kafka:`, error);
     }
     this.sendAck(topic);
   }
   private async handleStop(topic: string): Promise<void> {
     await this.flushBuffer(topic);
+    try {
+      await this.kafkaService.publishBatchSensorData("sensor-data", [
+        { type: "stop", sensorTopic: topic, timestamp: Date.now() },
+      ]);
+      console.log(`⏹️ [Kafka] STOP envoyé pour ${topic}`);
+    } catch (error) {
+      console.error(`❌ [handleStop] Erreur Kafka:`, error);
+    }
     this.buffer.delete(topic);
   }
   private sendAck(topic: string): void {
@@ -108,8 +124,14 @@ class MqttFog {
     const dataArray = this.buffer.get(topic);
     if (dataArray && dataArray.length > 0) {
       try {
-        await this.kafkaService.publishBatchSensorData("sensor-data", dataArray);
+        const batch = {
+          type: "data",
+          sensorTopic: topic,
+          measures: dataArray,
+        };
+        await this.kafkaService.publishBatchSensorData("sensor-data", [batch]);
         this.buffer.set(topic, []);
+        console.log(`📤 [Kafka] batch data envoyé pour ${topic} (${dataArray.length} mesures)`);
       } catch (error) {
         console.error(`❌ [flushBuffer] Erreur Kafka pour ${topic}:`, error);
       }
@@ -138,11 +160,14 @@ class MqttFog {
       if (parsed[MESSAGE_FIELDS.CMD] === COMMANDS.PING) {
         this.handlePing(topic);
       } else if (parsed[MESSAGE_FIELDS.CMD] === COMMANDS.START) {
-        this.handleStart(topic);
+        this.handleStart(topic).catch((e) => console.error("❌ [handleStart]", e));
       } else if (parsed[MESSAGE_FIELDS.CMD] === COMMANDS.STOP) {
         this.handleStop(topic).catch((e) => console.error("❌ [handleStop]", e));
       } else if (parsed[MESSAGE_FIELDS.MEASURES]) {
-        this.handleMeasurement(topic, parsed[MESSAGE_FIELDS.MEASURES]);
+        this.handleMeasurement(topic, {
+          measures: parsed[MESSAGE_FIELDS.MEASURES],
+          timestamp: parsed[MESSAGE_FIELDS.TIMESTAMP],
+        });
       } else {
         console.warn(
           "⚠️ [handleMessageReceivedFromSensor] Commande inconnue ou données manquantes:",

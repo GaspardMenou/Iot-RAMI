@@ -19,7 +19,11 @@ const defineSessionDataModel = (
       },
       idUser: {
         type: DataTypes.UUID,
-        allowNull: false,
+        allowNull: true,
+      },
+      idFog: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       idSensor: {
         type: DataTypes.UUID,

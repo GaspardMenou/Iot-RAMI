@@ -13,11 +13,16 @@ module.exports = {
         },
         idUser: {
           type: Sequelize.UUID,
-          allowNull: false,
+          allowNull: true,
           references: {
             model: "Users",
             key: "id",
           },
+        },
+        idFog: {
+          type: Sequelize.STRING,
+          allowNull: true,
+          defaultValue: null,
         },
         idSensor: {
           type: Sequelize.UUID,
