@@ -5,6 +5,7 @@ module.exports = {
   coverageDirectory: "coverage",
   collectCoverageFrom: ["src/**/*.{js,ts}"],
   setupFiles: ["./jest.setup.js"],
+  forceExit: true,
   coveragePathIgnorePatterns: [
     "src/server.ts",
     "src/db/",
