@@ -19,7 +19,10 @@ app.use(
     res: { setHeader: (arg0: string, arg1: string) => void },
     next: () => void
   ) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+      "Access-Control-Allow-Origin",
+      process.env.FRONTEND_URL || "http://localhost:8080"
+    );
     res.setHeader(
       "Access-Control-Allow-Headers",
       "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"
