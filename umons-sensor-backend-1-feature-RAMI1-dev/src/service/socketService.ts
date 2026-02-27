@@ -13,7 +13,8 @@ class SocketService {
   constructor(httpServer: HttpServer) {
     this.io = new Server(httpServer, {
       cors: {
-        origin: "*",
+        origin: process.env.FRONTEND_URL || "http://localhost:8080",
+        credentials: true,
       },
     });
   }
@@ -40,13 +41,16 @@ class SocketService {
     this.io.to(topic).emit("new-data", data);
     console.log(`Sent data to topic ${topic}:`, data);
   }
-  public async startKafkaConsumer() {
+  private kafkaRetryCount = 0;
+  private static readonly KAFKA_MAX_RETRIES = 10;
+
+  public async startKafkaConsumer(): Promise<void> {
     try {
-      const kakfaService = await KafkaService.getInstance();
-      if (!kakfaService) {
+      const kafkaService = await KafkaService.getInstance();
+      if (!kafkaService) {
         throw new Error("Kafka unavailable");
       }
-      kakfaService.registerTopic("sensor-data", async (data) => {
+      kafkaService.registerTopic("sensor-data", async (data) => {
         try {
           if (data.type === "start") {
             await this.handleSessionStart(data);
@@ -59,12 +63,24 @@ class SocketService {
           console.error("❌ [Kafka] Erreur traitement message:", error);
         }
       });
-      await kakfaService.startConsuming();
+      await kafkaService.startConsuming();
+      this.kafkaRetryCount = 0;
       console.log("Kafka consumer started");
     } catch (error) {
-      console.error("Error starting Kafka consumer:", error);
-      await new Promise((resolve) => setTimeout(resolve, 5000)); // Retry after 5 seconds
-      await this.startKafkaConsumer(); // Retry connection
+      this.kafkaRetryCount++;
+      if (this.kafkaRetryCount > SocketService.KAFKA_MAX_RETRIES) {
+        console.error(
+          `❌ [Kafka] Abandon après ${SocketService.KAFKA_MAX_RETRIES} tentatives. Le service démarre sans Kafka.`
+        );
+        return;
+      }
+      const delay = Math.min(Math.pow(2, this.kafkaRetryCount) * 1000, 30000);
+      console.error(
+        `❌ [Kafka] Erreur (tentative ${this.kafkaRetryCount}/${SocketService.KAFKA_MAX_RETRIES}), retry dans ${delay / 1000}s:`,
+        error
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      await this.startKafkaConsumer();
     }
   }
   // Map sensorTopic → sessionId pour tracker les sessions actives

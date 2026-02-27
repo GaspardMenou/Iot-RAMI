@@ -194,7 +194,7 @@ class MqttServer {
    * @return {Promise<void>}
    */
   private async handleDisconnect() {
-    this.removeAllSensorsAndUnsubscribeTheirTopic();
+    await this.removeAllSensorsAndUnsubscribeTheirTopic();
     this.manageEventHandlers("removeListener");
     //console.log("Déconnexion du broker! => TENTATIVE DE RECONNEXION");
     await this.reconnectBroker();
@@ -319,10 +319,8 @@ class MqttServer {
    *
    * @param {Error} _error - The error object.
    */
-  private handleErrorMqtt(_error: Error) {
-    console.error("[MQTT] Erreur:", _error);
-    //console.log(error);
-    //throw new ServerErrorException(error.message, "mqtt.error");
+  private handleErrorMqtt(error: Error) {
+    console.error("[MQTT] Erreur:", error.message);
   }
 
   // ------------------------ BASIC MQTT METHODS 2 (topic subscription and unsubcription, message publication)
@@ -677,11 +675,11 @@ class MqttServer {
    *
    * @return {Promise<void>}
    */
-  private removeAllSensorsAndUnsubscribeTheirTopic() {
+  private async removeAllSensorsAndUnsubscribeTheirTopic(): Promise<void> {
     const topics = Array.from(this.sensorsMap.keys());
-    topics.forEach(async (topic) => {
-      await this.removeFromSensorsMapAndUnsubItsTopic(topic);
-    });
+    await Promise.all(
+      topics.map((topic) => this.removeFromSensorsMapAndUnsubItsTopic(topic))
+    );
   }
 
   // ----------------------- AUTO-DISCOVER PUBLIC METHODS --------------------------
