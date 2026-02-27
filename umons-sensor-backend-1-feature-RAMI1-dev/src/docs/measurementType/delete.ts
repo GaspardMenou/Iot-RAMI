@@ -37,7 +37,7 @@ const deleteMeasurementType = {
         },
       },
       404: {
-        description: "Sensor not found",
+        description: "MeasurementType not found",
         content: {
           "application/json": {
             schema: {

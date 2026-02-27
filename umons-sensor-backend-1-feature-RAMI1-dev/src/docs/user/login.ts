@@ -1,53 +1,40 @@
 const login = {
   post: {
-    tags: ["User CRUD operations"],
+    tags: ["User"],
     summary: "Login",
-    description: "Login",
+    description: "Authenticate with email and password, receive a JWT token",
     operationId: "login",
-    parameters: [
-      {
-        name: "email",
-        in: "body",
-        description: "Email address",
-        type: "string",
+    requestBody: {
+      required: true,
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            required: ["email", "password"],
+            properties: {
+              email: { type: "string", format: "email" },
+              password: { type: "string" },
+            },
+          },
+        },
       },
-      {
-        name: "password",
-        in: "body",
-        description: "Password ",
-        type: "string",
-      },
-    ],
+    },
     responses: {
       "200": {
-        description: "User logged in",
+        description: "Authenticated — returns JWT token and user info",
         content: {
           "application/json": {
-            schema: {
-              $ref: "#/components/schemas/UserLogin",
-            },
+            schema: { $ref: "#/components/schemas/UserLogin" },
           },
         },
       },
       "400": {
         description: "Invalid credentials",
-        content: {
-          "application/json": {
-            schema: {
-              $ref: "#/components/schemas/Error",
-            },
-          },
-        },
+        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
       },
       "500": {
-        description: "Server error",
-        content: {
-          "application/json": {
-            schema: {
-              $ref: "#/components/schemas/Error",
-            },
-          },
-        },
+        description: "Internal server error",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
       },
     },
   },

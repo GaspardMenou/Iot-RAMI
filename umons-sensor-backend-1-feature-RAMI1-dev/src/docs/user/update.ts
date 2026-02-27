@@ -1,9 +1,9 @@
-const updateRole = {
+const update = {
   put: {
     tags: ["User"],
-    summary: "Update user role",
-    description: "Change a user's role. Requires privileged or admin rights — cannot elevate to a role higher than the requester's own",
-    operationId: "updateRole",
+    summary: "Update user profile",
+    description: "Update the authenticated user's profile information and optionally change password",
+    operationId: "updateUser",
     security: [{ bearerAuth: [] }],
     requestBody: {
       required: true,
@@ -11,10 +11,13 @@ const updateRole = {
         "application/json": {
           schema: {
             type: "object",
-            required: ["email", "role"],
             properties: {
+              firstName: { type: "string" },
+              lastName: { type: "string" },
               email: { type: "string", format: "email" },
-              role: { type: "string", enum: ["admin", "privileged", "regular"] },
+              sex: { type: "string", enum: ["male", "female"] },
+              password: { type: "string", description: "Current password (required to change password)" },
+              newPassword: { type: "string", minLength: 12, description: "New password" },
             },
           },
         },
@@ -22,11 +25,11 @@ const updateRole = {
     },
     responses: {
       "200": {
-        description: "Role updated",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } },
+        description: "User updated",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/UserLogin" } } },
       },
       "400": {
-        description: "Validation error or role escalation denied",
+        description: "Validation error",
         content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
       },
       "401": {
@@ -41,4 +44,4 @@ const updateRole = {
   },
 };
 
-export { updateRole };
+export { update };

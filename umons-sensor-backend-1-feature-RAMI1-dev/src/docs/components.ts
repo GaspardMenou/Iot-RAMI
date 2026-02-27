@@ -4,196 +4,155 @@ const components = {
       Sensor: {
         type: "object",
         properties: {
-          id: {
-            type: "string",
-            description: "The sensor id",
-          },
-          name: {
-            type: "string",
-            description: "The sensor name",
-          },
+          id: { type: "string", format: "uuid", description: "Sensor UUID" },
+          name: { type: "string", description: "Sensor name" },
+          topic: { type: "string", description: "MQTT base topic" },
         },
       },
       SensorCreate: {
         type: "object",
+        required: ["name", "topic"],
         properties: {
-          name: {
-            type: "string",
-            description: "The sensor name",
-          },
+          name: { type: "string", description: "Sensor name" },
+          topic: { type: "string", description: "MQTT base topic" },
         },
       },
       SensorDelete: {
         type: "object",
         properties: {
-          message: {
+          message: { type: "string" },
+        },
+      },
+      SensorStatus: {
+        type: "object",
+        properties: {
+          status: {
             type: "string",
+            enum: ["online", "offline", "publishing"],
+            description: "Real-time sensor connectivity status",
           },
+        },
+      },
+      SensorTopic: {
+        type: "object",
+        properties: {
+          topic: { type: "string", description: "Full MQTT topic for this sensor" },
+        },
+      },
+      DiscoveredSensor: {
+        type: "object",
+        properties: {
+          baseTopic: { type: "string", description: "MQTT base topic seen via PING" },
+          firstSeenAt: { type: "string", format: "date-time" },
+          lastSeenAt: { type: "string", format: "date-time" },
+          count: { type: "integer", description: "Number of PING messages received" },
         },
       },
       MeasurementType: {
         type: "object",
         properties: {
-          id: {
-            type: "string",
-            description: "The sensor id",
-          },
-          name: {
-            type: "string",
-            description: "The sensor name",
-          },
+          id: { type: "string", format: "uuid", description: "MeasurementType UUID" },
+          name: { type: "string", description: "Measurement type name (e.g. ecg, temperature)" },
         },
       },
       MeasurementTypeCreate: {
         type: "object",
+        required: ["name"],
         properties: {
-          name: {
-            type: "string",
-            description: "The sensor name",
-          },
+          name: { type: "string", description: "Measurement type name" },
         },
       },
       MeasurementTypeDelete: {
         type: "object",
         properties: {
-          message: {
-            type: "string",
-          },
+          message: { type: "string" },
         },
       },
       Measurement: {
         type: "object",
         properties: {
-          id: {
-            type: "string",
-            description: "The measurement id",
-          },
-          date: {
-            type: "string",
-            description:
-              "The measurement date in ISO format (YYYY-MM-DDTHH:mm:ss.sssZ)",
-          },
-          value: {
-            type: "number",
-            description: "The measurement value",
-          },
-          sensor: {
-            type: "string",
-            description: "The sensor id of the measurement",
-          },
-          type: {
-            type: "string",
-            description: "The type of the measurement",
-          },
+          id: { type: "string", format: "uuid", description: "Measurement UUID" },
+          date: { type: "string", format: "date-time", description: "Measurement timestamp (ISO 8601)" },
+          value: { type: "number", description: "Measured value" },
+          sensor: { type: "string", format: "uuid", description: "Sensor UUID" },
+          type: { type: "string", description: "Measurement type name" },
         },
       },
       MeasurementCreate: {
         type: "object",
+        required: ["date", "value", "sensor", "type"],
         properties: {
-          date: {
-            type: "string",
-            description:
-              "The measurement date in ISO format (YYYY-MM-DDTHH:mm:ss.sssZ)",
-          },
-          value: {
-            type: "number",
-            description: "The measurement value",
-          },
-          sensor: {
-            type: "string",
-            description: "The sensor id of the measurement",
-          },
-          type: {
-            type: "string",
-            description: "The type of the measurement",
-          },
+          date: { type: "string", format: "date-time" },
+          value: { type: "number" },
+          sensor: { type: "string", format: "uuid" },
+          type: { type: "string" },
         },
       },
       MeasurementCreateByGroup: {
         type: "object",
+        required: ["date", "value", "sensor", "type"],
         properties: {
-          date: {
-            type: "string",
-            description:
-              "The measurement date in ISO format (YYYY-MM-DDTHH:mm:ss.sssZ)",
-          },
-          value: {
-            type: "number",
-            description: "The measurement value",
-          },
-          sensor: {
-            type: "string",
-            description: "The sensor id of the measurement",
-          },
-          type: {
-            type: "string",
-            description: "The type id of the measurement",
-          },
+          date: { type: "string", format: "date-time" },
+          value: { type: "number" },
+          sensor: { type: "string", format: "uuid" },
+          type: { type: "string", format: "uuid", description: "MeasurementType UUID" },
+        },
+      },
+      MeasurementDelete: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+      Session: {
+        type: "object",
+        properties: {
+          id: { type: "string", format: "uuid", description: "Session UUID" },
+          idSensor: { type: "string", format: "uuid", description: "Sensor UUID" },
+          startedAt: { type: "string", format: "date-time" },
+          endedAt: { type: "string", format: "date-time", nullable: true },
         },
       },
       User: {
         type: "object",
         properties: {
-          id: {
-            type: "uuid",
-            description: "The user ID",
-          },
-          email: {
-            type: "string",
-            description: "The user email",
-          },
-          password: {
-            type: "string",
-            description: "The user password",
-          },
-          role: {
-            type: "string",
-            enum: ["ADMIN", "PRIVILEGED", "REGULAR"],
-            description: "The user role",
-          },
+          id: { type: "string", format: "uuid", description: "User UUID" },
+          email: { type: "string", format: "email" },
+          firstName: { type: "string" },
+          lastName: { type: "string" },
+          dateOfBirth: { type: "string", format: "date" },
+          sex: { type: "string", enum: ["male", "female"] },
+          role: { type: "string", enum: ["admin", "privileged", "regular"] },
         },
       },
       UserLogin: {
         type: "object",
         properties: {
-          id: {
-            type: "uuid",
-            description: "The user ID",
-          },
-          role: {
-            type: "string",
-            enum: ["ADMIN", "PRIVILEGED", "REGULAR"],
-            description: "The user role",
-          },
-          expiresAt: {
-            type: "string",
-            format: "date-time",
-            description: "The token expiration date",
-          },
-          token: {
-            type: "string",
-            format: "jwt",
-            description: "The JWT token",
-          },
+          id: { type: "string", format: "uuid" },
+          email: { type: "string", format: "email" },
+          firstName: { type: "string" },
+          lastName: { type: "string" },
+          dateOfBirth: { type: "string", format: "date" },
+          sex: { type: "string", enum: ["male", "female"] },
+          role: { type: "string", enum: ["admin", "privileged", "regular"] },
+          token: { type: "string", description: "JWT token" },
+          expiresAt: { type: "integer", description: "Token expiry timestamp (ms since epoch)" },
         },
       },
-
       Error: {
         type: "object",
         properties: {
-          message: {
-            type: "string",
-            description: "The error message",
-          },
-          status: {
-            type: "integer",
-            description: "The error status code",
-          },
-          codeError: {
-            type: "string",
-            description: "The error code",
-          },
+          message: { type: "string", description: "Human-readable error message" },
+          status: { type: "integer", description: "HTTP status code" },
+          codeError: { type: "string", description: "Machine-readable error code" },
         },
+      },
+    },
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
       },
     },
   },

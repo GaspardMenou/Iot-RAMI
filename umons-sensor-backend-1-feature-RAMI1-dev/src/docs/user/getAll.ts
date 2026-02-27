@@ -1,62 +1,26 @@
 const getAll = {
   get: {
-    tags: ["User CRUD operations"],
-    summary: "getAll",
-    description: "Get all users with worse role than the user who is logged in",
+    tags: ["User"],
+    summary: "Get all users",
+    description: "Returns all users with a role lower than the authenticated user's role",
     operationId: "getAll",
-    parameters: [
-      {
-        name: "token",
-        in: "header (Bearer)",
-        description: "JWT token",
-        required: true,
-        type: "string",
-      },
-    ],
+    security: [{ bearerAuth: [] }],
     responses: {
       "200": {
-        description:
-          "User has the rights to access to all users with worse role than him",
+        description: "List of users",
         content: {
           "application/json": {
-            schema: {
-              type: "array",
-              items: {
-                $ref: "#/components/schemas/User",
-              },
-            },
-          },
-        },
-      },
-      "400": {
-        description: "Invalid token",
-        content: {
-          "application/json": {
-            schema: {
-              $ref: "#/components/schemas/Error",
-            },
+            schema: { type: "array", items: { $ref: "#/components/schemas/User" } },
           },
         },
       },
       "401": {
         description: "Unauthorized",
-        content: {
-          "application/json": {
-            schema: {
-              $ref: "#/components/schemas/Error",
-            },
-          },
-        },
+        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
       },
       "500": {
-        description: "Server error",
-        content: {
-          "application/json": {
-            schema: {
-              $ref: "#/components/schemas/Error",
-            },
-          },
-        },
+        description: "Internal server error",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
       },
     },
   },
