@@ -2,7 +2,7 @@ import { sensorRoutes } from "@routes/sensor";
 import { sessionRoutes } from "@routes/session";
 import { measurementTypeRoutes } from "@routes/measurementType";
 import { measurementRoutes } from "@routes/measurement";
-import { mqttClientServorRoutes } from "@routes/mqttClientServor";
+import { mqttClientServerRoutes } from "@routes/mqttClientServer";
 import { homeRoutes } from "@routes/home";
 import { userRoutes } from "@routes/user";
 import { authRoutes } from "@routes/auth";
@@ -13,7 +13,7 @@ const routes = [
   { path: "/sessions", handler: sessionRoutes },
   { path: "/measurementTypes", handler: measurementTypeRoutes },
   { path: "/measurements", handler: measurementRoutes },
-  { path: "/connexion", handler: mqttClientServorRoutes },
+  { path: "/connexion", handler: mqttClientServerRoutes },
   {
     path: "/users",
     handler: userRoutes,

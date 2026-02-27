@@ -216,9 +216,7 @@ describe("Session Controller", () => {
       db.deleteSensorDataWithinTimeRange = deleteSensorDataMock;
 
       const res = await request.delete(`${baseUri}/${session.id}`);
-      // TODO REVIENT DESSUS
       expect(res.status).toBe(500);
-      //expect(res.body.deletedRowsNumber).toBe(10);
     });
 
     test("should return 404 if session not found", async () => {

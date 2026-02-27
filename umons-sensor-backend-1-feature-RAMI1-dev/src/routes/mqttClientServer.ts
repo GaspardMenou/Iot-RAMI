@@ -4,4 +4,4 @@ import { pingSensor } from "@controllers/mqttClientOverWebSocket";
 const router = express.Router();
 router.get("/online/:sensorName", pingSensor);
 
-export { router as mqttClientServorRoutes };
+export { router as mqttClientServerRoutes };

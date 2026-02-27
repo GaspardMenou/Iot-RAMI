@@ -77,6 +77,8 @@ class SocketService {
   }
   private kafkaRetryCount = 0;
   private static readonly KAFKA_MAX_RETRIES = 10;
+  private static readonly KAFKA_RETRY_BASE_MS = 1_000;
+  private static readonly KAFKA_MAX_RETRY_DELAY_MS = 30_000;
 
   public async startKafkaConsumer(): Promise<void> {
     try {
@@ -108,7 +110,7 @@ class SocketService {
         );
         return;
       }
-      const delay = Math.min(Math.pow(2, this.kafkaRetryCount) * 1000, 30000);
+      const delay = Math.min(Math.pow(2, this.kafkaRetryCount) * SocketService.KAFKA_RETRY_BASE_MS, SocketService.KAFKA_MAX_RETRY_DELAY_MS);
       console.error(
         `❌ [Kafka] Erreur (tentative ${this.kafkaRetryCount}/${SocketService.KAFKA_MAX_RETRIES}), retry dans ${delay / 1000}s:`,
         error

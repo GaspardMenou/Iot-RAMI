@@ -31,6 +31,11 @@ interface DiscoveredSensorInfo {
 }
 
 class MqttServer {
+  private static readonly MAX_RECONNECT_DELAY_S = 30;
+  private static readonly SENSOR_TIMEOUT_MS = 30_000;
+  private static readonly PING_TIMEOUT_MS = 500;
+  private static readonly MS_PER_SECOND = 1000;
+
   private reconnectAttemps = 0;
   private static instance: MqttServer | undefined;
   public mqttClient: MqttClient | undefined;
@@ -131,7 +136,7 @@ class MqttServer {
    */
   private async reconnectBroker(): Promise<void> {
     this.reconnectAttemps++;
-    const delay = Math.min(Math.pow(2, this.reconnectAttemps), 30) * 1000; // Exponential backoff with a maximum delay of 30 seconds
+    const delay = Math.min(Math.pow(2, this.reconnectAttemps), MqttServer.MAX_RECONNECT_DELAY_S) * MqttServer.MS_PER_SECOND;
     await new Promise((resolve) => setTimeout(resolve, delay)); // Exponential backoff
     await this.connectBroker(BROKER_INFO); // Attempt to reconnect after 5 seconds
   }
@@ -197,7 +202,7 @@ class MqttServer {
   private async handleDisconnect() {
     await this.removeAllSensorsAndUnsubscribeTheirTopic();
     this.manageEventHandlers("removeListener");
-    //console.log("Déconnexion du broker! => TENTATIVE DE RECONNEXION");
+
     await this.reconnectBroker();
   }
 
@@ -268,7 +273,7 @@ class MqttServer {
               const timeout = setTimeout(() => {
                 this.socketService?.emitSensorStatus(sensorName, "offline");
                 this.sensorTimeouts.delete(sensorName);
-              }, 30000);
+              }, MqttServer.SENSOR_TIMEOUT_MS);
               this.sensorTimeouts.set(sensorName, timeout);
             }
           } catch (dbError) {
@@ -290,7 +295,7 @@ class MqttServer {
           const timeout = setTimeout(() => {
             this.socketService?.emitSensorStatus(sensorName, "offline");
             this.sensorTimeouts.delete(sensorName);
-          }, 30000);
+          }, MqttServer.SENSOR_TIMEOUT_MS);
           this.sensorTimeouts.set(sensorName, timeout);
         } else {
           const existing = this.discoveredTopics.get(baseTopic);
@@ -382,7 +387,6 @@ class MqttServer {
               resolve();
             }
           });
-          //console.log(`Server unsubscribed from topic: ${topic}`);
         });
       } else {
         throw new Error(
@@ -413,7 +417,6 @@ class MqttServer {
             }
           });
         });
-        //console.log(`Server published [topic: ${topic}, Message: ${message}]`);
       } else {
         throw new Error(
           "MQTT client is not connected but your are trying to publish a message."
@@ -523,7 +526,7 @@ class MqttServer {
    * @return {Promise<void>}
    */
   public async publishCommandToSensor(topicFromDB: string, command: string) {
-    const timestamp = Date.now() / 1000;
+    const timestamp = Date.now() / MqttServer.MS_PER_SECOND;
     const message = JSON.stringify({
       [MESSAGE_FIELDS.TIMESTAMP]: timestamp,
       [MESSAGE_FIELDS.CMD]: command,
@@ -626,7 +629,7 @@ class MqttServer {
           cleanup();
           resolve(false);
         }
-      }, 500); // wait for 500 milliseconds
+      }, MqttServer.PING_TIMEOUT_MS);
     });
   }
 
