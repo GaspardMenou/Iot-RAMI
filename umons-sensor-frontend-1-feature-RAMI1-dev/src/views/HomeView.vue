@@ -136,6 +136,36 @@
 		margin: 1vw;
 	}
 
+	@media (max-width: 1024px) {
+		.container {
+			flex: 0 0 45%;
+		}
+
+		h2 {
+			font-size: 220%;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.container {
+			flex: 0 0 100%;
+			margin: 0.5rem 0;
+		}
+
+		h2 {
+			font-size: 180%;
+		}
+
+		h3 {
+			font-size: 130%;
+		}
+
+		input {
+			font-size: 100%;
+			width: 100%;
+		}
+	}
+
 	.measurement-card-container {
 		margin-top: 2vh;
 	}

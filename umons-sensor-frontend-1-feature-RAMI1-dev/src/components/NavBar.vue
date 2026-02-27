@@ -1,7 +1,29 @@
 <template>
-	<aside class="sidebar">
+	<div
+		v-if="isOpen"
+		class="sidebar-overlay"
+		@click="isOpen = false" />
+
+	<button
+		class="hamburger"
+		aria-label="Menu"
+		@click="isOpen = !isOpen">
+		<span />
+		<span />
+		<span />
+	</button>
+
+	<aside
+		class="sidebar"
+		:class="{ open: isOpen }">
 		<div class="sidebar-header">
 			<h2>RAMI</h2>
+			<button
+				class="close-btn"
+				aria-label="Close menu"
+				@click="isOpen = false">
+				✕
+			</button>
 		</div>
 		<nav class="sidebar-nav">
 			<ul>
@@ -10,7 +32,8 @@
 					:key="index">
 					<router-link
 						:class="[isActive(item.path) ? 'active-link' : '']"
-						:to="item.path">
+						:to="item.path"
+						@click="closeSidebarOnMobile">
 						{{ item.name }}
 					</router-link>
 				</li>
@@ -34,6 +57,7 @@
 
 	interface DataComponent {
 		items: MenuItem[]
+		isOpen: boolean
 	}
 
 	interface MenuItem {
@@ -46,6 +70,7 @@
 		data(): DataComponent {
 			const role = localStorage.getItem("role")
 			const isAdmin = role === "admin"
+			const isOpen = window.innerWidth > 768
 
 			const items: MenuItem[] = [
 				{ path: "/home", name: "Dashboard" },
@@ -58,7 +83,7 @@
 				items.push({ path: "/admin", name: "Administration" })
 			}
 
-			return { items: reactive(items) }
+			return { items: reactive(items), isOpen }
 		},
 		methods: {
 			isActive(path: string): boolean {
@@ -68,11 +93,17 @@
 				cleanUserLocalStorage()
 				location.href = "/"
 			},
+			closeSidebarOnMobile() {
+				if (window.innerWidth <= 768) {
+					this.isOpen = false
+				}
+			},
 		},
 	})
 </script>
 
 <style scoped>
+	/* ── Desktop sidebar (unchanged) ── */
 	.sidebar {
 		width: 240px;
 		min-width: 240px;
@@ -86,6 +117,9 @@
 	.sidebar-header {
 		margin-bottom: 2rem;
 		padding: 0 0.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 	}
 
 	.sidebar-header h2 {
@@ -152,5 +186,82 @@
 		background-color: var(--color-danger);
 		border-color: var(--color-danger);
 		color: white;
+	}
+
+	/* ── Hidden on desktop ── */
+	.hamburger {
+		display: none;
+	}
+
+	.close-btn {
+		display: none;
+	}
+
+	.sidebar-overlay {
+		display: none;
+	}
+
+	/* ── Mobile ── */
+	@media (max-width: 768px) {
+		.hamburger {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			position: fixed;
+			top: 0.9rem;
+			left: 0.9rem;
+			z-index: 200;
+			width: 2.2rem;
+			height: 1.6rem;
+			background: none;
+			border: none;
+			cursor: pointer;
+			padding: 0;
+		}
+
+		.hamburger span {
+			display: block;
+			width: 100%;
+			height: 2px;
+			background-color: var(--color-text);
+			border-radius: 2px;
+		}
+
+		.sidebar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			height: 100vh;
+			z-index: 100;
+			transform: translateX(-100%);
+			transition: transform 0.25s ease;
+		}
+
+		.sidebar.open {
+			transform: translateX(0);
+		}
+
+		.sidebar-overlay {
+			display: block;
+			position: fixed;
+			inset: 0;
+			background: rgba(0, 0, 0, 0.5);
+			z-index: 99;
+		}
+
+		.close-btn {
+			display: block;
+			background: none;
+			border: none;
+			color: var(--color-sidebar-text);
+			font-size: 1.1rem;
+			cursor: pointer;
+			padding: 0.25rem;
+			line-height: 1;
+		}
+
+		.close-btn:hover {
+			color: var(--color-sidebar-text-active);
+		}
 	}
 </style>

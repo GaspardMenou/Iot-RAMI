@@ -213,7 +213,7 @@
 
 	.graph-container {
 		margin-top: 20px;
-		height: 1000px;
+		height: clamp(400px, 60vh, 1000px);
 	}
 
 	.end-session {
@@ -223,6 +223,7 @@
 	.info-columns {
 		display: flex;
 		justify-content: space-between;
+		gap: 10px;
 	}
 
 	.info-box {
@@ -232,5 +233,19 @@
 		border-radius: 5px;
 		width: 48%;
 		text-align: center;
+	}
+
+	@media (max-width: 768px) {
+		.info-columns {
+			flex-direction: column;
+		}
+
+		.info-box {
+			width: 100%;
+		}
+
+		.create-session-container {
+			padding: 12px;
+		}
 	}
 </style>

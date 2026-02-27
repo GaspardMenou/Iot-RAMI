@@ -25,4 +25,11 @@
 		overflow-y: auto;
 		background: var(--color-background);
 	}
+
+	@media (max-width: 768px) {
+		.content {
+			padding: 1rem;
+			padding-top: 4rem;
+		}
+	}
 </style>
