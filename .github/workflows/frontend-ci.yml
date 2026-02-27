@@ -1,18 +1,18 @@
-name: Docker Image CI
+name: Frontend CI
 
 on:
   push:
     branches: [ "main", "dev" ]
     paths:
-      - "umons-sensor-backend-1-feature-RAMI1-dev/**"
+      - "umons-sensor-frontend-1-feature-RAMI1-dev/**"
   pull_request:
     branches: [ "main", "dev" ]
     paths:
-      - "umons-sensor-backend-1-feature-RAMI1-dev/**"
+      - "umons-sensor-frontend-1-feature-RAMI1-dev/**"
 
 defaults:
   run:
-    working-directory: ./umons-sensor-backend-1-feature-RAMI1-dev
+    working-directory: ./umons-sensor-frontend-1-feature-RAMI1-dev
 
 jobs:
   lint:
@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Lint
-        run: npm run format
+        run: npm run lint
 
   test:
     runs-on: ubuntu-latest
@@ -48,12 +48,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set lowercase image name
-        run: echo "IMAGE_NAME=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        run: echo "IMAGE_NAME=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')-frontend" >> $GITHUB_ENV
       - name: Build and push to GHCR
         uses: docker/build-push-action@v5
         with:
-          context: ./umons-sensor-backend-1-feature-RAMI1-dev
-          file: ./umons-sensor-backend-1-feature-RAMI1-dev/Dockerfile
+          context: ./umons-sensor-frontend-1-feature-RAMI1-dev
+          file: ./umons-sensor-frontend-1-feature-RAMI1-dev/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ github.sha }}

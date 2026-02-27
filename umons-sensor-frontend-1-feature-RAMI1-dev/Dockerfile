@@ -12,7 +12,7 @@ ENV VITE_APP_BACK_URL=$VITE_APP_BACK_URL
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN VITE_APP_ENV=$VITE_APP_ENV npm run command build
+RUN VITE_APP_ENV=$VITE_APP_ENV npm run build
 RUN echo $VITE_APP_BACK_URL > /app/dist/env.$VITE_APP_ENV
 
 

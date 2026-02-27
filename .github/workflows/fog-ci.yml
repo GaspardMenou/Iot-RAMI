@@ -1,40 +1,31 @@
-name: Docker Image CI
+name: Fog Service CI
 
 on:
   push:
     branches: [ "main", "dev" ]
     paths:
-      - "umons-sensor-backend-1-feature-RAMI1-dev/**"
+      - "fog-service/**"
   pull_request:
     branches: [ "main", "dev" ]
     paths:
-      - "umons-sensor-backend-1-feature-RAMI1-dev/**"
+      - "fog-service/**"
 
 defaults:
   run:
-    working-directory: ./umons-sensor-backend-1-feature-RAMI1-dev
+    working-directory: ./fog-service
 
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: npm install
-      - name: Lint
-        run: npm run format
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: npm install
-      - name: Run tests
-        run: npm run test
+      - name: TypeScript build
+        run: npm run build
 
   docker-push:
-    needs: [lint, test]
+    needs: [build]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
@@ -48,12 +39,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set lowercase image name
-        run: echo "IMAGE_NAME=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        run: echo "IMAGE_NAME=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')-fog" >> $GITHUB_ENV
       - name: Build and push to GHCR
         uses: docker/build-push-action@v5
         with:
-          context: ./umons-sensor-backend-1-feature-RAMI1-dev
-          file: ./umons-sensor-backend-1-feature-RAMI1-dev/Dockerfile
+          context: ./fog-service
+          file: ./fog-service/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
