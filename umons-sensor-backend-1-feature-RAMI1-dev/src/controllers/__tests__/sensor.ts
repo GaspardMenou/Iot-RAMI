@@ -2,7 +2,7 @@ import { Sensor } from "#/sensor";
 // Model(s) import
 import db from "@db/index";
 const DB: any = db;
-const { Sensor: SensorModel, UserSensorAccess } = DB;
+const { Sensor: SensorModel, Session: SessionModel, UserSensorAccess } = DB;
 // --- End of model(s) import
 import app from "@/app";
 import superTest from "supertest";
@@ -23,9 +23,13 @@ jest.mock("@db/index", () => ({
   Sensor: {
     findAll: jest.fn(),
     findByPk: jest.fn(),
+    findOne: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     destroy: jest.fn(),
+  },
+  Session: {
+    findOne: jest.fn(),
   },
   Measurement: {
     hasOne: jest.fn()
@@ -833,6 +837,65 @@ describe("Sensor controller", () => {
 
       const result = await superTest(app)
         .delete(baseUri + "/" + sensors[0].id)
+        .set("Authorization", `Bearer 1234`);
+
+      expect(result.status).toBe(500);
+      expect(result.body.message).toBe("Server error");
+      expect(result.body.codeError).toBe("server.error");
+    });
+  });
+
+  describe("GET /connexion/online/:sensorName", () => {
+    const sensorMock = {
+      dataValues: { id: sensors[0].id },
+      name: sensors[0].name,
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test("should return 400 if sensor name is not found", async () => {
+      SensorModel.findOne = jest.fn().mockResolvedValue(null);
+
+      const result = await superTest(app)
+        .get(`${baseUri}/connexion/online/unknownSensor`)
+        .set("Authorization", `Bearer 1234`);
+
+      expect(result.status).toBe(400);
+      expect(result.body.message).toBe("Invalid sensor name");
+      expect(result.body.codeError).toBe("sensor.name.invalid");
+    });
+
+    test("should return 'publishing' if sensor has an active session", async () => {
+      SensorModel.findOne = jest.fn().mockResolvedValue(sensorMock);
+      SessionModel.findOne = jest.fn().mockResolvedValue({ id: "session-uuid" });
+
+      const result = await superTest(app)
+        .get(`${baseUri}/connexion/online/${sensors[0].name}`)
+        .set("Authorization", `Bearer 1234`);
+
+      expect(result.status).toBe(200);
+      expect(result.body.message).toBe("publishing");
+    });
+
+    test("should return 'offline' if sensor has no active session", async () => {
+      SensorModel.findOne = jest.fn().mockResolvedValue(sensorMock);
+      SessionModel.findOne = jest.fn().mockResolvedValue(null);
+
+      const result = await superTest(app)
+        .get(`${baseUri}/connexion/online/${sensors[0].name}`)
+        .set("Authorization", `Bearer 1234`);
+
+      expect(result.status).toBe(200);
+      expect(result.body.message).toBe("offline");
+    });
+
+    test("should return 500 if a DB error occurs", async () => {
+      SensorModel.findOne = jest.fn().mockRejectedValue(new Error("DB error"));
+
+      const result = await superTest(app)
+        .get(`${baseUri}/connexion/online/${sensors[0].name}`)
         .set("Authorization", `Bearer 1234`);
 
       expect(result.status).toBe(500);

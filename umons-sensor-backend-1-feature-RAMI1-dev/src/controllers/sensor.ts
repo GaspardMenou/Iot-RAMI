@@ -129,9 +129,16 @@ const createSensor = async (req: Request, res: Response) => {
 const getSensorStatus = async (req: Request, res: Response) => {
   const { sensorName } = req.params;
   try {
-    const mqttInstance = await MqttServer.getInstance();
-    const status = mqttInstance.getSensorStatus(sensorName);
-    return res.status(200).json({ message: status });
+    const sensor = await Sensor.findOne({ where: { name: sensorName } });
+    if (!sensor) {
+      return res
+        .status(400)
+        .json(new BadRequestException("Invalid sensor name", "sensor.name.invalid"));
+    }
+    const activeSession = await Session.findOne({
+      where: { idSensor: sensor.dataValues.id, endedAt: null },
+    });
+    return res.status(200).json({ message: activeSession ? "publishing" : "offline" });
   } catch (error) {
     return res
       .status(500)

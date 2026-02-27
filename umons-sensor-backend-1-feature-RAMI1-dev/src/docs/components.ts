@@ -28,8 +28,8 @@ const components = {
         properties: {
           status: {
             type: "string",
-            enum: ["online", "offline", "publishing"],
-            description: "Real-time sensor connectivity status",
+            enum: ["offline", "publishing"],
+            description: "Sensor status based on active session in DB",
           },
         },
       },
