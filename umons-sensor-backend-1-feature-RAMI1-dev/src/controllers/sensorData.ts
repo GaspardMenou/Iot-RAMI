@@ -3,7 +3,7 @@ import { Op } from "sequelize";
 import db from "@db/index";
 import { BadRequestException, ServerErrorException } from "@/utils/exceptions";
 const DB: any = db;
-const { sensordata } = DB;
+const { sensordata, MeasurementType } = DB;
 // --- end of model import
 /*
 Details regarding CRUD operations:
@@ -160,6 +160,10 @@ const getSensorDataWithinTimeRange = async (
     // Query the SensorData table with the constructed where clause.
     const sensorData = await sensordata.findAll({
       where: whereClause,
+      include: {
+        model: MeasurementType,
+        attributes: ["name"],
+      },
     });
 
     // Return the array of sensor data objects.

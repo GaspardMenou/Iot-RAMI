@@ -100,10 +100,7 @@ const createSessionOnServerSide = async (req: Request, res: Response) => {
   const { idSession } = req.body;
 
   try {
-    await Session.update(
-      { endedAt: new Date() },
-      { where: { id: idSession } }
-    );
+    await Session.update({ endedAt: new Date() }, { where: { id: idSession } });
     return res.status(201).json({ message: "session ended" });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
@@ -269,9 +266,12 @@ const exportSessionAsCsv = async (req: Request, res: Response) => {
           ? new Date(session.dataValues.endedAt).toISOString()
           : ""
       }`,
-      `time,value`,
+      `time,value,type`,
       ...sensorData.map(
-        (row: any) => `${new Date(row.time).toISOString()},${row.value}`
+        (row: any) =>
+          `${new Date(row.time).toISOString()},${row.value},${
+            row.MeasurementType.name
+          }`
       ),
     ];
     res.setHeader("Content-Type", "text/csv");
