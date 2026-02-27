@@ -1,14 +1,14 @@
 import { Model, BuildOptions } from "sequelize";
 
-/** ============================ PLEASE READ THIS PART IN ORDER TO UNDERSTAND THE SESSION MODEL MANAGEMENT ============================
-The session model represents the interval of use of a sensor between t1 and t2 by a person. A session is valid
-only if the user started it and then stopped it. And this is where we can write it into the database.
-So, as long as the session is not stopped on the browser side, it is not saved in DB
+/** ============================ SESSION MODEL ============================
+A session represents a period of activity of a sensor, managed by the fog service.
+Sessions are created automatically when the fog sends a START event via Kafka,
+and closed when the fog sends a STOP event (or via admin).
  */
 
 interface SessionCreation {
   id: string;
-  idUser: string;
+  idFog?: string;
   idSensor: string;
   createdAt: Date;
   endedAt: Date;
@@ -16,7 +16,7 @@ interface SessionCreation {
 
 interface Session {
   id: string;
-  idUser: string;
+  idFog?: string;
   idSensor: string;
   createdAt: Date;
   updatedAt: Date;

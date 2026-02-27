@@ -1,13 +1,14 @@
 import { ref } from "vue"
 import { useAxios } from "@/composables/useAxios.composable"
 import { io } from "socket.io-client"
-import type { CreateClientSideSessionRequestBody, CreateSessionOnServerRequestBody, StartSessionResponse, CreateServorSessionResponse, Session } from "#/session"
+import type { Session } from "#/session"
 import { UserFields, EventTypes, handleEvent } from "@/composables/useUser.composable"
 import type { ChartData } from "chart.js"
 
 enum SessionControllerPaths {
 	START_SESSION_ON_CLIENT_SIDE = "sessions/new",
 	COMPLETE_SESSION_ON_SERVER_SIDE = "sessions/new/on/server",
+	GET_ACTIVE_SESSIONS = "sessions/active",
 	SESSION_DATA = "sessions/:id/data", // id must be replaced by that of the session
 	GET_USER_SESSIONS = "users/:userId/sessions",
 	GET_USER_SESSIONS_ON_A_SENSOR = "users/:userId/sessions/on/sensor/:sensorId",
@@ -116,7 +117,6 @@ const useSession = () => {
 	const selectedSession = ref<string | null>(null)
 
 	// *************************** [ATTRIBUTE]  SESSION
-	const idUser = ref("")
 	const idSensor = ref("")
 	const idSession = ref("")
 	const createdAt = ref<Date | null>(null)
@@ -129,15 +129,7 @@ const useSession = () => {
 	// *************************** [ATTRIBUTE]  GRAPH SESSION (both realtime and non realtime)
 	const chartData = ref({
 		labels: [] as string[],
-		datasets: [
-			{
-				label: "Value collected from sensor via WebSocket",
-				backgroundColor: "rgba(75, 192, 192, 0.5)",
-				borderColor: "rgba(75, 192, 192, 1)",
-				fill: false,
-				data: [] as { x: Date; y: number }[],
-			},
-		],
+		datasets: [],
 	})
 
 	// *************************** [ATTRIBUTE]  EXTRA INFORMATION (for realtime graph)
@@ -200,57 +192,32 @@ const useSession = () => {
 
 	// *************************** [METHOD]  SESSION
 
-	const startSessionOnClientSide = async (clientSideSession: CreateClientSideSessionRequestBody) => {
+	const startSessionOnClientSide = (sensorTopic: string, sensorId: string) => {
+		setupSession(sensorId, sensorTopic, new Date())
+		connectToWebSocket(sensorTopic)
+	}
+
+	const checkAndJoinActiveSession = async (sensorId: string, sensorTopic: string): Promise<boolean> => {
 		try {
-			const { data } = (await axios.post<StartSessionResponse>(SessionControllerPaths.START_SESSION_ON_CLIENT_SIDE, { ...clientSideSession })) as { data: StartSessionResponse }
-			// This retrieve the sensor topic on which you can get the values
-			setupSession(clientSideSession.idUser, clientSideSession.idSensor, data.topic, new Date())
-			connectToWebSocket(data.topic)
-			const sessionId = data.sessionId
-			idSession.value = sessionId
+			const { data } = await axios.get(SessionControllerPaths.GET_ACTIVE_SESSIONS)
+			const activeSession = data.find((s: any) => s.idSensor === sensorId)
+			if (activeSession) {
+				startSessionOnClientSide(sensorTopic, sensorId)
+				return true
+			}
+			return false
 		} catch (error) {
-			console.error("Erreur lors de la récupération du topic du capteur:", error)
+			console.error("Erreur vérification session active:", error)
+			return false
 		}
 	}
 
-	const createSessionOnServerSide = async () => {
-		endedAt.value = new Date()
-
-		if (!createdAt.value || !endedAt.value) {
-			console.error("Les valeurs createdAt et endedAt doivent être non nulles.")
-			return
-		}
-
-		if (!isValidDate(createdAt.value) || !isValidDate(endedAt.value)) {
-			console.error("Les valeurs createdAt et endedAt doivent être des dates valides.")
-			return
-		}
-
-		if (createdAt.value > endedAt.value) {
-			console.error("La date de fin doit arriver APRES la date de début !!!")
-			return
-		}
-
-		const sessionData: CreateSessionOnServerRequestBody = {
-			idUser: idUser.value,
-			idSensor: idSensor.value,
-			createdAt: createdAt.value.toISOString(),
-			endedAt: endedAt.value.toISOString(),
-			idSession: idSession.value,
-		}
-
-		try {
-			const { data } = (await axios.post<CreateServorSessionResponse>(SessionControllerPaths.COMPLETE_SESSION_ON_SERVER_SIDE, sessionData)) as unknown as { data: CreateServorSessionResponse }
-
-			socketClient.value?.disconnect()
-			cleanAfterSession()
-		} catch (error) {
-			console.error("Erreur lors de la tentative de fin de la session:", error)
-		}
+	const createSessionOnServerSide = () => {
+		socketClient.value?.disconnect()
+		cleanAfterSession()
 	}
 
-	const setupSession = (userId: string, sensorId: string, sessionTopic: string, sessionCreatedAt: Date) => {
-		idUser.value = userId
+	const setupSession = (sensorId: string, sessionTopic: string, sessionCreatedAt: Date) => {
 		idSensor.value = sensorId
 		topic.value = sessionTopic
 		createdAt.value = sessionCreatedAt
@@ -269,16 +236,18 @@ const useSession = () => {
 		socket.emit("join-session", { topic, token })
 		socket.on("new-data", (data: any) => {
 			try {
-				const { timestamp, measures } = data
-				const date = new Date(Math.floor(timestamp / 1000))
-				if (Array.isArray(measures)) {
-					measures.forEach((measure: { measureType: string; value: number }) => {
-						if (!isNaN(measure.value)) {
-							updateChart(date, parseFloat(String(measure.value)), measure.measureType)
-						}
-					})
-					updateTransmissionSpeed(date)
-				}
+				if (!Array.isArray(data.measures)) return
+				data.measures.forEach((entry: any) => {
+					const date = new Date(Math.floor(entry.timestamp / 1000))
+					if (Array.isArray(entry.measures)) {
+						entry.measures.forEach((measure: { measureType: string; value: number }) => {
+							if (!isNaN(measure.value)) {
+								updateChart(date, parseFloat(String(measure.value)), measure.measureType)
+							}
+						})
+						updateTransmissionSpeed(date)
+					}
+				})
 			} catch (error) {
 				console.error("Error processing WebSocket data:", error)
 			}
@@ -310,11 +279,11 @@ const useSession = () => {
 		{ bg: "rgba(255, 206, 86, 0.5)", border: "rgba(255, 206, 86, 1)" },
 	]
 
-	const updateChart = (label: Date, value: number, measureType: string) => {
+	const updateChart = (label: Date, value: number, measureType: string, maxpoint = 100) => {
 		const datasets = [...chartData.value.datasets]
 		const newLabels = [...chartData.value.labels, label.toISOString()]
 
-		let datasetIndex = datasets.findIndex((d) => d.label === measureType)
+		let datasetIndex = datasets.findIndex(d => d.label === measureType)
 		if (datasetIndex === -1) {
 			const color = DATASET_COLORS[datasets.length % DATASET_COLORS.length]
 			datasets.push({
@@ -328,8 +297,8 @@ const useSession = () => {
 		}
 
 		const newData = [...datasets[datasetIndex].data, { x: label, y: value }]
-		if (newData.length > 100) newData.shift()
-		if (newLabels.length > 100) newLabels.shift()
+		if (maxpoint > 0 && newData.length > maxpoint) newData.shift()
+		if (maxpoint > 0 && newLabels.length > maxpoint) newLabels.shift()
 
 		datasets[datasetIndex] = { ...datasets[datasetIndex], data: newData }
 		chartData.value = { labels: newLabels, datasets }
@@ -337,13 +306,16 @@ const useSession = () => {
 
 	const fetchDataAndUpdateChart = async (idSession: string) => {
 		try {
+			chartData.value = {
+				labels: [],
+				datasets: [],
+			}
 			const response = await axios.get(getURLForFetchingSessionData(idSession))
 			const sessionData = response.data
-
-			const newLabels = sessionData.map((item: any) => new Date(item.time).toISOString())
-			const newData = sessionData.map((item: any) => ({ x: new Date(item.time), y: item.value }))
-
-			updateChartWithNewValues(newLabels, newData)
+			for (let i = 0; i < sessionData.length; i++) {
+				const measureType = sessionData[i].MeasurementType?.name || "Unknown"
+				updateChart(new Date(sessionData[i].time), sessionData[i].value, measureType, 0)
+			}
 		} catch (error) {
 			console.error("Error fetching data", error)
 		}
@@ -365,9 +337,9 @@ const useSession = () => {
 	const exportSessionToCsv = async (sessionId: string) => {
 		try {
 			const url = getURLForExportingSessionAsCsv(sessionId)
-			const response = await axios.get(url, { responseType: 'blob' })
+			const response = await axios.get(url, { responseType: "blob" })
 			const blobUrl = URL.createObjectURL(response.data)
-			const link = document.createElement('a')
+			const link = document.createElement("a")
 			link.href = blobUrl
 			link.download = `session-${sessionId}.csv`
 			link.click()
@@ -378,7 +350,6 @@ const useSession = () => {
 	}
 
 	return {
-		idUser,
 		idSensor,
 		idSession,
 		topic,
@@ -387,6 +358,7 @@ const useSession = () => {
 		transmissionSpeed,
 		startSessionOnClientSide,
 		createSessionOnServerSide,
+		checkAndJoinActiveSession,
 		fetchDataAndUpdateChart,
 		fetchAllSessionsOfSensor,
 		sessions,

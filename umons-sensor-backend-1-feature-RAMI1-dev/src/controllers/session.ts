@@ -57,13 +57,7 @@ const handleDealingWithSensorDataError = (res: Response, error: unknown) => {
 
 // revue
 const createSessionOnClientSide = async (req: Request, res: Response) => {
-  const { idUser, idSensor } = req.body;
-
-  if (!isUuid(idUser)) {
-    return res
-      .status(400)
-      .json(new BadRequestException("user id is not uuid", "user.id.not.uuid"));
-  }
+  const { idSensor } = req.body;
 
   if (!isUuid(idSensor)) {
     return res
@@ -74,15 +68,6 @@ const createSessionOnClientSide = async (req: Request, res: Response) => {
   }
 
   try {
-    // Vérifier que l'utilisateur existe
-    const user = await User.findByPk(idUser);
-    if (!user) {
-      return res
-        .status(404)
-        .json(new BadRequestException("User not found", "user.not.found"));
-    }
-
-    // Vérifier que le capteur existe
     const sensor = await Sensor.findByPk(idSensor);
     if (!sensor) {
       return res
@@ -90,27 +75,21 @@ const createSessionOnClientSide = async (req: Request, res: Response) => {
         .json(new NotFoundException("Sensor not found", "sensor.not.found"));
     }
 
-    // ================== CREATION DE SESSION
-    const topicFromDB = sensor.topic;
-
     const mqttServerInstance: MqttServer = await MqttServer.getInstance();
-
     const topicForHearingFromSensor =
       mqttServerInstance.getTopicForHearingTheSensorOnWebClientSide(
-        topicFromDB
+        sensor.topic
       );
-    const endedAt = null;
-    await mqttServerInstance.sendStartSignal(topicFromDB);
+    await mqttServerInstance.sendStartSignal(sensor.topic);
     const session = await Session.create({
-      idUser,
       idSensor,
       createdAt: new Date(),
-      endedAt,
+      endedAt: null,
     });
     return res.status(201).json({
       topic: topicForHearingFromSensor,
       sessionId: session.id,
-    }); // Send the topic to the user so that he can subscribe to the channel
+    });
   } catch (error) {
     console.error("❌ [createSessionOnClientSide]", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -118,47 +97,10 @@ const createSessionOnClientSide = async (req: Request, res: Response) => {
 };
 
 const createSessionOnServerSide = async (req: Request, res: Response) => {
-  const { idUser, idSensor, createdAt, endedAt } = req.body;
-
-  if (!isUuid(idUser)) {
-    return res
-      .status(400)
-      .json(new BadRequestException("user id is not uuid", "user.id.not.uuid"));
-  }
+  const { idSession } = req.body;
 
   try {
-    // Vérifier que l'utilisateur existe
-    const user = await User.findByPk(idUser);
-    if (!user) {
-      return res
-        .status(404)
-        .json(new BadRequestException("User not found", "user.not.found"));
-    }
-
-    // Vérifier que le capteur existe
-    const sensor = await Sensor.findByPk(idSensor);
-    if (!sensor) {
-      return res
-        .status(404)
-        .json(new NotFoundException("Sensor not found", "sensor.not.found"));
-    }
-
-    // ================== CREATION DE SESSION
-
-    const mqttServerInstance: MqttServer = await MqttServer.getInstance();
-    await mqttServerInstance.sendStopSignal(sensor.topic);
-
-    await Session.update(
-      {
-        endedAt: new Date(),
-      },
-      {
-        where: {
-          id: req.body.idSession,
-        },
-      }
-    );
-
+    await Session.update({ endedAt: new Date() }, { where: { id: idSession } });
     return res.status(201).json({ message: "session ended" });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
@@ -324,9 +266,12 @@ const exportSessionAsCsv = async (req: Request, res: Response) => {
           ? new Date(session.dataValues.endedAt).toISOString()
           : ""
       }`,
-      `time,value`,
+      `time,value,type`,
       ...sensorData.map(
-        (row: any) => `${new Date(row.time).toISOString()},${row.value}`
+        (row: any) =>
+          `${new Date(row.time).toISOString()},${row.value},${
+            row.MeasurementType.name
+          }`
       ),
     ];
     res.setHeader("Content-Type", "text/csv");

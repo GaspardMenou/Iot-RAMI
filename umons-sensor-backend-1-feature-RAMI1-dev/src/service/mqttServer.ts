@@ -13,7 +13,6 @@ import db from "@db/index";
 import { Sensor as SensorType } from "@/types/sensor";
 import { BrokerInfo } from "@/types/mqttConstants";
 import SensorOverMqtt from "@/service/sensorsOverMqtt";
-import KafkaService from "@/service/kafkaService";
 const DB: any = db;
 const { Sensor, MeasurementType } = DB;
 
@@ -270,23 +269,6 @@ class MqttServer {
                 this.sensorTimeouts.delete(sensorName);
               }, 30000);
               this.sensorTimeouts.set(sensorName, timeout);
-            }
-
-            // Tentative de publication Kafka (non bloquante)
-            try {
-              const kafkaService = await KafkaService.getInstance();
-              await kafkaService.publishSensorData("sensor-data", {
-                sensorId,
-                timestamp: parsedMessage.timestamp,
-                measures: parsedMessage.measures,
-                topic,
-              });
-              console.log("📨 [Kafka] Donnée publiée avec succès");
-            } catch (kafkaError) {
-              console.warn(
-                "⚠️ [Kafka] Erreur de publication (non bloquante):",
-                kafkaError
-              );
             }
           } catch (dbError) {
             console.error("❌ [DB] Erreur de sauvegarde:", dbError);

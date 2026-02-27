@@ -19,6 +19,7 @@
 const char* COMMAND_PING = "ping";
 const char* COMMAND_START = "start";
 const char* COMMAND_STOP = "stop";
+const char* COMMAND_ACK = "ack";
 // possible answers
 const char* PING_RESPONSE = "pong";
 const char* PING_RESPONSE_WHEN_ALREADY_PUBLISHING = "pong.publishing";
@@ -29,6 +30,9 @@ const char* MSG_TIMESTAMP = "timestamp";
 const char* MSG_CMD = "cmd";
 const char* MSG_ANS = "ans";
 const char* MSG_VALUE = "value";
+const char* MSG_MEASURE = "measures";
+
+
 
 /****** NTP Client Settings; PROGREM because these settings are configured only once at the beginning *******/
 const char* NTP_SERVER PROGMEM = "pool.ntp.org";
@@ -129,6 +133,74 @@ void publishValue(PubSubClient& client, const char* topic, const float& value, c
 
     publishJSONMessage(client, topic, json_buffer, retained);
 }
+void sendPing(PubSubClient& client, const char* topic,const bool& retained){
+        long long timestamp_buffer = getCurrentMicrosecondTimestampLong();
+    if (timestamp_buffer < 0) {
+        return;
+    }
+
+    DynamicJsonDocument doc(1024);
+    doc[MSG_TIMESTAMP] = timestamp_buffer;
+    doc[MSG_CMD] = COMMAND_PING;
+
+    char json_buffer[512];
+    serializeJson(doc, json_buffer);
+
+    publishJSONMessage(client, topic, json_buffer, retained);
+}
+void sendStart(PubSubClient& client, const char* topic,const bool& retained){
+    long long timestamp_buffer = getCurrentMicrosecondTimestampLong();
+    if (timestamp_buffer < 0) {
+        return;
+    }
+
+    DynamicJsonDocument doc(1024);
+    doc[MSG_TIMESTAMP] = timestamp_buffer;
+    doc[MSG_CMD] = COMMAND_START;
+
+    char json_buffer[512];
+    serializeJson(doc, json_buffer);
+
+    publishJSONMessage(client, topic, json_buffer, retained);
+}
+void sendStop(PubSubClient& client, const char* topic,const bool& retained){
+    long long timestamp_buffer = getCurrentMicrosecondTimestampLong();
+    if (timestamp_buffer < 0) {
+        return;
+    }
+
+    DynamicJsonDocument doc(1024);
+    doc[MSG_TIMESTAMP] = timestamp_buffer;
+    doc[MSG_CMD] = COMMAND_STOP;
+
+    char json_buffer[512];
+    serializeJson(doc, json_buffer);
+
+    publishJSONMessage(client, topic, json_buffer, retained);
+}
+
+void publishMeasures(PubSubClient& client, const char* topic, const char* measureTypes[], const float measures[],int count, const bool& retained){
+    long long timestamp_buffer = getCurrentMicrosecondTimestampLong();
+    if (timestamp_buffer < 0) {
+        return;
+    }
+    DynamicJsonDocument doc(1024);
+
+    JsonArray array = doc.createNestedArray(MSG_MEASURE);  // crée le []
+
+    for (int i = 0; i < count; i++) {
+        JsonObject obj = array.createNestedObject();  // ajoute un {} dans le []
+        obj["measureType"] = measureTypes[i];
+        obj["value"] = measures[i];
+    }
+    
+    doc[MSG_TIMESTAMP] = timestamp_buffer;
+
+    char json_buffer[512];
+    serializeJson(doc, json_buffer);
+
+    publishJSONMessage(client, topic, json_buffer, retained);
+}
 
 void handlePingCommand(PubSubClient& client, const char* topic, const bool& allow_to_publish) {
     if (allow_to_publish) {
@@ -165,6 +237,24 @@ void interactWithReceivedCommand(PubSubClient& client, const String& received_co
     } else if (received_command == COMMAND_STOP) {
         Serial.println("Handling STOP command");
         handleStopCommand(client, topic, allow_to_publish);
+        Serial.print("New allow_to_publish state: ");
+        Serial.println(allow_to_publish ? "true" : "false");
+    }
+}
+
+void interactWithAnswerCommand(PubSubClient& client, const String& received_command, const char* topic, bool& allow_to_publish) {
+    Serial.print("Received command: ");
+    Serial.println(received_command);
+    Serial.print("Current allow_to_publish state: ");
+    Serial.println(allow_to_publish ? "true" : "false");
+    if (received_command == COMMAND_STOP) {
+        Serial.println("Handling STOP command");
+        allow_to_publish = false;
+        Serial.print("New allow_to_publish state: ");
+        Serial.println(allow_to_publish ? "true" : "false");
+    } else if (received_command == COMMAND_ACK) {
+        Serial.println("Handling HANDSHAKE command");
+        allow_to_publish = true;
         Serial.print("New allow_to_publish state: ");
         Serial.println(allow_to_publish ? "true" : "false");
     }

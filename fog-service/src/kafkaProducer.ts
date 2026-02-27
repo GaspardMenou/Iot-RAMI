@@ -1,12 +1,10 @@
-import { Kafka, Consumer } from "kafkajs";
-import { envs } from "@/utils/env";
+import { Kafka, Producer } from "kafkajs";
+import { KAFKA_CONFIG } from "./constants";
 class KafkaService {
   private static instance: KafkaService | undefined;
   private kafka!: Kafka;
-  private consumer!: Consumer;
+  private producer!: Producer;
   private isKafkaConnected = false;
-  private mapTopicCallbacks: Map<string, (data: any) => void> = new Map();
-
   private constructor() {
     // Constructeur privé pour empêcher l'instanciation directe}
   }
@@ -30,15 +28,15 @@ class KafkaService {
       console.log("🔄 [Kafka] Tentative de connexion...");
 
       this.kafka = new Kafka({
-        clientId: "sensor-app",
-        brokers: [envs.KAFKA_BROKERS],
+        clientId: "fog-service",
+        brokers: KAFKA_CONFIG.brokers,
         retry: {
           initialRetryTime: 100,
           retries: 5,
         },
       });
 
-      this.consumer = this.kafka.consumer({ groupId: "sensor-group" });
+      this.producer = this.kafka.producer();
       console.log("✅ [Kafka] Connexion établie");
     } catch (error) {
       console.error("❌ [Kafka] Erreur de connexion:", error);
@@ -48,9 +46,8 @@ class KafkaService {
 
   private async connect(): Promise<void> {
     try {
-      await this.consumer.connect();
-      console.log("✅ Kafka Consumer connected successfully");
-
+      await this.producer.connect();
+      console.log("✅ Kafka Producer connected successfully");
       this.isKafkaConnected = true;
     } catch (error) {
       console.error("❌ Error connecting to Kafka:", error);
@@ -59,46 +56,50 @@ class KafkaService {
     }
   }
 
-  public registerTopic(topic: string, callback: (data: any) => void): void {
-    this.mapTopicCallbacks.set(topic, callback);
-    console.log("🔖 Registered Kafka topic callback:", topic);
-  }
-
-  public async startConsuming(): Promise<void> {
+  public async publishSensorData(topic: string, data: any): Promise<void> {
     try {
-      for (const topic of this.mapTopicCallbacks.keys()) {
-        await this.consumer.subscribe({ topic });
-      }
-      await this.consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-          const callback = this.mapTopicCallbacks.get(topic);
-          if (callback) {
-            const data = JSON.parse(message.value?.toString() || "");
-            console.log("📨 Received Kafka message:", {
-              topic,
-              partition,
-              data,
-            });
-            callback(data);
-          } else {
-            console.warn("⚠️ No callback registered for topic:", topic);
-          }
-        },
+      await this.producer.send({
+        topic,
+        messages: [{ value: JSON.stringify(data) }],
       });
-      console.log("✅ Kafka Consumer started consuming");
+      console.log("📤 Published to Kafka:", {
+        topic,
+        data,
+      });
     } catch (error) {
-      console.error("❌ Error starting Kafka consumer:", error);
+      console.error("❌ Error publishing to Kafka:", error);
       throw error;
     }
   }
-
+  public async publishBatchSensorData(
+    topic: string,
+    dataArray: any[],
+  ): Promise<void> {
+    try {
+      const messages = dataArray.map((data) => ({
+        value: JSON.stringify(data),
+      }));
+      await this.producer.send({
+        topic,
+        messages,
+      });
+      console.log("📤 Published batch to Kafka:", {
+        topic,
+        count: dataArray.length,
+      });
+    } catch (error) {
+      console.error("❌ Error publishing batch to Kafka:", error);
+      throw error;
+    }
+  }
   public isConnected(): boolean {
     return this.isKafkaConnected;
   }
   public async disconnect(): Promise<void> {
     try {
-      await this.consumer.disconnect();
-      console.log("👋 Kafka Consumer disconnected");
+      await this.producer.disconnect();
+      console.log("👋 Kafka Producer disconnected");
+
       this.isKafkaConnected = false;
     } catch (error) {
       console.error("❌ Error disconnecting from Kafka:", error);
