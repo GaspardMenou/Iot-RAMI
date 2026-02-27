@@ -280,7 +280,7 @@ describe("Session Controller", () => {
         dataValues: { id: sensors[0].id, name: sensors[0].name, topic: sensors[0].topic },
       });
       db.sensordata.findAll.mockResolvedValue([
-        { time: new Date("2024-01-01T00:00:01Z"), value: 1.5 },
+        { time: new Date("2024-01-01T00:00:01Z"), value: 1.5, MeasurementType: { name: "ecg" } },
       ]);
 
       const res = await request.get(`${baseUri}/session1/export/csv`);
@@ -288,7 +288,7 @@ describe("Session Controller", () => {
       expect(res.status).toBe(200);
       expect(res.headers["content-type"]).toMatch(/text\/csv/);
       expect(res.text).toContain("# session_id,session1");
-      expect(res.text).toContain("time,value");
+      expect(res.text).toContain("time,value,type");
     });
 
     test("should return 404 if session not found", async () => {
