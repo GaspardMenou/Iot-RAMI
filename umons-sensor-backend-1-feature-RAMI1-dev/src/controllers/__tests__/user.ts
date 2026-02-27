@@ -173,6 +173,10 @@ describe("generateUserResponse", () => {
 });
 
 describe("User controller", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe("/signup", () => {
     test("should signup", async () => {
       const findOne = jest.fn();
@@ -368,13 +372,11 @@ describe("User controller", () => {
       const sign = jest.fn();
       sign.mockReturnValueOnce(token.token);
 
-      const dateNow = jest.fn();
-      dateNow.mockReturnValueOnce(1000);
+      jest.spyOn(Date, "now").mockReturnValueOnce(1000);
 
       User.findOne = findOne;
       bcrypt.compare = bcryptCompare;
       jwt.sign = sign;
-      Date.now = dateNow;
 
       const response = await superTest(app).post(`${baseUri}/login`).send({
         email: mockUserOfUserType.email,
@@ -520,7 +522,7 @@ describe("User controller", () => {
         email: expectedResponse.email,
         sex: expectedResponse.sex,
         role: expectedResponse.role,
-        expiresAt: null,
+        expiresAt: expect.any(Number),
         token: expectedResponse.token,
       });
     });
@@ -528,11 +530,11 @@ describe("User controller", () => {
   describe("/update/role", () => {
     beforeEach(() => {
       jest.clearAllMocks();
-      jwt.verify = jest.fn().mockImplementation(() => {
+      jest.spyOn(jwt, "verify").mockImplementation(() => {
         return {
           id: "id-1",
           role: "privileged",
-        };
+        } as any;
       });
     });
     test("should update role", async () => {

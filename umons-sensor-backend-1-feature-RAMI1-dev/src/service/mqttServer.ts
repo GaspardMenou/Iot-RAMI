@@ -10,11 +10,12 @@ import { createSensorData } from "@/controllers/sensorData";
 import SocketService from "@/service/socketService";
 // Model import
 import db from "@db/index";
-import { Sensor as SensorType } from "@/types/sensor";
-import { BrokerInfo } from "@/types/mqttConstants";
+import type { Sensor as SensorType } from "@/types/sensor";
+import type { MeasurementTypeModel } from "@/types/measurementType";
+import type { BrokerInfo } from "@/types/mqttConstants";
 import SensorOverMqtt from "@/service/sensorsOverMqtt";
-const DB: any = db;
-const { Sensor, MeasurementType } = DB;
+
+const { Sensor, MeasurementType } = db;
 
 // --- end of model import
 
@@ -724,7 +725,7 @@ class MqttServer {
   private async initializeMeasurementTypesMap() {
     const measurementTypes = await MeasurementType.findAll();
     if (measurementTypes !== undefined && measurementTypes.length > 0) {
-      measurementTypes.forEach((mt: any) => {
+      measurementTypes.forEach((mt: MeasurementTypeModel) => {
         this.measurementTypesMap.set(mt.dataValues.name, mt.dataValues.id);
       });
     }

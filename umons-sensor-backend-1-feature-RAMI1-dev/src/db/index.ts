@@ -12,6 +12,34 @@ import defineUserMeasurementTypeRequestModel from "@models/userMeasurementTypeRe
 import defineUserSensorAccessModel from "@models/userSensorAccess";
 import defineUserSensorRequestModel from "@models/userSensorRequest";
 
+import type { MeasurementStatic } from "#/measurement";
+import type {
+  MeasurementTypeStatic,
+  UserMeasurementTypeRequestStatic,
+} from "#/measurementType";
+import type { SensorDataStatic } from "#/sensorData";
+import type {
+  SensorStatic,
+  UserSensorAccessStatic,
+  UserSensorRequestStatic,
+} from "#/sensor";
+import type { SessionStatic } from "#/session";
+import type { UserStatic } from "#/user";
+
+export interface Database {
+  Measurement: MeasurementStatic;
+  MeasurementType: MeasurementTypeStatic;
+  Sensor: SensorStatic;
+  sensordata: SensorDataStatic;
+  Session: SessionStatic;
+  User: UserStatic;
+  UserMeasurementTypeRequest: UserMeasurementTypeRequestStatic;
+  UserSensorAccess: UserSensorAccessStatic;
+  UserSensorRequest: UserSensorRequestStatic;
+  sequelize: Sequelize;
+  Sequelize: typeof Sequelize;
+}
+
 const options: Options = {
   dialect: "postgres",
   logging: false,
@@ -34,21 +62,24 @@ specifies that setting up an association between two tables is done with the use
 Please follow the sequelize documentation so that never happens again.
 */
 
-const db: any = {};
+// Built dynamically — typed at export via the Database interface
+const db: Record<string, unknown> = {};
 
 type DefineModelFunction = (
   sequelize: Sequelize,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DataTypes: any
 ) => typeof Model;
 
 const addModelToDb = (
   sequelize: Sequelize,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DataTypes: any,
   defineModel: DefineModelFunction,
-  db: { [key: string]: any }
+  target: Record<string, unknown>
 ): void => {
   const model = defineModel(sequelize, DataTypes);
-  db[model.name] = model;
+  target[model.name] = model;
   console.log(`New model added: ${model.name}`);
 };
 
@@ -63,9 +94,10 @@ addModelToDb(sequelize, DataTypes, defineUserSensorAccessModel, db);
 addModelToDb(sequelize, DataTypes, defineUserSensorRequestModel, db);
 
 // run `.associate` if applicable
-Object.keys(db).map((model) => {
-  if (db[model].associate) {
-    db[model].associate(db);
+Object.keys(db).map((modelName) => {
+  const entry = db[modelName] as { associate?: (models: Record<string, unknown>) => void };
+  if (entry.associate) {
+    entry.associate(db);
   }
 });
 
@@ -73,4 +105,4 @@ Object.keys(db).map((model) => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-export default db;
+export default db as unknown as Database;

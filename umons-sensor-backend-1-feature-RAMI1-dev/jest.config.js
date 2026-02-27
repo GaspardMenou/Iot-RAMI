@@ -5,6 +5,7 @@ module.exports = {
   coverageDirectory: "coverage",
   collectCoverageFrom: ["src/**/*.{js,ts}"],
   setupFiles: ["./jest.setup.js"],
+  setupFilesAfterEnv: ["./jest.setup.afterFramework.js"],
   forceExit: true,
   coveragePathIgnorePatterns: [
     "src/server.ts",
@@ -17,10 +18,10 @@ module.exports = {
   ],
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
+      branches: 75,
+      functions: 60,
+      lines: 75,
+      statements: 75,
     },
   },
   globals: {
