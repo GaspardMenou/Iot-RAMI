@@ -1,16 +1,3 @@
-jest.mock("mqtt", () => ({
-  connect: jest.fn(() => ({
-    on: jest.fn(),
-    once: jest.fn(),
-    removeListener: jest.fn(),
-    end: jest.fn((_force: any, cb: any) => cb && cb()),
-    subscribe: jest.fn((_topic: any, cb: any) => cb && cb(null)),
-    unsubscribe: jest.fn((_topic: any, cb: any) => cb && cb(null)),
-    publish: jest.fn((_topic: any, _msg: any, cb: any) => cb && cb(null)),
-    connected: true,
-  })),
-}));
-
 import { MeasurementType } from "#/measurementType";
 // Model(s) import
 import db from "@db/index";

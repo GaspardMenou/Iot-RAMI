@@ -3,9 +3,8 @@ import superTest from "supertest";
 import app from "@/app";
 // Model(s) import
 import db from "@db/index";
-import MqttServer from "@/service/mqttServer";
 const DB: any = db;
-const { Sensor: SensorModel } = DB;
+const { Sensor: SensorModel, Session: SessionModel } = DB;
 // --- End of model(s) import
 
 jest.mock("@db/index", () => ({
@@ -17,36 +16,15 @@ jest.mock("@db/index", () => ({
     findAll: jest.fn(),
     findByPk: jest.fn(),
     destroy: jest.fn(),
-    update: jest.fn()
+    update: jest.fn(),
   },
   sensordata: {
     findAll: jest.fn(),
   },
 }));
 
-jest.mock("mqtt", () => {
-  const mMqttClient = {
-    on: jest.fn(),
-    end: jest.fn(),
-    once: jest.fn(),
-  };
-  return {
-    connect: jest.fn(() => mMqttClient),
-  };
-});
-
-jest.mock("@/service/mqttServer", () => {
-  const mMqttServerInstance = {
-    sendStartSignal: jest.fn().mockResolvedValue(true),
-    sendStopSignal: jest.fn().mockResolvedValue(true),
-    getTopicForHearingTheSensorOnWebClientSide: jest
-      .fn()
-      .mockReturnValue("Sensor 1/topic"), // See sensors[0].topic
-  };
-  return {
-    getInstance: jest.fn().mockResolvedValue(mMqttServerInstance),
-  };
-});
+// On cast DB en any pour pouvoir utiliser .mockResolvedValue sur ses propriétés
+const mockDB = db as any;
 
 const request = superTest(app);
 const baseUri = "/api/v1/sessions";
@@ -77,11 +55,11 @@ describe("Session Controller", () => {
     test("should return 201 and the topic when sensor is valid", async () => {
       const sensor = sensors[0];
 
-      db.Sensor.findByPk.mockResolvedValue({
+      mockDB.Sensor.findByPk.mockResolvedValue({
         id: sensor.id,
         topic: sensor.topic,
       });
-      db.Session.create.mockResolvedValue({
+      mockDB.Session.create.mockResolvedValue({
         id: "bc9d5577-c636-402c-a682-dc533f31dfce",
       });
       const res = await request.post(`${baseUri}/new`).send({
@@ -90,15 +68,6 @@ describe("Session Controller", () => {
 
       expect(res.status).toBe(201);
       expect(res.body.topic).toBe(sensor.topic);
-
-      const mockMqttServerInstance = await MqttServer.getInstance();
-
-      expect(
-        mockMqttServerInstance.getTopicForHearingTheSensorOnWebClientSide
-      ).toHaveBeenCalledWith(sensor.topic);
-      expect(mockMqttServerInstance.sendStartSignal).toHaveBeenCalledWith(
-        sensor.topic
-      );
     });
 
     test("should return a 400 if sensor id is not uuid", async () => {
@@ -137,11 +106,11 @@ describe("Session Controller", () => {
         idSession: "bc9d5577-c636-402c-a682-dc533f31dfce",
       };
 
-      db.Session.update.mockResolvedValue([1]);
+      mockDB.Session.update.mockResolvedValue([1]);
 
       const res = await request.post(`${baseUri}/new/on/server`).send(body);
 
-      expect(db.Session.update).toHaveBeenCalled();
+      expect(mockDB.Session.update).toHaveBeenCalled();
       expect(res.status).toBe(201);
       expect(res.body.message).toBe("session ended");
     });
@@ -164,7 +133,7 @@ describe("Session Controller", () => {
         },
       ];
 
-      db.Session.findAll.mockResolvedValue(sessions);
+      mockDB.Session.findAll.mockResolvedValue(sessions);
 
       const res = await request.get(baseUri);
 
@@ -182,7 +151,7 @@ describe("Session Controller", () => {
         endedAt: new Date().toISOString(),
       };
 
-      db.Session.findByPk.mockResolvedValue(session);
+      mockDB.Session.findByPk.mockResolvedValue(session);
 
       const res = await request.get(`${baseUri}/${session.id}`);
 
@@ -191,7 +160,7 @@ describe("Session Controller", () => {
     });
 
     test("should return 404 if session not found", async () => {
-      db.Session.findByPk.mockResolvedValue(null);
+      mockDB.Session.findByPk.mockResolvedValue(null);
 
       const res = await request.get(`${baseUri}/nonexistent-id`);
 
@@ -210,17 +179,17 @@ describe("Session Controller", () => {
         endedAt: new Date().toISOString(),
       };
 
-      db.Session.findByPk.mockResolvedValue(session);
-      db.Sensor.findByPk.mockResolvedValue(sensors[0]);
+      mockDB.Session.findByPk.mockResolvedValue(session);
+      mockDB.Sensor.findByPk.mockResolvedValue(sensors[0]);
       const deleteSensorDataMock = jest.fn().mockResolvedValue(10); // Assuming 10 rows deleted
-      db.deleteSensorDataWithinTimeRange = deleteSensorDataMock;
+      mockDB.deleteSensorDataWithinTimeRange = deleteSensorDataMock;
 
       const res = await request.delete(`${baseUri}/${session.id}`);
       expect(res.status).toBe(500);
     });
 
     test("should return 404 if session not found", async () => {
-      db.Session.findByPk.mockResolvedValue(null);
+      mockDB.Session.findByPk.mockResolvedValue(null);
 
       const res = await request.delete(`${baseUri}/nonexistent-id`);
 
@@ -237,8 +206,8 @@ describe("Session Controller", () => {
         endedAt: new Date().toISOString(),
       };
 
-      db.Session.findByPk.mockResolvedValue(session);
-      db.Sensor.findByPk.mockResolvedValue(null);
+      mockDB.Session.findByPk.mockResolvedValue(session);
+      mockDB.Sensor.findByPk.mockResolvedValue(null);
 
       const res = await request.delete(`${baseUri}/${session.id}`);
 
@@ -250,7 +219,7 @@ describe("Session Controller", () => {
 
   describe("DELETE /", () => {
     test("should return 204 and delete all sessions", async () => {
-      db.Session.destroy.mockResolvedValue({});
+      mockDB.Session.destroy.mockResolvedValue({});
 
       const res = await request.delete(baseUri);
 
@@ -272,12 +241,12 @@ describe("Session Controller", () => {
         createdAt: new Date("2024-01-01T00:00:00Z"),
         endedAt: new Date("2024-01-01T01:00:00Z"),
       };
-      db.Session.findByPk.mockResolvedValue(session);
-      db.Sensor.findByPk.mockResolvedValue({
+      mockDB.Session.findByPk.mockResolvedValue(session);
+      mockDB.Sensor.findByPk.mockResolvedValue({
         ...sensors[0],
         dataValues: { id: sensors[0].id, name: sensors[0].name, topic: sensors[0].topic },
       });
-      db.sensordata.findAll.mockResolvedValue([
+      mockDB.sensordata.findAll.mockResolvedValue([
         { time: new Date("2024-01-01T00:00:01Z"), value: 1.5, MeasurementType: { name: "ecg" } },
       ]);
 
@@ -290,19 +259,19 @@ describe("Session Controller", () => {
     });
 
     test("should return 404 if session not found", async () => {
-      db.Session.findByPk.mockResolvedValue(null);
+      mockDB.Session.findByPk.mockResolvedValue(null);
       const res = await request.get(`${baseUri}/nonexistent-id/export/csv`);
       expect(res.status).toBe(404);
       expect(res.body.codeError).toBe("session.not.found");
     });
 
     test("should return 404 if sensor not found", async () => {
-      db.Session.findByPk.mockResolvedValue({
+      mockDB.Session.findByPk.mockResolvedValue({
         id: "session1",
         idSensor: sensors[0].id,
         dataValues: { id: "session1", idSensor: sensors[0].id, createdAt: new Date(), endedAt: new Date() },
       });
-      db.Sensor.findByPk.mockResolvedValue(null);
+      mockDB.Sensor.findByPk.mockResolvedValue(null);
       const res = await request.get(`${baseUri}/session1/export/csv`);
       expect(res.status).toBe(404);
       expect(res.body.codeError).toBe("sensor.not.found");
@@ -322,10 +291,10 @@ describe("Session Controller", () => {
         { value: 2, timestamp: new Date().toISOString() },
       ];
 
-      db.Session.findByPk.mockResolvedValue(session);
-      db.Sensor.findByPk.mockResolvedValue(sensors[0]);
+      mockDB.Session.findByPk.mockResolvedValue(session);
+      mockDB.Sensor.findByPk.mockResolvedValue(sensors[0]);
       const getSensorDataMock = jest.fn().mockResolvedValue(sensorData);
-      db.getSensorDataWithinTimeRange = getSensorDataMock;
+      mockDB.getSensorDataWithinTimeRange = getSensorDataMock;
 
       const res = await request.get(`${baseUri}/${session.id}/data`);
 
@@ -335,7 +304,7 @@ describe("Session Controller", () => {
     });
 
     test("should return 404 if session not found", async () => {
-      db.Session.findByPk.mockResolvedValue(null);
+      mockDB.Session.findByPk.mockResolvedValue(null);
 
       const res = await request.get(`${baseUri}/nonexistent-id/data`);
 
@@ -352,8 +321,8 @@ describe("Session Controller", () => {
         endedAt: new Date().toISOString(),
       };
 
-      db.Session.findByPk.mockResolvedValue(session);
-      db.Sensor.findByPk.mockResolvedValue(null);
+      mockDB.Session.findByPk.mockResolvedValue(session);
+      mockDB.Sensor.findByPk.mockResolvedValue(null);
 
       const res = await request.get(`${baseUri}/${session.id}/data`);
 

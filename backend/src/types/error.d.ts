@@ -163,8 +163,6 @@ type AuthErrors =
 
 type APIServerErrors = "server.error" | "resource.not.found";
 
-type MqttServerErrors = "mqtt.error";
-
 type APIErrors =
   | APISensorErrors
   | APISensorDataErrors
@@ -174,7 +172,6 @@ type APIErrors =
   | APIMeasurementErrors
   | APIUserErrors
   | AuthErrors
-  | APIUserSensorErrors
-  | MqttServerErrors;
+  | APIUserSensorErrors;
 
 export { APIErrors };
