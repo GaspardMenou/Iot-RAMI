@@ -31,10 +31,13 @@ ENV NODE_ENV=$NODE_ENV
 COPY --from=builder /app/node_modules ./node_modules
 # On copie le code compilé
 COPY --from=builder /app/dist ./dist
-# On copie le package.json (optionnel mais utile pour le debug)
+# On copie le dossier db (migrations, seeders, config) et le .sequelizerc pour les migrations
+COPY --from=builder /app/src/db ./src/db
+COPY --from=builder /app/.sequelizerc ./
+# On copie le package.json
 COPY package.json ./
 
 EXPOSE 3000
 
-# On lance directement node pour éviter les erreurs de scripts (exit 127)
+# On lance directement node
 CMD ["node", "dist/server.js"]
