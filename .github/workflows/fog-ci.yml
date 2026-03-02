@@ -5,10 +5,13 @@ on:
     branches: [ "main", "dev" ]
     paths:
       - "fog-service/**"
+      - ".github/workflows/fog-ci.yml"
   pull_request:
     branches: [ "main", "dev" ]
     paths:
       - "fog-service/**"
+      - ".github/workflows/fog-ci.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
