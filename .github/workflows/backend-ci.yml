@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Backend CI
 
 on:
   push:
@@ -10,6 +10,10 @@ on:
     paths:
       - "backend/**"
 
+permissions:
+  contents: read
+  packages: write
+
 defaults:
   run:
     working-directory: ./backend
@@ -19,18 +23,52 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Lint
         run: npm run format
 
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Run tests
+        env:
+          NODE_ENV: development
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: postgres
+          JWT_SECRET: test-secret
         run: npm run test
 
   docker-push:
@@ -48,7 +86,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set lowercase image name
-        run: echo "IMAGE_NAME=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        run: |
+          echo "IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-backend" | tr '[:upper:]' '[:lower:]' >> $GITHUB_ENV
       - name: Build and push to GHCR
         uses: docker/build-push-action@v5
         with:
@@ -60,3 +99,5 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            NODE_ENV=production

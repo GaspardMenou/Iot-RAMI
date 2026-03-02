@@ -10,6 +10,10 @@ on:
     paths:
       - "fog-service/**"
 
+permissions:
+  contents: read
+  packages: write
+
 defaults:
   run:
     working-directory: ./fog-service
@@ -19,8 +23,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+          cache-dependency-path: fog-service/package-lock.json
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: TypeScript build
         run: npm run build
 
@@ -39,7 +49,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set lowercase image name
-        run: echo "IMAGE_NAME=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')-fog" >> $GITHUB_ENV
+        run: |
+          echo "IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-fog" | tr '[:upper:]' '[:lower:]' >> $GITHUB_ENV
       - name: Build and push to GHCR
         uses: docker/build-push-action@v5
         with:
