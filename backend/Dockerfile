@@ -31,9 +31,10 @@ ENV NODE_ENV=$NODE_ENV
 COPY --from=builder /app/node_modules ./node_modules
 # On copie le code compilé
 COPY --from=builder /app/dist ./dist
-# On copie le package.json pour les scripts npm
+# On copie le package.json (optionnel mais utile pour le debug)
 COPY package.json ./
 
 EXPOSE 3000
 
-CMD ["npm", "run", "command", "start"]
+# On lance directement node pour éviter les erreurs de scripts (exit 127)
+CMD ["node", "dist/server.js"]

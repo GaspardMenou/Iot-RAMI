@@ -1,0 +1,102 @@
+version: "3.8"
+
+services:
+  # --- BASE DE DONNÉES (TimescaleDB) ---
+  node-db:
+    image: timescale/timescaledb:latest-pg13
+    container_name: iot-rami-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: umons-sensor-prod
+      POSTGRES_PASSWORD: umons-sensor-prod
+      POSTGRES_DB: umons-sensor-db-prod
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - rami-network
+
+  # --- MESSAGE BROKER (Kafka & Zookeeper) ---
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: iot-rami-zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - rami-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: iot-rami-kafka
+    restart: always
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "iot-rami-zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://iot-rami-kafka:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - rami-network
+
+  # --- BACKEND (Node.js) ---
+  node-backend:
+    image: ghcr.io/gaspardmenou/iot-rami-backend:latest
+    container_name: iot-rami-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NODE_PORT_IN: 3000
+      DB_HOST: node-db
+      DB_PORT: 5432
+      DB_USER: umons-sensor-prod
+      DB_PASSWORD: umons-sensor-prod
+      DB_NAME: umons-sensor-db-prod
+      DB_DIALECT: postgres
+      JWT_SECRET: votre_jwt_secret_super_secure
+      BCRYPT_SALT_ROUNDS: 10
+      KAFKA_BROKERS: "iot-rami-kafka:29092"
+      MQTT_URL: "mqtts://82093dec19714340be5279126c522a92.s1.eu.hivemq.cloud"
+      MQTT_PORT: 8883
+      MQTT_USERNAME: backend
+      MQTT_PASSWORD: "k%P6o{q7)hCHke~s%A7(#vv&"
+      KAFKAJS_NO_PARTITIONER_WARNING: 1
+      PM2_INSTANCES: 1
+    depends_on:
+      - node-db
+      - kafka
+    networks:
+      - rami-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # --- FRONTEND (Vue.js + Nginx) ---
+  frontend:
+    image: ghcr.io/gaspardmenou/iot-rami-frontend:latest
+    container_name: iot-rami-frontend
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      VITE_APP_BACK_URL: "http://localhost:3000/api/v1"
+      VITE_SOCKET_URL: "http://localhost:3000"
+    networks:
+      - rami-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+volumes:
+  db-data:
+
+networks:
+  rami-network:
+    driver: bridge
