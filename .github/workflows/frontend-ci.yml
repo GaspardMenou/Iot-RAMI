@@ -4,15 +4,15 @@ on:
   push:
     branches: [ "main", "dev" ]
     paths:
-      - "umons-sensor-frontend-1-feature-RAMI1-dev/**"
+      - "frontend/**"
   pull_request:
     branches: [ "main", "dev" ]
     paths:
-      - "umons-sensor-frontend-1-feature-RAMI1-dev/**"
+      - "frontend/**"
 
 defaults:
   run:
-    working-directory: ./umons-sensor-frontend-1-feature-RAMI1-dev
+    working-directory: ./frontend
 
 jobs:
   lint:
@@ -43,8 +43,8 @@ jobs:
       - name: Build and push to GHCR
         uses: docker/build-push-action@v5
         with:
-          context: ./umons-sensor-frontend-1-feature-RAMI1-dev
-          file: ./umons-sensor-frontend-1-feature-RAMI1-dev/Dockerfile
+          context: ./frontend
+          file: ./frontend/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
