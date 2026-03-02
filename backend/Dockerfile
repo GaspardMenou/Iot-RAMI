@@ -3,33 +3,36 @@ FROM node:lts-slim AS builder
 
 WORKDIR /app
 
-# We need all dependencies to build (including devDependencies for tsup)
+# Installation des outils de compilation nécessaires pour les modules natifs (bcrypt)
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock*.json ./
 RUN npm install
 
 COPY . .
-
-# Run build
 RUN npm run build
+
+# On retire les devDependencies pour ne garder que le nécessaire pour la prod
+RUN npm prune --omit=dev
 
 # Stage 2: Production
 FROM node:lts-slim
 
 WORKDIR /home/node/app
 
-# Only NODE_ENV is relevant for build/runtime optimization
 ARG NODE_ENV=production
 ENV NODE_ENV=$NODE_ENV
 
-# Install only production dependencies
-COPY package.json package-lock*.json ./
-RUN npm install --omit=dev
-
-# Copy build output from stage 1
+# On copie les node_modules déjà installés et nettoyés depuis le builder
+COPY --from=builder /app/node_modules ./node_modules
+# On copie le code compilé
 COPY --from=builder /app/dist ./dist
-
-# The rest of the environment variables (DB_*, KAFKA_*, MQTT_*) 
-# will be provided at runtime via docker-compose or Kubernetes secrets.
+# On copie le package.json pour les scripts npm
+COPY package.json ./
 
 EXPOSE 3000
 
