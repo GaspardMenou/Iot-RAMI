@@ -90,7 +90,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set lowercase image name
         run: |
-          echo "IMAGE_NAME=ghcr.io/${{ github.repository }}-backend" | tr '[:upper:]' '[:lower:]' >> $GITHUB_ENV
+          echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }}-backend | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - name: Build and push to GHCR
         uses: docker/build-push-action@v5
         with:
