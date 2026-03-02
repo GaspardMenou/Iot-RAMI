@@ -11,7 +11,6 @@ import {
 } from "@utils/exceptions";
 import { Role } from "#/user";
 import { decodeToken, getSensorsAvailable } from "@controllers/measurement";
-import MqttServer from "@service/mqttServer";
 
 const checkName = (name: string) => {
   if (!name) {
@@ -110,14 +109,6 @@ const createSensor = async (req: Request, res: Response) => {
         .status(500)
         .json(new ServerErrorException("Server error", "server.error"));
     }
-    // Register immediately in MQTT map and clear from discovered
-    try {
-      const mqttInstance = await MqttServer.getInstance();
-      mqttInstance.addSensorToSensorsMap(sensor.id, name, topic);
-      mqttInstance.removeDiscoveredTopic(topic);
-    } catch (_) {
-      // MQTT not critical for sensor creation response
-    }
     return res.status(201).json(sensor);
   } catch (error) {
     return res
@@ -148,8 +139,8 @@ const getSensorStatus = async (req: Request, res: Response) => {
 
 const getDiscoveredSensors = async (_: Request, res: Response) => {
   try {
-    const mqttInstance = await MqttServer.getInstance();
-    return res.status(200).json(mqttInstance.getDiscoveredTopics());
+    // La découverte de capteurs est maintenant déléguée au Fog Service
+    return res.status(200).json([]);
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }

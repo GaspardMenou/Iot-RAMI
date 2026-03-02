@@ -4,7 +4,6 @@ import {
   NotFoundException,
   ServerErrorException,
 } from "@utils/exceptions";
-import MqttServer from "@service/mqttServer";
 import {
   deleteSensorDataWithinTimeRange,
   getSensorDataWithinTimeRange,
@@ -75,12 +74,8 @@ const createSessionOnClientSide = async (req: Request, res: Response) => {
         .json(new NotFoundException("Sensor not found", "sensor.not.found"));
     }
 
-    const mqttServerInstance: MqttServer = await MqttServer.getInstance();
-    const topicForHearingFromSensor =
-      mqttServerInstance.getTopicForHearingTheSensorOnWebClientSide(
-        sensor.topic
-      );
-    await mqttServerInstance.sendStartSignal(sensor.topic);
+    const topicForHearingFromSensor = sensor.topic;
+
     const session = await Session.create({
       idSensor,
       createdAt: new Date(),
