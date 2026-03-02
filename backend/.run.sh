@@ -5,14 +5,6 @@ docker_build() {
   echo "Building docker image..."
     docker build --no-cache -f "$REPO_PATH/Dockerfile" \
         --build-arg NODE_ENV="$NODE_ENV" \
-        --build-arg PM2_PUBLIC_KEY="$PM2_PUBLIC_KEY" \
-        --build-arg PM2_SECRET_KEY="$PM2_SECRET_KEY" \
-        --build-arg DB_USER="$DB_USER" \
-        --build-arg DB_PASSWORD="$DB_PASSWORD" \
-        --build-arg DB_HOST="$DB_CONTAINER_NAME" \
-        --build-arg DB_NAME="$DB_NAME" \
-        --build-arg DB_DIALECT="$DB_DIALECT" \
-        --build-arg NODE_PORT_IN="$NODE_PORT_IN" \
         -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" .
 }
 
@@ -20,14 +12,6 @@ docker_build_tag() {
   echo "Building docker image..."
     docker build --no-cache -f "$REPO_PATH/Dockerfile" \
         --build-arg NODE_ENV="$NODE_ENV" \
-        --build-arg PM2_PUBLIC_KEY="$PM2_PUBLIC_KEY" \
-        --build-arg PM2_SECRET_KEY="$PM2_SECRET_KEY" \
-        --build-arg DB_USER="$DB_USER" \
-        --build-arg DB_PASSWORD="$DB_PASSWORD" \
-        --build-arg DB_HOST="$DB_CONTAINER_NAME" \
-        --build-arg DB_NAME="$DB_NAME" \
-        --build-arg DB_DIALECT="$DB_DIALECT" \
-        --build-arg NODE_PORT_IN="$NODE_PORT_IN" \
         -t "$CI_REGISTRY_IMAGE:$CI_TAG_NAME" .
 }
 
