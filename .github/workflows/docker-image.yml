@@ -2,13 +2,17 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
+    paths:
+      - "backend/**"
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
+    paths:
+      - "backend/**"
 
 defaults:
   run:
-    working-directory: ./umons-sensor-backend-1-feature-RAMI1-dev
+    working-directory: ./backend
 
 jobs:
   lint:
@@ -32,7 +36,7 @@ jobs:
   docker-push:
     needs: [lint, test]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
@@ -48,8 +52,8 @@ jobs:
       - name: Build and push to GHCR
         uses: docker/build-push-action@v5
         with:
-          context: ./umons-sensor-backend-1-feature-RAMI1-dev
-          file: ./umons-sensor-backend-1-feature-RAMI1-dev/Dockerfile
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ github.sha }}

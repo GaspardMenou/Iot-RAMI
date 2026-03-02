@@ -1,0 +1,168 @@
+# UMONS — Sensor Backend
+
+API REST Express/TypeScript pour la gestion des capteurs IoT du projet RAMI 1.0 (Université de Mons).
+
+---
+
+## Stack technique
+
+| Technologie | Rôle |
+|-------------|------|
+| Node.js + Express + TypeScript | Serveur HTTP REST |
+| TimescaleDB (PostgreSQL 13) | Stockage des données capteurs (hypertable) |
+| Sequelize | ORM + migrations |
+| Kafka (Confluent) | Pipeline de données temps réel |
+| MQTT (HiveMQ cloud) | Réception des données des capteurs |
+| Socket.io | WebSocket pour le frontend temps réel |
+| JWT + bcrypt | Authentification |
+| Jest | Tests unitaires |
+| Swagger | Documentation API |
+
+---
+
+## Prérequis
+
+- Node.js LTS (≥ 18)
+- Docker + Docker Compose
+- npm
+
+---
+
+## Installation
+
+```bash
+npm install
+```
+
+Créer un fichier `.env.development` à la racine du projet :
+
+```bash
+DB_CONTAINER_NAME=umons-sensor-db-dev
+DB_VERSION=13
+DB_PORT_OUT=5432
+DB_PORT_IN=5432
+DB_USER=umons-sensor-dev
+DB_PASSWORD=umons-sensor-dev
+DB_NAME=umons-sensor-db-dev
+
+NODE_ENV=development
+NODE_PORT=3000
+NODE_PORT_IN=3000
+NODE_PORT_OUT=3000
+NODE_CONTAINER_NAME=umons-sensor-dev
+
+JWT_SECRET=umons-sensor-dev
+JWT_EXPIRES_IN=1d
+BCRYPT_SALT_ROUNDS=10
+
+DB_DIALECT=postgres
+KAFKA_BROKERS=kafka:9092
+```
+
+---
+
+## Démarrage
+
+### 1. Lancer l'infrastructure Docker
+
+```bash
+npm run docker:build    # Build l'image (nécessite NODE_ENV défini)
+npm run docker:start    # Lance TimescaleDB, Kafka, Zookeeper, Mosquitto
+```
+
+Services Docker démarrés :
+- `node-db` — TimescaleDB sur le port 5432
+- `kafka` — Kafka sur le port 9092
+- `zookeeper` — Coordination Kafka sur le port 2181
+- `mosquitto` — Broker MQTT local sur les ports 1883 / 9001
+
+### 2. Initialiser la base de données (première fois)
+
+```bash
+npm run docker:init-db   # Migrations + seeders
+# ou séparément :
+npm run migrate
+npm run seed
+```
+
+### 3. Démarrer le serveur en développement
+
+```bash
+npm run dev   # Nodemon sur :3000
+```
+
+---
+
+## Commandes utiles
+
+```bash
+npm run dev              # Serveur de développement (nodemon)
+npm run test             # Tests Jest (--runInBand)
+npm run test:coverage    # Tests avec rapport de couverture
+npm run format           # ESLint --fix
+npm run docker:start     # docker compose up -d
+npm run docker:init-db   # Migrations + seeders
+```
+
+---
+
+## Architecture
+
+### Routes API (`/api/v1`)
+
+| Méthode | Route | Description |
+|---------|-------|-------------|
+| POST | `/auth/login` | Connexion utilisateur |
+| GET/POST | `/sensors` | Lister / créer un capteur |
+| GET | `/sensors/discovered` | Capteurs détectés automatiquement via MQTT |
+| GET | `/sensors/connexion/online/:name` | Statut en ligne d'un capteur |
+| GET | `/sessions` | Sessions de mesure |
+| GET | `/sessions/:id/export/csv` | Export CSV d'une session |
+| GET | `/measurements` | Types de mesures disponibles |
+
+Documentation complète : http://localhost:3000/api/v1/docs
+
+### Services
+
+- **`mqttServer.ts`** — Client MQTT singleton. Souscrit au wildcard `#`, gère les PINGs (auto-discover + statut), traite les messages multi-mesures et les pousse dans Kafka. Timeout 30s pour le statut `offline`.
+- **`kafkaService.ts`** — Producteur/consommateur Kafka. Stocke les données dans TimescaleDB via `createSensorData`.
+- **`socketService.ts`** — Socket.io attaché au serveur HTTP. Rooms par topic MQTT, diffuse les nouvelles données et le statut des capteurs au frontend.
+
+### Format des messages MQTT reçus
+
+```json
+{
+  "timestamp": 1234567890123456,
+  "measures": [
+    { "measureType": "temperature", "value": 22.5 },
+    { "measureType": "humidity",    "value": 58.3 }
+  ]
+}
+```
+
+PING du capteur (détection statut) :
+```json
+{ "cmd": "ping" }
+```
+
+---
+
+## Tests
+
+```bash
+npm run test             # Tous les tests
+npm run test:coverage    # Avec couverture (rapport dans /coverage)
+```
+
+Compte de test (seed) : `adriano@ig.umons.ac.be` / `adriano@ig.umons.ac.be`
+
+---
+
+## CI/CD
+
+Pipeline GitHub Actions (`.github/workflows/docker-image.yml`) :
+1. **lint** — ESLint
+2. **test** — Jest
+3. **docker-push** — Build + push vers `ghcr.io/thegasp16/iot-rami` (sur push vers `main` uniquement)
+
+Déploiement automatique via Watchtower sur la VM de production.
