@@ -2,12 +2,12 @@
 
 docker_build(){
   echo "Building docker image..."
-    docker build --no-cache -f $REPO_PATH/Dockerfile --build-arg VITE_APP_ENV="$VITE_APP_ENV" --build-arg VITE_APP_PORT_IN="$VITE_APP_PORT_IN" --build-arg VITE_APP_BACK_URL="$VITE_APP_BACK_URL" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" .
+    docker build --no-cache -f $REPO_PATH/Dockerfile -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" .
 }
 
 docker_build_tag(){
   echo "Building docker image..."
-    docker build --no-cache -f $REPO_PATH/Dockerfile --build-arg VITE_APP_ENV="$VITE_APP_ENV" --build-arg VITE_APP_BACK_URL="$VITE_APP_BACK_URL" -t "$CI_REGISTRY_IMAGE:$CI_TAG_NAME" .
+    docker build --no-cache -f $REPO_PATH/Dockerfile -t "$CI_REGISTRY_IMAGE:$CI_TAG_NAME" .
 }
 
 docker_tag() {

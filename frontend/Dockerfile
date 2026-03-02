@@ -1,30 +1,27 @@
 # build stage
 FROM node:lts-alpine as build-stage
 WORKDIR /app
-ARG VITE_APP_ENV=production
-ARG VITE_APP_PORT_IN=8080
-ARG VITE_APP_BACK_URL=http://localhost:3000
 
-ENV VITE_APP_ENV=$VITE_APP_ENV
-ENV VITE_APP_PORT_IN=$VITE_APP_PORT_IN
-ENV VITE_APP_BACK_URL=$VITE_APP_BACK_URL
+# On force les placeholders lors du build CI
+# Les fichiers JS contiendront littéralement ces chaînes de caractères
+ENV VITE_APP_BACK_URL=VITE_APP_BACK_URL_PLACEHOLDER
+ENV VITE_SOCKET_URL=VITE_SOCKET_URL_PLACEHOLDER
 
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN VITE_APP_ENV=$VITE_APP_ENV npm run build
-RUN echo $VITE_APP_BACK_URL > /app/dist/env.$VITE_APP_ENV
-
+RUN npm run build-only
 
 # production stage
 FROM nginx:stable-alpine as production-stage
 COPY --from=build-stage /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-ENV VITE_APP_ENV=$VITE_APP_ENV
-ENV VITE_APP_PORT_IN=$VITE_APP_PORT_IN
-ENV VITE_APP_BACK_URL=$VITE_APP_BACK_URL
+# On ajoute notre script d'entrée
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-EXPOSE $VITE_APP_PORT_IN
+EXPOSE 80
 
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
-
