@@ -127,8 +127,8 @@ const useSession = () => {
 	const socketClient = ref<any>(null)
 
 	// *************************** [ATTRIBUTE]  GRAPH SESSION (both realtime and non realtime)
-	const chartData = ref({
-		labels: [] as string[],
+	const chartData = ref<ChartData<"line", { x: Date; y: number }[]>>({
+		labels: [],
 		datasets: [],
 	})
 
@@ -213,6 +213,10 @@ const useSession = () => {
 	}
 
 	const createSessionOnServerSide = () => {
+		endSession()
+	}
+
+	const endSession = () => {
 		socketClient.value?.disconnect()
 		cleanAfterSession()
 	}
@@ -280,8 +284,8 @@ const useSession = () => {
 	]
 
 	const updateChart = (label: Date, value: number, measureType: string, maxpoint = 100) => {
-		const datasets = [...chartData.value.datasets]
-		const newLabels = [...chartData.value.labels, label.toISOString()]
+		const datasets = [...chartData.value.datasets] as ChartDataset<"line", { x: Date; y: number }[]>[]
+		const newLabels = [...(chartData.value.labels || []), label.toISOString()] as string[]
 
 		let datasetIndex = datasets.findIndex(d => d.label === measureType)
 		if (datasetIndex === -1) {
@@ -366,6 +370,7 @@ const useSession = () => {
 		handleSessionSelect,
 		registerOrRemoveEventHandlers,
 		exportSessionToCsv,
+		endSession,
 	}
 }
 export { useDistributionSessionBySensor, useSession }

@@ -52,9 +52,9 @@
 				})
 			},
 			async submitUpdateUserRequest(userSensor: UserSensorRequest, accessApi: string) {
-				const { error, httpStatus } = await useUserSensorOrMeasurementType().updateUserSensorRequest(userSensor.User.email, userSensor.sensorName, accessApi)
-				if (error && httpStatus && [401, 403].includes(httpStatus)) alert(error)
-				else if (error) console.error(error)
+				const result = await useUserSensorOrMeasurementType().updateUserSensorRequest(userSensor.User.email, userSensor.sensorName, accessApi)
+				if (result.httpStatus && [401, 403].includes(result.httpStatus) && result.error) alert(result.error)
+				else if (result.error) console.error(result.error)
 				this.usersSensor = useUserSensorOrMeasurementTypeStore().getUserSensorRequest()
 			},
 			beautifulDate(date: string) {

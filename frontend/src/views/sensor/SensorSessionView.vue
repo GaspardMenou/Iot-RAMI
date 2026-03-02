@@ -11,7 +11,7 @@
 			id: { type: String, required: true },
 		},
 		setup(props) {
-			const { idSensor, chartData, timeSinceLastValue, transmissionSpeed, checkAndJoinActiveSession } = useSession()
+			const { idSensor, chartData, timeSinceLastValue, transmissionSpeed, checkAndJoinActiveSession, endSession } = useSession()
 			const { fetchSensors, sensors } = useSensor(undefined)
 
 			const isSessionActive = ref(false)
