@@ -56,9 +56,9 @@ const char *MQTT_BROKER PROGMEM = "82093dec19714340be5279126c522a92.s1.eu.hivemq
 const char *MQTT_USERNAME PROGMEM = "sensorsOverHiveMQ";
 const char *MQTT_PASSWORD PROGMEM = "KUvhSswNgi..7w4";
 const int MQTT_PORT = 8883;
-const char *MQTT_TOPIC = "esp32-bme280-topic";
-const char *MQTT_TOPIC_TO_SPEAK_ON = "esp32-bme280-topic/sensor";
-const char *MQTT_TOPIC_TO_LISTEN_ON = "esp32-bme280-topic/server";
+const char *MQTT_TOPIC = "esp32-bmp280-topic";
+const char *MQTT_TOPIC_TO_SPEAK_ON = "esp32-bmp280-topic/sensor";
+const char *MQTT_TOPIC_TO_LISTEN_ON = "esp32-bmp280-topic/server";
 
 /****** Settings; PROGREM would be useless here *******/
 const unsigned int NUMBER_OF_VALUES_PER_SECOND = 100;

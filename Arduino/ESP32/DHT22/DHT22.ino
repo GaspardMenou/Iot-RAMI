@@ -1,21 +1,7 @@
 #include "SpecificConstants.hpp"
 #include "MQTTCommonOperations.hpp"
-#include "DHT.h"
-
-/**** esp32 sensor pin Settings *******/
-const int pin_lo_minus = 2;
-const int pin_lo_plus = 15;
-const int sdn = 18;
-const int analog_pin = 34;
-
-const float MIN_RANDOM_VALUE = 0.0;
-const float MAX_RANDOM_VALUE = 5.0;
-
-#define DHTPIN 17
-#define DHTTYPE DHT22
-
-DHT dht(DHTPIN, DHTTYPE);   
-
+#include "Sensor.hpp"
+  
 /**** Secure WiFi Connectivity Initialisation *****/
 WiFiClientSecure espClient;
 
@@ -57,26 +43,16 @@ void callback(char *topic, byte *payload, unsigned int length) {
 void setup() {
     // Set software serial baud to 115200;
     Serial.begin(115200);
-    pinMode(pin_lo_plus, INPUT); // Setup for leads off detection LO +
-    pinMode(pin_lo_minus, INPUT); // Setup for leads off detection LO -
-    pinMode(sdn ,OUTPUT);
-    pinMode(analog_pin, INPUT);
-    digitalWrite(sdn, HIGH);
-    dht.begin();
     setup_wifi(SSID, PASSWORD);
     setCACertForTLS(espClient, ROOT_CA);      // enable this line and the the "certificate" code for secure connection
     
     configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER); // For timestamp
-
+    setupSensor(); // initialize the sensor
     // Connecting to mqtt broker
     client.setServer(MQTT_BROKER, MQTT_PORT);
     client.setCallback(callback); // how to answer to mqtt messages
 }
 
-// Add this new helper function before the loop()
-float generateRandomValue() {
-    return MIN_RANDOM_VALUE + static_cast<float>(random(1000)) / 1000.0 * (MAX_RANDOM_VALUE - MIN_RANDOM_VALUE);
-}
 
 unsigned long previousPingMillis = 0;
 unsigned long previousStartMillis = 0;
@@ -108,18 +84,7 @@ void loop() {
     if (currentMillis - previousMillis >= 1000) {
         previousMillis = currentMillis;
         if (allow_to_publish) {
-            float h = dht.readHumidity();
-            float t = dht.readTemperature();
-            if (isnan(h) || isnan(t)) {
-                Serial.println("DHT read failed!");
-                return;
-            }
-            const char* types[] = {"humidity", "temperature"};
-            float values[] = {h, t};
-            Serial.print("Sending value: ");
-            Serial.println(h);
-            Serial.println(t);
-            publishMeasures(client, MQTT_TOPIC_TO_SPEAK_ON, types, values, 2, true);
+            readAndPublishMeasures(client, MQTT_TOPIC_TO_SPEAK_ON);
         }
     }
 }

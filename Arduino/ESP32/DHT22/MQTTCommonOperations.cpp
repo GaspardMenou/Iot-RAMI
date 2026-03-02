@@ -68,6 +68,7 @@ void reconnect(PubSubClient& client, const char* mqtt_username, const char* mqtt
         Serial.print("Attempting MQTT connection...");
         // sensor id (you can change it to whatever you like, you may also add a parameter TODO)
         String clientId = "RAM1-Sensor-";
+        clientId += WiFi.macAddress();
         // Attempt to connect
         if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
             Serial.println("connected");
