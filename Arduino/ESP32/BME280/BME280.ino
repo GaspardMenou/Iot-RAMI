@@ -3,7 +3,7 @@
 #include "Sensor.hpp"
   
 /**** Secure WiFi Connectivity Initialisation *****/
-WiFiClientSecure espClient;
+WiFiClient espClient;
 
 /**** MQTT Client Initialisation Using WiFi Connection *****/
 PubSubClient client(espClient);
@@ -44,7 +44,7 @@ void setup() {
     // Set software serial baud to 115200;
     Serial.begin(115200);
     setup_wifi(SSID, PASSWORD);
-    setCACertForTLS(espClient, ROOT_CA);      // enable this line and the the "certificate" code for secure connection
+    //setCACertForTLS(espClient, ROOT_CA);      // enable this line and the the "certificate" code for secure connection
     
     configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER); // For timestamp
     setupSensor(); // initialize the sensor

@@ -36,7 +36,7 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: "iot-rami-zookeeper:2181"
       # IMPORTANT : On remplace localhost par l'IP réelle du serveur pour le listener externe
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://iot-rami-kafka:29092,PLAINTEXT_HOST://<IP_DU_SERVEUR_RAMI>:9092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://iot-rami-kafka:29092,PLAINTEXT_HOST://10.0.0.152:9092"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
       KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -63,7 +63,7 @@ services:
       JWT_SECRET: votre_jwt_secret_super_secure
       BCRYPT_SALT_ROUNDS: 10
       KAFKA_BROKERS: "iot-rami-kafka:29092"
-      FRONTEND_URL: "http://<IP_DU_SERVEUR_RAMI>:8080"
+      FRONTEND_URL: "http://10.0.0.152:8080"
     depends_on:
       - node-db
       - kafka
@@ -77,8 +77,8 @@ services:
     ports:
       - "8080:80"
     environment:
-      VITE_APP_BACK_URL: "http://<IP_DU_SERVEUR_RAMI>:3000/api/v1"
-      VITE_SOCKET_URL: "http://<IP_DU_SERVEUR_RAMI>:3000"
+      VITE_APP_BACK_URL: "http://10.0.0.152:3000/api/v1"
+      VITE_SOCKET_URL: "http://10.0.0.152:3000"
     networks:
       - rami-network
 
