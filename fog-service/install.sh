@@ -13,6 +13,7 @@ fi
 
 # 2. Create required directories
 mkdir -p mosquitto/config mosquitto/data mosquitto/log
+chmod -R 777 mosquitto/
 
 # 3. Download compose and mosquitto config from the repo
 echo "📥 Downloading configuration files..."
@@ -30,7 +31,7 @@ echo "🔐 Generating Mosquitto password file..."
 docker run --rm \
   -v "$(pwd)/mosquitto/config:/mosquitto/config" \
   eclipse-mosquitto:latest \
-  mosquitto_passwd -b /mosquitto/config/passwd "$MQTT_USERNAME" "$MQTT_PASSWORD"
+  mosquitto_passwd -c -b /mosquitto/config/passwd "$MQTT_USERNAME" "$MQTT_PASSWORD"
 
 # 6. Write .env file
 echo "MQTT_USERNAME=$MQTT_USERNAME" > .env
