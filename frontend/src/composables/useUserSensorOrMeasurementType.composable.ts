@@ -3,210 +3,164 @@ import { useAxios } from "@/composables/useAxios.composable"
 import { useUserSensorOrMeasurementTypeStore } from "@/stores/userSensorOrMeasurementType"
 import type { UserMeasurementTypeRequest, UserMeasurementTypeUpdateResponse } from "#/userMeasurementType"
 
+export interface ComposableResponse<T> {
+	data: T | null
+	error: string | null
+	httpStatus: number | null
+}
+
 const useUserSensorOrMeasurementType = () => {
 	const { axios } = useAxios()
-	const handleErrors = (e: any) => {
-		const httpStatus: number = e.response?.status
+	
+	const handleErrors = (e: any): ComposableResponse<any> => {
+		const httpStatus: number = e.response?.status || 500
 		const { message, status } = e.response?.data ?? {}
 		const messageClean = "Error " + (status ?? httpStatus) + " - " + message
 		return { data: null, error: messageClean, httpStatus }
 	}
-	const getAllUserSensorAccess = async () => {
+
+	const getAllUserSensorAccess = async (): Promise<ComposableResponse<UserSensorAccess[]>> => {
 		const token = localStorage.getItem("token")
-		if (token === null) return { data: null, error: { message: "No token" } }
+		if (token === null) return { data: null, error: "No token", httpStatus: 401 }
 
 		try {
-			const { data } = (await axios.get<UserSensorAccess[]>("/users/sensors/access?number=1000", {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			})) as { data: UserSensorAccess[] }
-			return { data, error: null }
+			const { data } = await axios.get<UserSensorAccess[]>("/users/sensors/access?number=1000", {
+				headers: { Authorization: `Bearer ${token}` },
+			})
+			return { data, error: null, httpStatus: 200 }
 		} catch (e) {
 			return handleErrors(e)
 		}
 	}
 
-	const getAllUserSensorRequest = async () => {
+	const getAllUserSensorRequest = async (): Promise<ComposableResponse<UserSensorRequest[]>> => {
 		const token = localStorage.getItem("token")
-		if (token === null) return { data: null, error: { message: "No token" } }
+		if (token === null) return { data: null, error: "No token", httpStatus: 401 }
 
 		try {
-			const { data } = (await axios.get<UserSensorRequest[]>("/users/sensors/creation?number=1000", {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			})) as { data: UserSensorRequest[] }
-			return { data, error: null }
+			const { data } = await axios.get<UserSensorRequest[]>("/users/sensors/creation?number=1000", {
+				headers: { Authorization: `Bearer ${token}` },
+			})
+			return { data, error: null, httpStatus: 200 }
 		} catch (e) {
 			return handleErrors(e)
 		}
 	}
 
-	const updateUserSensorAccess = async (user: string, sensor: string, banned: string) => {
+	const updateUserSensorAccess = async (user: string, sensor: string, banned: string): Promise<ComposableResponse<string>> => {
 		const token = localStorage.getItem("token")
-		if (token === null) return { data: null, error: { message: "No token" } }
+		if (token === null) return { data: null, error: "No token", httpStatus: 401 }
 
 		try {
 			const { data } = await axios.post<UserSensorAccessUpdateResponse>(
 				"/users/sensors/access",
-				{
-					userName: user,
-					sensorName: sensor,
-					banned: banned,
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
+				{ userName: user, sensorName: sensor, banned: banned },
+				{ headers: { Authorization: `Bearer ${token}` } }
 			)
-
 			await useUserSensorOrMeasurementTypeStore().refresh()
-			return { data: data.message, error: null }
+			return { data: data.message, error: null, httpStatus: 200 }
 		} catch (e) {
 			return handleErrors(e)
 		}
 	}
 
-	const updateUserSensorRequest = async (user: string, sensor: string, banned: string) => {
+	const updateUserSensorRequest = async (user: string, sensor: string, banned: string): Promise<ComposableResponse<string>> => {
 		const token = localStorage.getItem("token")
-		if (token === null) return { data: null, error: { message: "No token" } }
+		if (token === null) return { data: null, error: "No token", httpStatus: 401 }
 
 		try {
 			const { data } = await axios.post<UserSensorRequestUpdateResponse>(
 				"/users/sensors/creation",
-				{
-					userName: user,
-					sensorName: sensor,
-					banned: banned,
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
+				{ userName: user, sensorName: sensor, banned: banned },
+				{ headers: { Authorization: `Bearer ${token}` } }
 			)
-
 			await useUserSensorOrMeasurementTypeStore().refresh()
-			return { data: data.message, error: null }
+			return { data: data.message, error: null, httpStatus: 200 }
 		} catch (e) {
 			return handleErrors(e)
 		}
 	}
 
-	const createUserSensorAccess = async (user: string, sensor: string) => {
+	const createUserSensorAccess = async (user: string, sensor: string): Promise<ComposableResponse<string>> => {
 		const token = localStorage.getItem("token")
-		if (token === null) return { data: null, error: { message: "No token" } }
+		if (token === null) return { data: null, error: "No token", httpStatus: 401 }
 
 		try {
 			const { data } = await axios.post<UserSensorAccessUpdateResponse>(
 				"/users/sensors/access/ask",
-				{
-					user: user,
-					sensor: sensor,
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
+				{ user: user, sensor: sensor },
+				{ headers: { Authorization: `Bearer ${token}` } }
 			)
-			return { data: data.message, error: null }
+			return { data: data.message, error: null, httpStatus: 200 }
 		} catch (e) {
 			return handleErrors(e)
 		}
 	}
 
-	const createUserSensorRequest = async (user: string, sensor: string) => {
+	const createUserSensorRequest = async (user: string, sensor: string): Promise<ComposableResponse<string>> => {
 		const token = localStorage.getItem("token")
-		if (token === null) return { data: null, error: { message: "No token" } }
+		if (token === null) return { data: null, error: "No token", httpStatus: 401 }
 
 		try {
 			const { data } = await axios.post<UserSensorRequestUpdateResponse>(
 				"/users/sensors/creation/ask",
-				{
-					user: user,
-					sensor: sensor,
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
+				{ user: user, sensor: sensor },
+				{ headers: { Authorization: `Bearer ${token}` } }
 			)
-			return { data: data.message, error: null }
+			return { data: data.message, error: null, httpStatus: 200 }
 		} catch (e) {
 			return handleErrors(e)
 		}
 	}
 
-	const getAllUserMeasurementTypeRequest = async () => {
+	const getAllUserMeasurementTypeRequest = async (): Promise<ComposableResponse<UserMeasurementTypeRequest[]>> => {
 		const token = localStorage.getItem("token")
-		if (token === null) return { data: null, error: { message: "No token" } }
+		if (token === null) return { data: null, error: "No token", httpStatus: 401 }
 
 		try {
-			const { data } = (await axios.get<UserMeasurementTypeRequest[]>("/users/measurementTypes/creation?number=1000", {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			})) as { data: UserMeasurementTypeRequest[] }
-			return { data, error: null }
+			const { data } = await axios.get<UserMeasurementTypeRequest[]>("/users/measurementTypes/creation?number=1000", {
+				headers: { Authorization: `Bearer ${token}` },
+			})
+			return { data, error: null, httpStatus: 200 }
 		} catch (e) {
 			return handleErrors(e)
 		}
 	}
 
-	const updateUserMeasurementTypeRequest = async (user: string, type: string, banned: string) => {
+	const updateUserMeasurementTypeRequest = async (user: string, type: string, banned: string): Promise<ComposableResponse<string>> => {
 		const token = localStorage.getItem("token")
-		if (token === null) return { data: null, error: { message: "No token" } }
+		if (token === null) return { data: null, error: "No token", httpStatus: 401 }
 
 		try {
 			const { data } = await axios.post<UserMeasurementTypeUpdateResponse>(
 				"/users/measurementTypes/creation",
-				{
-					userName: user,
-					type: type,
-					banned: banned,
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
+				{ userName: user, type: type, banned: banned },
+				{ headers: { Authorization: `Bearer ${token}` } }
 			)
-
 			await useUserSensorOrMeasurementTypeStore().refresh()
-			return { data: data.message, error: null }
+			return { data: data.message, error: null, httpStatus: 200 }
 		} catch (e) {
 			return handleErrors(e)
 		}
 	}
 
-	const createUserMeasurementTypeRequest = async (user: string, type: string) => {
+	const createUserMeasurementTypeRequest = async (user: string, type: string): Promise<ComposableResponse<string>> => {
 		const token = localStorage.getItem("token")
-		if (token === null) return { data: null, error: { message: "No token" } }
+		if (token === null) return { data: null, error: "No token", httpStatus: 401 }
 
 		try {
 			const { data } = await axios.post<UserMeasurementTypeUpdateResponse>(
 				"/users/measurementTypes/creation/ask",
-				{
-					user: user,
-					type: type,
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
+				{ user: user, type: type },
+				{ headers: { Authorization: `Bearer ${token}` } }
 			)
-			return { data: data.message, error: null }
+			return { data: data.message, error: null, httpStatus: 200 }
 		} catch (e) {
 			return handleErrors(e)
 		}
 	}
 
-	const submitForm = async (user: string, sensor: string, submitFunction: string) => {
+	const submitForm = async (user: string, sensor: string, submitFunction: string): Promise<ComposableResponse<string>> => {
 		switch (submitFunction) {
 			case "sensor.access":
 				return await createUserSensorAccess(user, sensor)
@@ -215,9 +169,10 @@ const useUserSensorOrMeasurementType = () => {
 			case "measurementType.request":
 				return await createUserMeasurementTypeRequest(user, sensor)
 			default:
-				return { data: null, error: { message: "No function" } }
+				return { data: null, error: "No function", httpStatus: 400 }
 		}
 	}
+
 	return {
 		getAllUserSensorAccess,
 		updateUserSensorAccess,

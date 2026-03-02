@@ -3,7 +3,7 @@ import { useAxios } from "@/composables/useAxios.composable"
 import { io } from "socket.io-client"
 import type { Session } from "#/session"
 import { UserFields, EventTypes, handleEvent } from "@/composables/useUser.composable"
-import type { ChartData } from "chart.js"
+import type { ChartData, ChartDataset } from "chart.js"
 
 enum SessionControllerPaths {
 	START_SESSION_ON_CLIENT_SIDE = "sessions/new",

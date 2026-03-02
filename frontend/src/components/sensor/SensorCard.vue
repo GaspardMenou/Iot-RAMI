@@ -27,7 +27,6 @@
 	import { useSensor, SensorState } from "@/composables/useSensor.composable"
 	import { useRouter } from "vue-router"
 	import { io } from "socket.io-client"
-	import { on } from "events";
 
 	export default defineComponent({
 		name: "SensorCard",
