@@ -30,7 +30,7 @@ Dans les **options avancées** (icône engrenage) :
 Se connecter en SSH sur le Pi, puis lancer le script d'installation :
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/GaspardMenou/Iot-RAMI/main/fog-service/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/GaspardMenou/Iot-RAMI/main/fog-service/install.sh | sudo bash
 ```
 
 Le script va :
