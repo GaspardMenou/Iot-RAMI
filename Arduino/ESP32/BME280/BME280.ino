@@ -31,10 +31,10 @@ void callback(char *topic, byte *payload, unsigned int length) {
     }
     if (doc.containsKey(MSG_CMD)) {
         String received_command = doc[MSG_CMD];
-        interactWithReceivedCommand(client, received_command, MQTT_TOPIC_TO_SPEAK_ON, allow_to_publish);
+        interactWithReceivedCommand(client, received_command, saved_topic_sensor, allow_to_publish);
     } else if (doc.containsKey(MSG_ANS)) {
         String received_answer = doc[MSG_ANS];
-        interactWithAnswerCommand(client, received_answer, MQTT_TOPIC_TO_SPEAK_ON, allow_to_publish);
+        interactWithAnswerCommand(client, received_answer, saved_topic_sensor, allow_to_publish);
     }
 }
 
@@ -43,13 +43,13 @@ void callback(char *topic, byte *payload, unsigned int length) {
 void setup() {
     // Set software serial baud to 115200;
     Serial.begin(115200);
-    setup_wifi(SSID, PASSWORD);
+    setup_wifi();
     //setCACertForTLS(espClient, ROOT_CA);      // enable this line and the the "certificate" code for secure connection
     
     configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER); // For timestamp
     setupSensor(); // initialize the sensor
     // Connecting to mqtt broker
-    client.setServer(MQTT_BROKER, MQTT_PORT);
+    client.setServer(saved_broker, MQTT_PORT);
     client.setCallback(callback); // how to answer to mqtt messages
 }
 
@@ -63,9 +63,9 @@ const long START_INTERVAL = 30000;
 
 void loop() {
     if (!client.connected()) {
-        reconnect(client, MQTT_USERNAME, MQTT_PASSWORD, MQTT_TOPIC_TO_LISTEN_ON);
-        sendPing(client, MQTT_TOPIC_TO_SPEAK_ON);
-        sendStart(client, MQTT_TOPIC_TO_SPEAK_ON);
+        reconnect(client, saved_username, saved_password, saved_topic_server);
+        sendPing(client, saved_topic_sensor);
+        sendStart(client, saved_topic_sensor);
         previousPingMillis = millis();
         previousStartMillis = millis();
     }
@@ -73,18 +73,18 @@ void loop() {
     unsigned long currentMillis = millis();
     if (!allow_to_publish && currentMillis - previousStartMillis >= START_INTERVAL){
         previousStartMillis = millis();
-        sendStart(client, MQTT_TOPIC_TO_SPEAK_ON);
+        sendStart(client, saved_topic_sensor);
     }
 
     if (currentMillis - previousPingMillis >= PING_INTERVAL) {
         previousPingMillis = currentMillis;
-        sendPing(client, MQTT_TOPIC_TO_SPEAK_ON);
+        sendPing(client, saved_topic_sensor);
     }
 
     if (currentMillis - previousMillis >= 1000) {
         previousMillis = currentMillis;
         if (allow_to_publish) {
-            readAndPublishMeasures(client, MQTT_TOPIC_TO_SPEAK_ON);
+            readAndPublishMeasures(client, saved_topic_sensor);
         }
     }
 }

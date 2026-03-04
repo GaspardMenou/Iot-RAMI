@@ -12,9 +12,6 @@ void setupSensor() {
 
 }
 void readAndPublishMeasures(PubSubClient& client, const char* topic) {
-    Serial.print("Temperature = ");
-    Serial.print(bmp.readTemperature());
-    Serial.println(" *C");
     float temperature = bmp.readTemperature();
     float pressure = bmp.readPressure()/100;
     if (isnan(pressure) || isnan(temperature)) {

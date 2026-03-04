@@ -1,18 +1,19 @@
 #ifndef MQTT_COMMON_OPERATIONS
 #define MQTT_COMMON_OPERATIONS
 
-#include <WiFi.h>
+
 #include <NTPClient.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <WiFiClientSecure.h>
+#include <WiFiClient.h>
 
 /****** 
  * Usage of PROGMEM
  * -----------------
  * PROGMEM is used to store variables in flash memory (program memory) instead of SRAM. 
  * This is particularly useful on microcontrollers with limited SRAM.
- * To decide whether a string should be stored in PROGMEM, we consider its length and its access frequency.
+ * To decide whether a string should be stored in PROGMEM, we consider its lengt h and its access frequency.
  * - If the string is long and accessed rarely, it should be stored in PROGMEM.
  * - Else, it should remain in SRAM for performance reasons.
  ******/
@@ -46,9 +47,19 @@ extern const char* NTP_SERVER PROGMEM;
 extern const long GMT_OFFSET_SEC;
 extern const int DAYLIGHT_OFFSET_SEC;
 
+
+//
+extern char saved_broker[40];
+extern char saved_username[40];
+extern char saved_password[40];
+extern char saved_name[40];
+extern char saved_topic[50];
+extern char saved_topic_sensor[60];
+extern char saved_topic_server[60];
+
 /************************************ Function prototypes *************************************/
 // Wifi and security
-void setup_wifi(const char* ssid, const char* password);
+void setup_wifi();
 void setCACertForTLS(WiFiClientSecure& client, const char* certificate);
 // Mqtt (connexion, command reception and message publication)
 void reconnect(PubSubClient& client, const char* mqtt_username, const char* mqtt_password, const char* topic);

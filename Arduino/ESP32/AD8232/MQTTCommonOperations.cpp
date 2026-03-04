@@ -1,4 +1,6 @@
+#include <Preferences.h>
 #include "MQTTCommonOperations.hpp"
+#include <WiFiManager.h>
 
 /****** 
  * Usage of PROGMEM
@@ -39,23 +41,65 @@ const char* NTP_SERVER PROGMEM = "pool.ntp.org";
 const long GMT_OFFSET_SEC = 0;
 const int DAYLIGHT_OFFSET_SEC = 3600;
 
+WiFiManager wm;
+WiFiManagerParameter broker("broker", "MQTT Broker IP", "192.168.10.4", 40);
+WiFiManagerParameter username("mqtt_user", "MQTT User", "fog1", 40);
+WiFiManagerParameter password("mqtt_password", "MQTT Password", "fog1password", 40);
+WiFiManagerParameter sensor_name("sensor_name", "MQTT Sensor Name", "esp32-bmp280", 40);
+Preferences preference;
+bool shouldSaveConfig = false;
+char saved_broker[40];
+char saved_username[40];
+char saved_password[40];
+char saved_name[40];
+char saved_topic[50];
+char saved_topic_sensor[60];
+char saved_topic_server[60];
 
 /************************************ Function Implementations *************************************/
-void setup_wifi(const char* ssid, const char* password) {
-    delay(10);
-    Serial.print("\nConnecting to ");
-    Serial.println(ssid);
+void setup_wifi() {
+    wm.setSaveConfigCallback([]() {
+          shouldSaveConfig = true;
+    });
+    wm.addParameter(&broker);
+    wm.addParameter(&username);
+    wm.addParameter(&password);
+    wm.addParameter(&sensor_name);
 
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
 
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+    preference.begin("fog",true);
+    preference.getString("broker", saved_broker,40);
+    preference.getString("username", saved_username,40);
+    preference.getString("password", saved_password,40);
+    preference.getString("sensor_name", saved_name,40);
+    preference.end();
+
+    Serial.println(saved_broker);
+    Serial.println(saved_username);
+    Serial.println(saved_password);
+    Serial.println(saved_name);
+    snprintf(saved_topic, 60, "%s-topic", saved_name);
+    snprintf(saved_topic_server, 60, "%s-topic/sensor", saved_name);
+    snprintf(saved_topic_sensor, 60, "%s-topic/sensor", saved_name);
+
+    if(wm.autoConnect()){
+        if(shouldSaveConfig){
+            preference.begin("fog",false);
+            preference.putString("broker", broker.getValue());
+            preference.putString("username",username.getValue());
+            preference.putString("password",password.getValue());
+            preference.putString("sensor_name",sensor_name.getValue());
+            preference.end();
+            ESP.restart();
+        }
+        Serial.println("Connecté");
+        Serial.println(WiFi.localIP());
+        
+    }else {
+        Serial.println("Il y a un pb chef");
     }
-    randomSeed(micros());
-    Serial.println("\nWiFi connected\nIP address: ");
-    Serial.println(WiFi.localIP());
+    
+    
 }
 
 void setCACertForTLS(WiFiClientSecure& client, const char* certificate) {

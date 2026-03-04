@@ -15,8 +15,8 @@
 
 /****** WiFi Connection Details and root certificate *******/
 // PROGMEM beacause these settings are used only once at the beginning
-const char *SSID PROGMEM = "NETGEAR36";
-const char *PASSWORD PROGMEM = "giftedcar426";
+//const char *SSID PROGMEM = "NETGEAR36";
+//const char *PASSWORD PROGMEM = "giftedcar426";
 const char *ROOT_CA PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
@@ -52,9 +52,9 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 )EOF";
 
 /****** MQTT Broker Settings; PROGREM because same as wifi, except for the topics constants which we access very often *******/
-const char *MQTT_BROKER PROGMEM = "mosquitto";
-const char *MQTT_USERNAME PROGMEM = "fog-service";
-const char *MQTT_PASSWORD PROGMEM = "passwordsecure";
+const char *MQTT_BROKER PROGMEM = "10.0.0.114";
+const char *MQTT_USERNAME PROGMEM = "fog1";
+const char *MQTT_PASSWORD PROGMEM = "fog1password";
 const int MQTT_PORT = 1883;
 const char *MQTT_TOPIC = "esp32-bmp280-topic";
 const char *MQTT_TOPIC_TO_SPEAK_ON = "esp32-bmp280-topic/sensor";

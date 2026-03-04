@@ -5,7 +5,7 @@
 #include <PubSubClient.h>
 
 #define DHTTYPE DHT22
-#define DHTPIN 17
+#define DHTPIN 27
 
 void readAndPublishMeasures(PubSubClient& client, const char* topic);
 void setupSensor();

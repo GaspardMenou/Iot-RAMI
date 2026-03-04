@@ -20,8 +20,8 @@
 
 /****** WiFi Connection Details and root certificate *******/
 // PROGMEM beacause these settings are used only once at the beginning
-extern const char* SSID PROGMEM;
-extern const char* PASSWORD PROGMEM;
+//extern const char* SSID PROGMEM;
+//extern const char* PASSWORD PROGMEM;
 extern const char *ROOT_CA PROGMEM;// may be common
 
 /****** MQTT Broker Settings; PROGREM because same as wifi, except for the topics constants which we access very often *******/
