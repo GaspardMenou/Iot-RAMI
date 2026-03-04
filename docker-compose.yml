@@ -8,9 +8,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: umons-sensor-prod
-      POSTGRES_PASSWORD: umons-sensor-prod
-      POSTGRES_DB: umons-sensor-db-prod
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - db-data:/var/lib/postgresql/data
     networks:
@@ -35,8 +35,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: "iot-rami-zookeeper:2181"
-      # IMPORTANT : On remplace localhost par l'IP réelle du serveur pour le listener externe
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://iot-rami-kafka:29092,PLAINTEXT_HOST://10.0.0.152:9092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://iot-rami-kafka:29092,PLAINTEXT_HOST://${SERVER_HOST}:9092"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
       KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -56,14 +55,14 @@ services:
       NODE_PORT_IN: 3000
       DB_HOST: node-db
       DB_PORT: 5432
-      DB_USER: umons-sensor-prod
-      DB_PASSWORD: umons-sensor-prod
-      DB_NAME: umons-sensor-db-prod
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
       DB_DIALECT: postgres
-      JWT_SECRET: votre_jwt_secret_super_secure
+      JWT_SECRET: ${JWT_SECRET}
       BCRYPT_SALT_ROUNDS: 10
       KAFKA_BROKERS: "iot-rami-kafka:29092"
-      FRONTEND_URL: "http://10.0.0.152:8080"
+      FRONTEND_URL: "http://${SERVER_HOST}:8080"
     depends_on:
       - node-db
       - kafka
@@ -77,10 +76,24 @@ services:
     ports:
       - "8080:80"
     environment:
-      VITE_APP_BACK_URL: "http://10.0.0.152:3000/api/v1"
-      VITE_SOCKET_URL: "http://10.0.0.152:3000"
+      VITE_APP_BACK_URL: "http://${SERVER_HOST}:3000/api/v1"
+      VITE_SOCKET_URL: "http://${SERVER_HOST}:3000"
     networks:
       - rami-network
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: iot-rami-watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DOCKER_API_VERSION: "1.44"
+      REPO_USER: ${GHCR_USER}
+      REPO_PASS: ${GHCR_TOKEN}
+      WATCHTOWER_POLL_INTERVAL: 300
+      WATCHTOWER_CLEANUP: "true"
+    command: iot-rami-backend iot-rami-frontend
 
 volumes:
   db-data:
