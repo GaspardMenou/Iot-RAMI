@@ -43,8 +43,6 @@ echo "KAFKA_BROKERS=$KAFKA_BROKERS" >> .env
 echo "🚀 Starting services..."
 docker compose up -d
 
-sudo hostnamectl hostname rami-fog
-
 sudo apt update 
 sudo apt upgrade -y
 
