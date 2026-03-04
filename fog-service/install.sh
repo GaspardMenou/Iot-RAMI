@@ -43,4 +43,8 @@ echo "KAFKA_BROKERS=$KAFKA_BROKERS" >> .env
 echo "🚀 Starting services..."
 docker compose up -d
 
-echo "✅ Installation complete!"
+sudo hostnamectl set-hostname rami-fog
+
+echo "✅ Installation complete! et rédémarrage du système."
+
+sudo reboot

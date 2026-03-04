@@ -19,12 +19,6 @@ services:
       - ./mosquitto/log:/mosquitto/log
     ports:
       - "1883:1883"
-  avahi:
-    image: flungo/avahi:latest
-    restart: always
-    network_mode: host
-    environment:
-      - SERVER_HOST_NAME=rami-fog
   watchtower:
     image: containrrr/watchtower
     restart: always
