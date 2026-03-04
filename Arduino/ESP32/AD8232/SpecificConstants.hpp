@@ -25,13 +25,8 @@
 extern const char *ROOT_CA PROGMEM;// may be common
 
 /****** MQTT Broker Settings; PROGREM because same as wifi, except for the topics constants which we access very often *******/
-extern const char* MQTT_BROKER PROGMEM;    // may be common
-extern const char* MQTT_USERNAME PROGMEM;  // may be common
-extern const char* MQTT_PASSWORD PROGMEM;  // may be common
 extern const int MQTT_PORT;                // may be common
-extern const char* MQTT_TOPIC;
-extern const char* MQTT_TOPIC_TO_SPEAK_ON;
-extern const char* MQTT_TOPIC_TO_LISTEN_ON;
+
 
 /****** Settings; PROGREM would be useless here *******/
 extern const unsigned int NUMBER_OF_VALUES_PER_SECOND;

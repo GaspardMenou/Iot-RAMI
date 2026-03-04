@@ -52,13 +52,8 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 )EOF";
 
 /****** MQTT Broker Settings; PROGREM because same as wifi, except for the topics constants which we access very often *******/
-const char *MQTT_BROKER PROGMEM = "10.0.0.114";
-const char *MQTT_USERNAME PROGMEM = "fog1";
-const char *MQTT_PASSWORD PROGMEM = "fog1password";
 const int MQTT_PORT = 1883;
-const char *MQTT_TOPIC = "esp32-bmp280-topic";
-const char *MQTT_TOPIC_TO_SPEAK_ON = "esp32-bmp280-topic/sensor";
-const char *MQTT_TOPIC_TO_LISTEN_ON = "esp32-bmp280-topic/server";
+
 
 /****** Settings; PROGREM would be useless here *******/
 const unsigned int NUMBER_OF_VALUES_PER_SECOND = 100;
