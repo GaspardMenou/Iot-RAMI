@@ -69,7 +69,6 @@
 		box-shadow: 0 2px 8px var(--color-shadow);
 		padding: 1.5rem;
 		width: 100%;
-		height: 600px;
 		margin: auto;
 	}
 
@@ -99,7 +98,7 @@
 		flex-direction: row;
 		gap: 1rem;
 		width: 100%;
-		flex: 1;
+		height: 520px;
 		overflow: hidden;
 	}
 
