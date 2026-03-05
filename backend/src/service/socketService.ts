@@ -111,9 +111,14 @@ class SocketService {
         );
         return;
       }
-      const delay = Math.min(Math.pow(2, this.kafkaRetryCount) * SocketService.KAFKA_RETRY_BASE_MS, SocketService.KAFKA_MAX_RETRY_DELAY_MS);
+      const delay = Math.min(
+        Math.pow(2, this.kafkaRetryCount) * SocketService.KAFKA_RETRY_BASE_MS,
+        SocketService.KAFKA_MAX_RETRY_DELAY_MS
+      );
       console.error(
-        `❌ [Kafka] Erreur (tentative ${this.kafkaRetryCount}/${SocketService.KAFKA_MAX_RETRIES}), retry dans ${delay / 1000}s:`,
+        `❌ [Kafka] Erreur (tentative ${this.kafkaRetryCount}/${
+          SocketService.KAFKA_MAX_RETRIES
+        }), retry dans ${delay / 1000}s:`,
         error
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
@@ -149,9 +154,13 @@ class SocketService {
     this.sessionCreationInProgress.add(data.sensorTopic);
     try {
       const baseTopic = data.sensorTopic.replace("/sensor", "");
-      const sensorInstance = await SensorModel.findOne({ where: { topic: baseTopic } });
+      const sensorInstance = await SensorModel.findOne({
+        where: { topic: baseTopic },
+      });
       if (!sensorInstance) {
-        console.warn(`⚠️ [SessionStart] Capteur inconnu pour topic: ${baseTopic}`);
+        console.warn(
+          `⚠️ [SessionStart] Capteur inconnu pour topic: ${baseTopic}`
+        );
         addDiscoveredTopic(baseTopic);
         return;
       }
@@ -161,8 +170,13 @@ class SocketService {
         idFog: "fog-service",
         createdAt: new Date(data.timestamp),
       });
-      this.activeSessions.set(data.sensorTopic, (session.dataValues as { id: string }).id);
-      console.log(`▶️ [Session] Créée pour ${baseTopic} — id: ${session.dataValues.id}`);
+      this.activeSessions.set(
+        data.sensorTopic,
+        (session.dataValues as { id: string }).id
+      );
+      console.log(
+        `▶️ [Session] Créée pour ${baseTopic} — id: ${session.dataValues.id}`
+      );
     } finally {
       this.sessionCreationInProgress.delete(data.sensorTopic);
     }
@@ -172,11 +186,15 @@ class SocketService {
     await this.getMeasurementTypesMap();
     const sessionId = this.activeSessions.get(data.sensorTopic);
     if (!sessionId) {
-      console.warn(`⚠️ [SensorData] Pas de session active pour: ${data.sensorTopic}`);
+      console.warn(
+        `⚠️ [SensorData] Pas de session active pour: ${data.sensorTopic}`
+      );
       return;
     }
     const baseTopic = data.sensorTopic.replace("/sensor", "");
-    const sensorInstance = await SensorModel.findOne({ where: { topic: baseTopic } });
+    const sensorInstance = await SensorModel.findOne({
+      where: { topic: baseTopic },
+    });
     if (!sensorInstance) {
       addDiscoveredTopic(baseTopic);
       return;
@@ -185,7 +203,9 @@ class SocketService {
 
     for (const entry of data.measures) {
       for (const measure of entry.measures) {
-        const idMeasurementType = this.measurementTypesMap.get(measure.measureType);
+        const idMeasurementType = this.measurementTypesMap.get(
+          measure.measureType
+        );
         if (!idMeasurementType) continue;
         await db.sensordata.create({
           time: new Date(Math.floor(entry.timestamp / 1000)),

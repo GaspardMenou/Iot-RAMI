@@ -19,6 +19,7 @@ interface Session {
   idFog?: string;
   idSensor: string;
   createdAt: Date;
+  endedAt?: Date;
   updatedAt: Date;
 }
 
