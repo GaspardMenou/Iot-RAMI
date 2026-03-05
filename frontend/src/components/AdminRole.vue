@@ -1,43 +1,52 @@
 <template>
 	<div class="admin-role">
-		<h1>Admin Role</h1>
-		<section>
-			<h2>Modify user role</h2>
-			<form>
-				<label for="userEmail">
-					<span>User to modify</span>
-					<select
-						v-model="userSelected"
-						name="user">
-						<option
-							v-for="user in users"
-							:key="user.email"
-							:value="user.email">
-							{{ user.email }} - {{ user.role }}
-						</option>
-					</select>
-				</label>
-				<label for="role">
-					<span>New role</span>
-					<select
-						v-model="roleSelected"
-						name="role">
-						<option
-							v-for="role in roles"
-							:key="role"
-							:value="role">
-							{{ role }}
-						</option>
-					</select>
-				</label>
-				<button
-					type="submit"
-					@click="submitUpdateUserRole">
-					Click Here
-				</button>
-			</form>
-		</section>
-		<hr />
+		<p class="description">Modifier le rôle d'un utilisateur existant.</p>
+		<form
+			class="role-form"
+			@submit.prevent="submitUpdateUserRole">
+			<div class="field">
+				<label class="field-label">Utilisateur</label>
+				<select
+					v-model="userSelected"
+					class="field-select">
+					<option
+						value=""
+						disabled>
+						Sélectionner un utilisateur
+					</option>
+					<option
+						v-for="user in users"
+						:key="user.email"
+						:value="user.email">
+						{{ user.email }} — {{ user.role }}
+					</option>
+				</select>
+			</div>
+			<div class="field">
+				<label class="field-label">Nouveau rôle</label>
+				<select
+					v-model="roleSelected"
+					class="field-select">
+					<option
+						value=""
+						disabled>
+						Sélectionner un rôle
+					</option>
+					<option
+						v-for="role in roles"
+						:key="role"
+						:value="role">
+						{{ role }}
+					</option>
+				</select>
+			</div>
+			<button
+				type="submit"
+				class="btn-submit"
+				:disabled="!userSelected || !roleSelected">
+				Mettre à jour
+			</button>
+		</form>
 	</div>
 </template>
 
@@ -97,40 +106,74 @@
 	})
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 	.admin-role {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
+		gap: 1.25rem;
+	}
 
-		section {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
+	.description {
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
 
-			form {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				justify-content: center;
+	.role-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		max-width: 480px;
+	}
 
-				label {
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-					justify-content: center;
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
 
-					span {
-						margin-bottom: 0.5rem;
-					}
+	.field-label {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
 
-					select {
-						margin-bottom: 1rem;
-					}
-				}
-			}
-		}
+	.field-select {
+		padding: 8px 12px;
+		background: var(--color-surface-secondary);
+		color: var(--color-text);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		font-size: 0.9rem;
+		width: 100%;
+		cursor: pointer;
+	}
+
+	.field-select:focus {
+		outline: none;
+		border-color: var(--color-primary);
+	}
+
+	.btn-submit {
+		padding: 9px 20px;
+		background: var(--color-primary);
+		color: white;
+		border: none;
+		border-radius: 8px;
+		font-size: 0.875rem;
+		font-weight: 600;
+		cursor: pointer;
+		width: fit-content;
+		align-self: center;
+		transition: background-color 0.15s;
+	}
+
+	.btn-submit:hover:not(:disabled) {
+		background: var(--color-primary-hover, var(--color-primary));
+	}
+
+	.btn-submit:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 </style>

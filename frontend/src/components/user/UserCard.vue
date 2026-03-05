@@ -2,18 +2,20 @@
 	<div
 		class="user-card"
 		@click="selectUser">
-		<div class="user-info-section">
-			<p class="user-detail">{{ user.firstName }} {{ user.lastName }}</p>
-			<p class="user-detail">{{ formatHumanReadableDate(user.dateOfBirth, true) }}</p>
-			<p class="user-detail">{{ user.sex }}</p>
-			<p class="user-detail">{{ user.email }}</p>
-			<p class="user-detail">{{ user.role }}</p>
+		<div class="user-avatar">{{ initials }}</div>
+		<div class="user-main">
+			<div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+			<div class="user-email">{{ user.email }}</div>
+		</div>
+		<div class="user-meta">
+			<span class="role-badge">{{ user.role }}</span>
+			<span class="user-dob">{{ formatHumanReadableDate(user.dateOfBirth, true) }}</span>
 		</div>
 	</div>
 </template>
 
 <script lang="ts">
-	import { defineComponent } from "vue"
+	import { defineComponent, computed } from "vue"
 	import { EventTypes, handleEvent } from "@/composables/useUser.composable"
 	import type { PropType } from "vue"
 	import type { User } from "#/user"
@@ -30,6 +32,12 @@
 		setup(props) {
 			const { formatHumanReadableDate } = useSensor(undefined)
 
+			const initials = computed(() => {
+				const f = (props.user.firstName || "").charAt(0).toUpperCase()
+				const l = (props.user.lastName || "").charAt(0).toUpperCase()
+				return f + l || "?"
+			})
+
 			const selectUser = () => {
 				handleEvent("emit", EventTypes.USER_SELECTED_FOR_FETCHING_SESSIONS, props.user.id)
 			}
@@ -37,6 +45,7 @@
 			return {
 				selectUser,
 				formatHumanReadableDate,
+				initials,
 			}
 		},
 	})
@@ -46,59 +55,84 @@
 	.user-card {
 		display: flex;
 		align-items: center;
+		gap: 1rem;
 		border: 1px solid var(--color-border);
-		padding: 15px 20px;
-		margin-bottom: 10px;
-		background-color: var(--color-surface);
+		padding: 0.75rem 1rem;
+		background-color: var(--color-surface-secondary);
 		border-radius: 8px;
-		box-shadow: 0 1px 3px var(--color-shadow);
 		cursor: pointer;
-		transition: border-color 0.2s, box-shadow 0.2s;
-		width: 100%;
-		justify-content: space-between;
+		transition: border-color 0.2s;
 	}
 
 	.user-card:hover {
 		border-color: var(--color-primary);
-		box-shadow: 0 4px 6px var(--color-shadow);
 	}
 
 	.user-card--selected {
 		border-color: var(--color-primary);
-		background-color: rgba(14, 165, 233, 0.1);
+		background-color: rgba(14, 165, 233, 0.08);
 	}
 
-	.user-info-section {
+	.user-avatar {
+		width: 38px;
+		height: 38px;
+		border-radius: 50%;
+		background: var(--color-primary);
+		color: white;
 		display: flex;
-		flex-direction: row;
-		width: 100%;
-		justify-content: space-between;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.85rem;
+		font-weight: 700;
+		flex-shrink: 0;
 	}
 
-	.user-detail {
-		margin: 0 20px; /* Increase margin for more space between details */
-		position: relative;
-		padding-left: 20px; /* Increase padding for more space before the separator */
+	.user-main {
 		flex: 1;
-		text-align: center;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
 	}
 
-	.user-detail::before {
-		content: "";
-		position: absolute;
-		left: 0;
-		top: 50%;
-		transform: translateY(-50%);
-		width: 1px;
-		height: 60%;
-		background-color: var(--color-border);
+	.user-name {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--color-text);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
-	.user-info-section .user-detail:first-child::before {
-		display: none; /* No separator before the first element */
+	.user-email {
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
-	.details-button:hover {
-		background-color: #0056b3;
+	.user-meta {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 0.25rem;
+		flex-shrink: 0;
+	}
+
+	.role-badge {
+		font-size: 0.72rem;
+		font-weight: 600;
+		padding: 2px 8px;
+		border-radius: 999px;
+		background: rgba(14, 165, 233, 0.15);
+		color: var(--color-primary);
+		text-transform: capitalize;
+	}
+
+	.user-dob {
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+		white-space: nowrap;
 	}
 </style>

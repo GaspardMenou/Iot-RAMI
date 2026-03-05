@@ -1,8 +1,8 @@
 <template>
 	<div class="users-list-view">
 		<div class="header">
-			<h2 v-if="totalUsers > 0">You have access to the profile of {{ totalUsers }} users</h2>
-			<h2 v-else>You do not have access to any users or there are none</h2>
+			<h2 v-if="totalUsers > 0">{{ totalUsers }} utilisateur{{ totalUsers !== 1 ? "s" : "" }}</h2>
+			<h2 v-else>Aucun utilisateur accessible.</h2>
 			<hr />
 		</div>
 		<div
