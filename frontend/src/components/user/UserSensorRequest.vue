@@ -2,7 +2,7 @@
 	<div class="user-sensor-request">
 		<UserForm
 			submitFunction="sensor.request"
-			title="Ask for sensor creation" />
+			title="Demander la création d'un capteur" />
 	</div>
 </template>
 

@@ -2,7 +2,7 @@
 	<div class="user-measurement-type-request">
 		<UserForm
 			submitFunction="measurementType.request"
-			title="Ask for measurement type creation" />
+			title="Demander un type de mesure" />
 	</div>
 </template>
 

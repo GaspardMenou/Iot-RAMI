@@ -1,96 +1,142 @@
 <template>
 	<div class="user-form">
-		<section>
-			<h2>{{ title }}</h2>
-			<form>
-				<label for="email">Email</label>
+		<form @submit.prevent="submitForm">
+			<div class="field">
+				<label class="field-label">{{ label }}</label>
 				<input
-					id="email"
-					v-model="formData.email"
-					required
-					type="email" />
-				<label for="item">Item</label>
-				<input
-					id="item"
-					v-model="formData.item"
-					required
-					type="text" />
-				<label for="keepEmail">Keep email</label>
-				<input
-					v-model="formData.keepEmail"
-					type="checkbox" />
-				<button @click="submitForm">Submit</button>
-			</form>
-		</section>
+					v-model="item"
+					class="field-input"
+					type="text"
+					:placeholder="placeholder" />
+			</div>
+			<p
+				v-if="feedback"
+				class="feedback"
+				:class="feedbackClass">
+				{{ feedback }}
+			</p>
+			<button
+				type="submit"
+				class="btn-submit"
+				:disabled="!item.trim()">
+				Envoyer la demande
+			</button>
+		</form>
 	</div>
 </template>
 
 <script lang="ts">
-	import { defineComponent } from "vue"
+	import { defineComponent, ref } from "vue"
 	import useUserSensorOrMeasurementType from "@/composables/useUserSensorOrMeasurementType.composable"
+
+	const LABELS: Record<string, { label: string; placeholder: string }> = {
+		"sensor.access": { label: "Nom du capteur", placeholder: "ex: ECG chambre 1" },
+		"sensor.request": { label: "Nom du capteur souhaité", placeholder: "ex: Température couloir" },
+		"measurementType.request": { label: "Nom du type de mesure", placeholder: "ex: température" },
+	}
 
 	export default defineComponent({
 		name: "UserForm",
 		props: {
-			title: {
-				type: String,
-				required: true,
-			},
-			submitFunction: {
-				type: String,
-				required: true,
-			},
+			title: { type: String, required: true },
+			submitFunction: { type: String, required: true },
 		},
-		data() {
-			return {
-				formData: {
-					email: "",
-					item: "",
-					keepEmail: false,
-				},
-			}
-		},
-		methods: {
-			async submitForm(event: Event) {
-				event.preventDefault()
+		setup(props) {
+			const email = localStorage.getItem("email") || ""
+			const item = ref("")
+			const feedback = ref("")
+			const feedbackClass = ref("")
 
-				if (!this.formData.email.trim()) {
-					alert("Email is empty")
-					return
-				} else if (!this.formData.item.trim()) {
-					alert("Item is empty")
-					return
-				} else if (!this.formData.email.includes("@")) {
-					alert("Email is not valid")
-					return
+			const meta = LABELS[props.submitFunction] ?? { label: "Valeur", placeholder: "" }
+
+			const submitForm = async () => {
+				if (!item.value.trim()) return
+				const { error } = await useUserSensorOrMeasurementType().submitForm(email, item.value.trim(), props.submitFunction)
+				if (error) {
+					feedback.value = error
+					feedbackClass.value = "error"
+				} else {
+					feedback.value = "Demande envoyée avec succès."
+					feedbackClass.value = "success"
+					item.value = ""
 				}
-				const { error } = await useUserSensorOrMeasurementType().submitForm(this.formData.email, this.formData.item, this.submitFunction)
-				error ? alert(error) : null
-				this.formData.item = error ? this.formData.item : ""
-				this.formData.email = this.formData.keepEmail ? this.formData.email : ""
-			},
+			}
+
+			return { item, feedback, feedbackClass, label: meta.label, placeholder: meta.placeholder, submitForm }
 		},
 	})
 </script>
 
-<style lang="scss" scoped>
-	section {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
+<style scoped>
+	.user-form {
+		max-width: 420px;
 	}
 
 	form {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		gap: 1rem;
 	}
 
-	input {
-		margin: 0.5rem;
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
 	}
 
-	button {
-		margin: 0.5rem;
+	.field-label {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	.field-input {
+		padding: 8px 12px;
+		background: var(--color-surface-secondary);
+		color: var(--color-text);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		font-size: 0.9rem;
+		width: 100%;
+	}
+
+	.field-input:focus {
+		outline: none;
+		border-color: var(--color-primary);
+	}
+
+	.feedback {
+		font-size: 0.85rem;
+		margin: 0;
+	}
+
+	.feedback.success {
+		color: var(--color-success);
+	}
+
+	.feedback.error {
+		color: var(--color-danger);
+	}
+
+	.btn-submit {
+		padding: 9px 20px;
+		background: var(--color-primary);
+		color: white;
+		border: none;
+		border-radius: 8px;
+		font-size: 0.875rem;
+		font-weight: 600;
+		cursor: pointer;
+		width: fit-content;
+		transition: background-color 0.15s;
+	}
+
+	.btn-submit:hover:not(:disabled) {
+		background: var(--color-primary-hover, var(--color-primary));
+	}
+
+	.btn-submit:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 </style>

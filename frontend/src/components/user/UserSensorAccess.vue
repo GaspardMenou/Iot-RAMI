@@ -2,7 +2,7 @@
 	<div class="user-sensor-access">
 		<UserForm
 			submitFunction="sensor.access"
-			title="Ask for sensor access" />
+			title="Demander l'accès à un capteur" />
 	</div>
 </template>
 
