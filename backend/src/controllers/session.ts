@@ -213,7 +213,7 @@ const getSessionData = async (req: Request, res: Response) => {
     const sensorData = await getSensorDataWithinTimeRange(
       sensor.dataValues.id,
       session.dataValues.createdAt,
-      session.dataValues.endedAt
+      session.dataValues.endedAt ?? new Date()
     );
 
     return res.status(200).json(sensorData);
@@ -248,7 +248,7 @@ const exportSessionAsCsv = async (req: Request, res: Response) => {
     const sensorData = await getSensorDataWithinTimeRange(
       sensor.dataValues.id,
       session.dataValues.createdAt,
-      session.dataValues.endedAt
+      session.dataValues.endedAt ?? new Date()
     );
     const lines: string[] = [
       `# session_id,${session.dataValues.id}`,

@@ -310,16 +310,28 @@ const useSession = () => {
 
 	const fetchDataAndUpdateChart = async (idSession: string) => {
 		try {
-			chartData.value = {
-				labels: [],
-				datasets: [],
-			}
+			chartData.value = { labels: [], datasets: [] }
 			const response = await axios.get(getURLForFetchingSessionData(idSession))
-			const sessionData = response.data
-			for (let i = 0; i < sessionData.length; i++) {
-				const measureType = sessionData[i].MeasurementType?.name || "Unknown"
-				updateChart(new Date(sessionData[i].time), sessionData[i].value, measureType, 0)
+			const sessionData: { time: string; value: number; MeasurementType?: { name: string } }[] = response.data
+
+			// Build all datasets in memory first, then assign once
+			const labels: string[] = []
+			const datasetsMap = new Map<string, { x: Date; y: number }[]>()
+
+			for (const point of sessionData) {
+				const measureType = point.MeasurementType?.name || "Unknown"
+				const date = new Date(point.time)
+				labels.push(date.toISOString())
+				if (!datasetsMap.has(measureType)) datasetsMap.set(measureType, [])
+				datasetsMap.get(measureType)!.push({ x: date, y: parseFloat(String(point.value)) })
 			}
+
+			const datasets = Array.from(datasetsMap.entries()).map(([label, data], i) => {
+				const color = DATASET_COLORS[i % DATASET_COLORS.length]
+				return { label, data, fill: false, backgroundColor: color.bg, borderColor: color.border }
+			})
+
+			chartData.value = { labels, datasets }
 		} catch (error) {
 			console.error("Error fetching data", error)
 		}
