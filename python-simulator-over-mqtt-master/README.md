@@ -1,5 +1,3 @@
-OS: Linux (Ubuntu /22.04 LTS)
-
 # MQTT CLI Application
 Cette application permet de simuler un capteur IoT qui communique avec le fog via MQTT (architecture RAMI 1.0).
 

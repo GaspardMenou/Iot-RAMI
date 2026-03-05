@@ -12,7 +12,7 @@ API REST Express/TypeScript pour la gestion des capteurs IoT du projet RAMI 1.0 
 | TimescaleDB (PostgreSQL 13) | Stockage des données capteurs (hypertable) |
 | Sequelize | ORM + migrations |
 | Kafka (Confluent) | Pipeline de données temps réel |
-| MQTT (HiveMQ cloud) | Réception des données des capteurs |
+| MQTT (Mosquitto local, via fog-service) | Réception des données des capteurs |
 | Socket.io | WebSocket pour le frontend temps réel |
 | JWT + bcrypt | Authentification |
 | Jest | Tests unitaires |
@@ -52,7 +52,7 @@ NODE_PORT_OUT=3000
 NODE_CONTAINER_NAME=umons-sensor-dev
 
 JWT_SECRET=umons-sensor-dev
-JWT_EXPIRES_IN=1d
+JWT_EXPIRATION=1d
 BCRYPT_SALT_ROUNDS=10
 
 DB_DIALECT=postgres
@@ -124,26 +124,19 @@ Documentation complète : http://localhost:3000/api/v1/docs
 
 ### Services
 
-- **`mqttServer.ts`** — Client MQTT singleton. Souscrit au wildcard `#`, gère les PINGs (auto-discover + statut), traite les messages multi-mesures et les pousse dans Kafka. Timeout 30s pour le statut `offline`.
-- **`kafkaService.ts`** — Producteur/consommateur Kafka. Stocke les données dans TimescaleDB via `createSensorData`.
+- **`mqttServer.ts`** — Client MQTT singleton. Gère la connexion au broker local, les PINGs (auto-discover + statut capteur). Ne publie plus sur Kafka (rôle du fog-service).
+- **`kafkaService.ts`** — Consommateur Kafka uniquement. Reçoit les messages du fog-service, stocke dans TimescaleDB et déclenche la diffusion WebSocket.
 - **`socketService.ts`** — Socket.io attaché au serveur HTTP. Rooms par topic MQTT, diffuse les nouvelles données et le statut des capteurs au frontend.
 
-### Format des messages MQTT reçus
+### Format des messages Kafka reçus (depuis le fog-service)
 
 ```json
-{
-  "timestamp": 1234567890123456,
-  "measures": [
-    { "measureType": "temperature", "value": 22.5 },
-    { "measureType": "humidity",    "value": 58.3 }
-  ]
-}
+{ "type": "start", "sensorTopic": "esp32-dht22-topic/sensor", "timestamp": 1735000000000 }
+{ "type": "data",  "sensorTopic": "esp32-dht22-topic/sensor", "measures": [{ "timestamp": 1735000001000, "measures": [{ "measureType": "temperature", "value": 22.5 }] }] }
+{ "type": "stop",  "sensorTopic": "esp32-dht22-topic/sensor", "timestamp": 1735000060000 }
 ```
 
-PING du capteur (détection statut) :
-```json
-{ "cmd": "ping" }
-```
+Voir [`docs/KAFKA.md`](../docs/KAFKA.md) et [`docs/MQTT.md`](../docs/MQTT.md) pour la documentation complète.
 
 ---
 

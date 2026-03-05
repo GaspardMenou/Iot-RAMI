@@ -1,135 +1,101 @@
 # RAMI 1.0 - Roadmap
 
-## Etat actuel du projet (Fevrier 2026)
+## Etat du projet (Mars 2026)
 
-### Ce qui fonctionne
-- Backend Express/TypeScript avec API REST complete (`/api/v1`)
-- Authentification JWT + bcrypt (login, signup, roles admin/operator)
-- 9 modeles Sequelize avec migrations et seeds
-- MQTT : backend se connecte a Mosquitto local (port 1883), recoit les donnees capteurs, les stocke en DB
-- Kafka : le producer publie les donnees capteurs sur le topic `sensor-data` (non-bloquant si Kafka est down)
-- Frontend Vue 3 avec session workflow : selection capteur → ping status → start → visualisation graphique ECG
-- Frontend se connecte directement au broker MQTT via WebSocket (port 9001) pour le temps reel
-- Simulateur Python fonctionnel (mode sensor/server/duo sur HiveMQ ou Mosquitto)
-- Docker Compose : PostgreSQL/TimescaleDB, Mosquitto, Kafka, Zookeeper, backend Node.js
-- Swagger API docs a `/api/v1/docs`
-
-### Ce qui ne fonctionne pas / est incomplet
-- **Kafka consumer** : `KafkaService` n'initialise pas le consumer (pas de `this.consumer = this.kafka.consumer(...)` dans `connectToKafka`), donc `connect()` et `subscribeTopic()` crashent
-- **Kafka broker hardcode** : `kafka:9092` dans `kafkaService.ts`, non configurable par env
-- **MQTT frontend hardcode** : `ws://localhost:9001/mqtt` dans `useSession.composable.ts` (ne marche qu'en local)
-- **Pas de lien Kafka → Frontend** : les donnees passent par MQTT direct, Kafka n'est pas consomme
-- **Tests** : couverture minimale, peu de tests d'integration
-- **ESP32** : code Arduino existe mais non teste recemment avec le stack actuel (broker passe de HiveMQ a Mosquitto local)
+Le projet est complet. Toutes les phases ont ete livrees.
 
 ---
 
-## Phase 1 : Stabilisation & Corrections critiques
+## Phase 1 : Stabilisation & Corrections critiques ✅
 
-> Rendre le systeme existant robuste et configurable.
-
-- [ ] **Corriger KafkaService** : ajouter `this.consumer = this.kafka.consumer({ groupId: '...' })` dans `connectToKafka()`
-- [ ] **Externaliser les configs hardcodees** :
-  - Kafka broker (`kafka:9092`) → variable d'environnement `KAFKA_BROKERS`
-  - MQTT frontend (`ws://localhost:9001/mqtt`) → variable d'environnement `VITE_APP_MQTT_URL`
-  - MQTT backend broker URL/port/credentials → variables d'environnement (actuellement hardcode dans `mqttConstant.ts`)
-- [ ] **Gestion d'erreurs MQTT backend** : la reconnexion existe mais `handleErrorMqtt` est vide — logger les erreurs, implementer un backoff exponentiel
-- [ ] **Gestion d'erreurs Kafka** : ajouter un health check, ne pas crash si Kafka est indisponible au demarrage
-- [ ] **Verifier le workflow complet** : simulateur Python → Mosquitto → backend → DB → frontend MQTT → graphique ECG
-- [ ] **Nettoyer les console.log de debug** dans `mqttServer.ts` et `useSession.composable.ts` (emoji logs partout)
+- [x] **Corriger KafkaService** : consumer initialise dans `connectToKafka()`
+- [x] **Externaliser les configs hardcodees** : `KAFKA_BROKERS`, `MQTT_URL/PORT/USERNAME/PASSWORD` via variables d'environnement
+- [x] **Gestion d'erreurs MQTT backend** : `handleErrorMqtt` avec logging + backoff exponentiel
+- [x] **Gestion d'erreurs Kafka** : health check, demarrage en mode degrade si Kafka indisponible
+- [x] **Verifier le workflow complet** : simulateur → Mosquitto → backend → DB → frontend → graphique
 
 ---
 
-## Phase 2 : Pipeline temps reel via WebSocket (alternative a MQTT direct)
+## Phase 2 : Pipeline temps reel via WebSocket ✅
 
-> Actuellement le frontend se connecte directement au broker MQTT. C'est fonctionnel mais expose les credentials MQTT au client. L'alternative propre est un WebSocket backend.
-
-- [ ] **Option A (rapide)** : garder la connexion MQTT directe frontend → Mosquitto, mais securiser les credentials (ne pas les retourner en clair dans l'API)
-- [ ] **Option B (propre)** : implementer un WebSocket cote backend (Socket.io ou ws) qui relaie les donnees Kafka/MQTT au frontend
-  - [ ] Backend : creer un endpoint WebSocket qui ecoute le consumer Kafka et pousse les messages
-  - [ ] Frontend : remplacer la connexion MQTT par un client WebSocket
-  - [ ] Gerer les etats de connexion (connecte, deconnecte, reconnexion automatique)
-- [ ] **Mettre a jour le graphique ECG** pour gerer le streaming avec buffer circulaire (actuellement limite a 100 points)
+- [x] **WebSocket securise** : Socket.io cote backend, JWT verifie sur `join-session`, rooms par topic
+- [x] **Frontend** : `connectToWebSocket` remplace `connectToMQTT`, ecoute `new-data`
+- [x] **Credentials MQTT retires** : ne sont plus envoyes au frontend
+- [x] **Graphique multi-mesures** : datasets dynamiques par `measureType`
 
 ---
 
-## Phase 3 : Amelioration du frontend
+## Phase 3 : Amelioration du frontend ✅
 
-- [ ] **Indicateur de statut capteur temps reel** : actuellement le statut online/offline necessite un clic manuel (ping) — le rendre automatique avec polling ou push
-- [ ] **Ameliorer le panneau admin** :
-  - CRUD capteurs (ajout/suppression depuis l'interface)
-  - Gestion des roles utilisateurs
-  - Vue d'ensemble de toutes les sessions actives
-- [ ] **Export des donnees** : permettre le telechargement CSV/Excel des donnees historiques d'une session
-- [ ] **Validation des formulaires** : ajouter une validation cote client (email, mot de passe, champs requis) avec messages d'erreur clairs
-- [ ] **Responsive design** : verifier et corriger l'interface sur mobile/tablette
-
----
-
-## Phase 4 : Integration hardware ESP32
-
-- [ ] **Mettre a jour la config ESP32** : le broker est passe de HiveMQ (public) a Mosquitto local — adapter `SpecificConstants.cpp` avec l'IP du serveur, port 1883, credentials test/test
-- [ ] **Flasher et tester le sketch ECG** (`rami1_esp32_AD8232_ecg`) avec le cablage AD8232
-- [ ] **Valider le flux complet** : ESP32 → Mosquitto → Backend → DB → Frontend → graphique ECG
-- [ ] **Tester le filtrage haute frequence** (`AvecFiltrage.ino`) et comparer avec le signal brut
-- [ ] **Documenter le setup hardware** : branchement, librairies Arduino requises, flash procedure
+- [x] **Validation des formulaires** : regles complexite mot de passe, messages d'erreur clairs
+- [x] **Indicateur statut capteur** : badge online/offline temps reel via WebSocket + timeout 30s
+- [x] **Panel admin** : CRUD capteurs, gestion roles, sessions actives
+- [x] **Export CSV** : route `GET /sessions/:id/export/csv`, bouton dans l'interface, protection injection CSV
+- [x] **Responsive design**
+- [x] **Auto-decouverte capteurs** : fog ecoute wildcard `#`, route `GET /sensors/discovered`
+- [x] **Multi-mesures** : format `{ timestamp, measures: [{ measureType, value }] }`, clé primaire composite
 
 ---
 
-## Phase 5 : Tests & Qualite
+## Phase 4 : Integration hardware & Architecture fog/cloud ✅
 
-- [ ] **Tests backend** :
-  - Tests unitaires controllers (auth, sensor, session, measurement)
-  - Tests d'integration : MQTT message → DB insertion
-  - Tests d'integration : API session workflow (create → start → stop → fetch data)
-  - Mock Kafka et MQTT pour les tests
-- [ ] **Tests frontend** :
-  - Tests des composables (useSession, useSensor, useUser)
-  - Tests des composants cles (RealTimeSession, SensorCard, SessionCard)
-- [ ] **CI/CD** : valider que le pipeline GitLab lint → build → test → deploy fonctionne
-- [ ] **Benchmarks** : mesurer la latence end-to-end (capteur → affichage) et le debit max de messages/seconde
-
----
-
-## Phase 6 : Documentation & Livraison
-
-- [ ] Mettre a jour les README de chaque sous-projet avec les instructions actuelles
-- [ ] Documenter les topics MQTT (format des messages, commandes ping/start/stop, topic duplication `/sensor` et `/server`)
-- [ ] Documenter les schemas Kafka (topic `sensor-data`, format JSON)
-- [ ] Verifier que le Swagger (`/api/v1/docs`) est a jour avec toutes les routes
-- [ ] Rediger le rapport de contribution
-- [ ] Preparer la demo (scenario : lancement stack Docker → connexion → simulateur → session → visualisation)
+- [x] **Sketches Arduino** : DHT22 + ECG AD8232, format multi-mesures, PING periodique, portail captif WiFiManager
+- [x] **Structure modulaire Arduino** : `Sensor.hpp/cpp` (capteur) / `MQTTCommonOperations` (generique) / `BASE.ino`
+- [x] **Fog-service** : Node.js sur Raspberry Pi, bridge MQTT → Kafka, buffer + flush 1s/10 entrees
+- [x] **Protocole fog** : PING → START → ACK → mesures → STOP, timeout 30s declenche STOP automatique
+- [x] **Sessions fog-driven** : fog cree/clot les sessions via Kafka, frontend en mode lecture seule
+- [x] **Auto-join session active** : frontend detecte et rejoint une session active au montage
+- [x] **Deploiement VM cloud** : docker-compose, Watchtower, CI/CD GitHub Actions → GHCR
+- [x] **Deploiement fog Pi** : compose.yaml, Mosquitto authentifie, install.sh, mDNS `rami-fog.local`
+- [x] **Simulateur Python** : protocole fog complet, arguments CLI, Ctrl+C propre
 
 ---
 
-## Architecture cible
+## Phase 5 : Tests & Qualite ✅
+
+- [x] **Backend** : 348 tests Jest (controllers, middlewares, services — MQTT mock, Kafka mock, Socket.io mock)
+- [x] **Frontend** : 137 tests Vitest (composables, stores Pinia, helpers)
+- [x] **CI/CD GitHub Actions** : lint → test → docker build → push GHCR
+
+---
+
+## Phase 6 : Documentation & Livraison ✅
+
+- [x] **READMEs** : racine, backend, frontend, fog-service, simulateur Python — mis a jour
+- [x] **docs/MQTT.md** : topics, protocole complet, formats de messages
+- [x] **docs/KAFKA.md** : topic `sensor-data`, schemas des 3 types de messages
+- [x] **docs/API.md** : toutes les routes REST + WebSocket Socket.io
+- [x] **docs/DEMO.md** : scenario de demonstration pas a pas
+- [x] **docs/RAPPORT.md** : rapport de contribution du stage
+- [x] **Swagger** : corrections et routes manquantes ajoutees
+
+---
+
+## Architecture finale
 
 ```
-                                    ┌──────────────┐
-                                    │   Frontend   │
-                                    │   Vue 3      │
-                                    │   :8080      │
-                                    └──────┬───────┘
-                                           │ WebSocket ou MQTT/WS
-                                           │
-┌──────────┐    MQTT     ┌─────────────────┴───────────────────┐
-│  ESP32   │────────────▶│           Backend Express           │
-│ AD8232   │  :1883      │              :3000                  │
-└──────────┘             │                                     │
-                         │  ┌───────────┐    ┌──────────────┐  │
-┌──────────┐    MQTT     │  │ MqttServer│───▶│ KafkaService │  │
-│Simulateur│────────────▶│  │ singleton │    │  producer    │  │
-│ Python   │  :1883      │  └─────┬─────┘    └──────────────┘  │
-└──────────┘             │        │                            │
-                         │        ▼                            │
-                         │  ┌───────────┐                      │
-                         │  │ PostgreSQL│                      │
-                         │  │TimescaleDB│                      │
-                         │  │  :5432    │                      │
-                         │  └───────────┘                      │
-                         └─────────────────────────────────────┘
-                              Mosquitto :1883 / :9001 (WS)
-                              Kafka :9092  |  Zookeeper :2181
+ESP32 / Simulateur Python
+        |
+        | MQTT ({topic}/sensor)
+        v
+Fog-service (Raspberry Pi)
+  - Mosquitto local (port 1883, authentifie)
+  - fog-service Node.js
+      Ecoute MQTT wildcard #
+      Bufferise les mesures (flush 1s ou 10 entrees)
+      Publie sur Kafka en batch
+        |
+        | Kafka topic: sensor-data (start / data / stop)
+        v
+Backend Cloud (VM x86, port 3000)
+  - Express + TypeScript
+  - KafkaService (consumer)
+  - SocketService (Socket.io)
+        |---> PostgreSQL / TimescaleDB
+        |---> WebSocket (Socket.io) ---> Frontend Vue 3 (port 8080)
+                                           - Graphique temps reel
+                                           - Panel admin
+                                           - Export CSV
 ```
 
 ---
@@ -137,13 +103,14 @@
 ## Stack technique
 
 | Couche | Technologie |
-|--------|------------|
-| Hardware | ESP32 + AD8232 (ECG) |
-| Protocole IoT | MQTT (Mosquitto local, anciennement HiveMQ) |
+|--------|-------------|
+| Hardware | ESP32 + DHT22 (temp/hum) / AD8232 (ECG) |
+| Protocole IoT | MQTT (Mosquitto local, authentifie) |
+| Noeud fog | Node.js + KafkaJS producer (Raspberry Pi) |
 | Event streaming | Kafka (KafkaJS) |
 | Backend | Node.js, Express, TypeScript, Sequelize |
 | Base de donnees | PostgreSQL 13 / TimescaleDB |
-| Frontend | Vue 3, TypeScript, Vite, Pinia, Chart.js |
+| Frontend | Vue 3, TypeScript, Vite, Pinia, Chart.js, Socket.io client |
 | Auth | JWT + bcrypt |
-| Deploiement | Docker, Docker Compose, PM2 |
-| CI/CD | GitLab CI |
+| Deploiement | Docker, Docker Compose, Watchtower |
+| CI/CD | GitHub Actions → GHCR |

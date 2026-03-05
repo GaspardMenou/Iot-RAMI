@@ -9,19 +9,24 @@ Projet de l'Université de Mons (UMONS) — Capture, traitement et visualisation
 ```
 ESP32 / Simulateur Python
         │
-        │ MQTT (HiveMQ cloud, TLS 8883)
+        │ MQTT ({topic}/sensor)
         ▼
-  Backend Node.js  ──── Kafka ────► TimescaleDB (PostgreSQL)
-        │                                    │
-        │ WebSocket (Socket.io)              │ REST API
-        ▼                                    ▼
-  Frontend Vue 3  ◄───────────────────────────
+  Fog-service (Raspberry Pi)
+  Mosquitto local + fog-service Node.js
+        │
+        │ Kafka (topic: sensor-data)
+        ▼
+  Backend Cloud (Express :3000)  ──► TimescaleDB (PostgreSQL)
+        │
+        │ WebSocket (Socket.io)
+        ▼
+  Frontend Vue 3 (:8080)
 ```
 
 **Flux de données :**
-1. Le capteur ESP32 publie ses mesures en MQTT sur HiveMQ
-2. Le backend reçoit les messages MQTT et les pousse dans Kafka
-3. Kafka consomme les messages et les stocke dans TimescaleDB
+1. Le capteur publie ses mesures en MQTT sur le broker Mosquitto local du fog
+2. Le fog-service bufferise et publie sur Kafka (batch toutes les 1s)
+3. Le backend cloud consomme Kafka, stocke dans TimescaleDB
 4. Le frontend reçoit les données en temps réel via WebSocket (Socket.io)
 
 ---
@@ -30,11 +35,12 @@ ESP32 / Simulateur Python
 
 | Dossier | Description | Port |
 |---------|-------------|------|
-| `umons-sensor-backend-1-feature-RAMI1-dev/` | API REST Express/TypeScript | 3000 |
-| `umons-sensor-frontend-1-feature-RAMI1-dev/` | SPA Vue 3 + Vite | 8080 |
+| `backend/` | API REST Express/TypeScript + Socket.io | 3000 |
+| `frontend/` | SPA Vue 3 + Vite | 8080 |
+| `fog-service/` | Bridge MQTT → Kafka (Raspberry Pi) | — |
 | `python-simulator-over-mqtt-master/` | Simulateur de capteur MQTT (Python) | — |
-| `sensors-over-mqtt-master/` | Code Arduino/ESP32 | — |
-| `sensor_dummy_mqtt/` | Sketch actif ESP32 + DHT22 | — |
+| `Arduino/` | Sketches ESP32 (DHT22, ECG AD8232) | — |
+| `docs/` | Documentation technique | — |
 
 ---
 
@@ -42,25 +48,25 @@ ESP32 / Simulateur Python
 
 ### 1. Backend (API + base de données)
 ```bash
-cd umons-sensor-backend-1-feature-RAMI1-dev
+cd backend
 npm install
-npm run docker:start        # Lance TimescaleDB, Kafka, Mosquitto via Docker
+npm run docker:start        # Lance TimescaleDB, Kafka, Mosquitto, backend via Docker
 npm run docker:init-db      # Migrations + seeders (première fois)
 npm run dev                 # Démarre le serveur sur :3000
 ```
 
 ### 2. Frontend
 ```bash
-cd umons-sensor-frontend-1-feature-RAMI1-dev
+cd frontend
 npm install
 VITE_APP_ENV=dev npm run dev   # Démarre sur :8080
 ```
 
-### 3. Simulateur Python (optionnel, si pas d'ESP32)
+### 3. Simulateur Python (si pas d'ESP32 ni de fog)
 ```bash
 cd python-simulator-over-mqtt-master
 pip install -r requirements.txt
-python3 ./mqttCliApp.py duo hivemq   # Simule capteur + serveur
+python3 ./mqttCliApp.py sensor local --topic pysimulator-esp32-ecg-topic --types temperature humidity --rate 1
 ```
 
 ---
@@ -75,10 +81,12 @@ python3 ./mqttCliApp.py duo hivemq   # Simule capteur + serveur
 
 ## Documentation
 
+- Documentation technique : [`docs/`](./docs/README.md)
 - API Swagger : http://localhost:3000/api/v1/docs
-- README Backend : [`umons-sensor-backend-1-feature-RAMI1-dev/README.md`](./umons-sensor-backend-1-feature-RAMI1-dev/README.md)
-- README Frontend : [`umons-sensor-frontend-1-feature-RAMI1-dev/README.md`](./umons-sensor-frontend-1-feature-RAMI1-dev/README.md)
-- README ESP32/Arduino : [`sensors-over-mqtt-master/README.md`](./sensors-over-mqtt-master/README.md)
+- README Backend : [`backend/README.md`](./backend/README.md)
+- README Frontend : [`frontend/README.md`](./frontend/README.md)
+- README Fog : [`fog-service/README.md`](./fog-service/README.md)
+- Simulateur Python : [`python-simulator-over-mqtt-master/README.md`](./python-simulator-over-mqtt-master/README.md)
 
 ---
 
