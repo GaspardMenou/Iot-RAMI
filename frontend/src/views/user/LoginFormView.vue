@@ -1,13 +1,13 @@
 <template>
 	<div>
 		<FormVue
-			title="Login"
+			title="Connexion"
 			:formFields="formFields"
-			submitButtonText="Login"
+			submitButtonText="Se connecter"
 			formName="login"
 			sectionLink="/signup"
-			sectionLinkText="Create your account"
-			sectionText="Don't have an account?" />
+			sectionLinkText="Créer un compte"
+			sectionText="Pas encore de compte ?" />
 	</div>
 </template>
 
@@ -29,7 +29,7 @@
 			}
 		},
 		created() {
-			this.formFields = new FormBuilder().addTextField(UserFields.EMAIL, "Email", "Enter your email").addPasswordField(UserFields.PASSWORD, "Password", "Enter your password").build()
+			this.formFields = new FormBuilder().addTextField(UserFields.EMAIL, "Email", "Entrez votre email").addPasswordField(UserFields.PASSWORD, "Mot de passe", "Entrez votre mot de passe").build()
 		},
 	})
 </script>

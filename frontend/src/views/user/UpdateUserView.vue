@@ -7,17 +7,17 @@
 					v-model="changePasswordVisible" />
 				<span class="slider round"></span>
 			</label>
-			<span class="toggle-label">{{ changePasswordVisible ? "Do not change" : "Change" }} your password</span>
+			<span class="toggle-label">{{ changePasswordVisible ? "Conserver" : "Modifier" }} mon mot de passe</span>
 		</div>
 
 		<FormView
-			title="Update Your Information"
+			title="Modifier mon profil"
 			:formFields="filteredFormFields"
-			submitButtonText="Update"
+			submitButtonText="Mettre à jour"
 			formName="userUpdate"
-			sectionText="Need to go back to your account?"
+			sectionText="Retourner au tableau de bord ?"
 			sectionLink="/home"
-			sectionLinkText="Back to account" />
+			sectionLinkText="Retour" />
 	</div>
 </template>
 
@@ -36,25 +36,25 @@
 			const changePasswordVisible = ref(false)
 
 			const formFields = new FormBuilder()
-				.addTextField(UserFields.FIRST_NAME, "First Name", "Enter your first name", localStorage.getItem(UserFields.FIRST_NAME) || "")
-				.addTextField(UserFields.LAST_NAME, "Last Name", "Enter your last name", localStorage.getItem(UserFields.LAST_NAME) || "")
-				.addDateField(UserFields.DATE_OF_BIRTH, "Date of Birth", "Date of Birth", localStorage.getItem(UserFields.DATE_OF_BIRTH) || "", true)
+				.addTextField(UserFields.FIRST_NAME, "Prénom", "Entrez votre prénom", localStorage.getItem(UserFields.FIRST_NAME) || "")
+				.addTextField(UserFields.LAST_NAME, "Nom", "Entrez votre nom", localStorage.getItem(UserFields.LAST_NAME) || "")
+				.addDateField(UserFields.DATE_OF_BIRTH, "Date de naissance", "Date de naissance", localStorage.getItem(UserFields.DATE_OF_BIRTH) || "", true)
 				.addSelectField(
 					UserFields.SEX,
-					"Sex",
+					"Sexe",
 					[
-						{ value: Sex.MALE, label: "Male" },
-						{ value: Sex.FEMALE, label: "Female" },
-						{ value: Sex.OTHER, label: "Other" },
-						{ value: Sex.NOTSPECIFY, label: "Not Specified" },
+						{ value: Sex.MALE, label: "Homme" },
+						{ value: Sex.FEMALE, label: "Femme" },
+						{ value: Sex.OTHER, label: "Autre" },
+						{ value: Sex.NOTSPECIFY, label: "Non précisé" },
 					],
 					localStorage.getItem(UserFields.SEX) || ""
 				)
-				.addTextField(UserFields.ROLE, "Role", "Your role", localStorage.getItem(UserFields.ROLE) || "", true)
-				.addTextField(UserFields.EMAIL, "Email", "Enter your email", localStorage.getItem(UserFields.EMAIL) || "")
-				.addPasswordField(UserFields.PASSWORD, "Password", "Enter your current password")
-				.addPasswordField(UserFields.NEW_PASSWORD, "New Password", "Enter your new password")
-				.addPasswordField(UserFields.CONFIRM_NEW_PASSWORD, "Confirm Password", "Confirm your new password")
+				.addTextField(UserFields.ROLE, "Rôle", "Votre rôle", localStorage.getItem(UserFields.ROLE) || "", true)
+				.addTextField(UserFields.EMAIL, "Email", "Entrez votre email", localStorage.getItem(UserFields.EMAIL) || "")
+				.addPasswordField(UserFields.PASSWORD, "Mot de passe actuel", "Entrez votre mot de passe actuel")
+				.addPasswordField(UserFields.NEW_PASSWORD, "Nouveau mot de passe", "Entrez votre nouveau mot de passe")
+				.addPasswordField(UserFields.CONFIRM_NEW_PASSWORD, "Confirmer le mot de passe", "Confirmez votre nouveau mot de passe")
 				.build()
 
 			const filteredFormFields = computed(() => {

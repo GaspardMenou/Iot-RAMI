@@ -70,31 +70,28 @@
 </script>
 
 <template>
-	<div class="admin-sensor-request">
-		<h1>Admin Request</h1>
-		<section>
-			<h2>Grant or revoke measurement type creation</h2>
-			<form>
-				<label for="status">Filter by status</label>
-				<select
-					id="status"
-					v-model="statusDisplay">
-					<option value="pending">Show Pending</option>
-					<option value="accepted">Show Accepted</option>
-					<option value="rejected">Show Rejected</option>
-					<option value="all">Show All</option>
+	<div class="admin-measurement-request">
+		<div class="toolbar">
+			<label class="filter-label">
+				Filtrer :
+				<select v-model="statusDisplay">
+					<option value="all">Tous</option>
+					<option value="pending">En attente</option>
+					<option value="accepted">Acceptés</option>
+					<option value="rejected">Refusés</option>
 				</select>
-			</form>
-			<div class="table-wrapper">
-			<table class="user-table">
+			</label>
+		</div>
+		<div class="table-wrapper">
+			<table>
 				<thead>
 					<tr>
-						<th @click="sortTable('User.email')">User</th>
-						<th @click="sortTable('measurementType')">Measurement Type</th>
-						<th @click="sortTable('status')">Status</th>
-						<th @click="sortTable('created_at')">Created at</th>
-						<th>Accept</th>
-						<th>Reject</th>
+						<th @click="sortTable('User.email')">Utilisateur</th>
+						<th @click="sortTable('measurementType')">Type de mesure</th>
+						<th @click="sortTable('status')">Statut</th>
+						<th @click="sortTable('created_at')">Date</th>
+						<th>Accepter</th>
+						<th>Refuser</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -105,69 +102,39 @@
 						<td>{{ user.measurementType }}</td>
 						<td>{{ user.status }}</td>
 						<td>{{ beautifulDate(user.createdAt) }}</td>
-						<td>
-							<button @click="submitUpdateUserRequest(user, 'false')">Accept</button>
-						</td>
-						<td>
-							<button @click="submitUpdateUserRequest(user, 'true')">Rejected</button>
-						</td>
+						<td><button @click="submitUpdateUserRequest(user, 'false')">Accepter</button></td>
+						<td><button @click="submitUpdateUserRequest(user, 'true')">Refuser</button></td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
-		</section>
 	</div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
+	.admin-measurement-request {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.toolbar {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.filter-label {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.875rem;
+		color: var(--color-text-muted);
+	}
+
 	.table-wrapper {
 		width: 100%;
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
-	}
-
-	.user-table {
-		width: 100%;
-		min-width: 500px;
-		border-collapse: collapse;
-
-		th {
-			background-color: var(--color-background);
-			font-weight: bold;
-			cursor: pointer;
-		}
-
-		td,
-		th {
-			padding: 10px;
-			border: 1px solid var(--color-shadow);
-		}
-
-		tbody tr:hover {
-			background-color: var(--color-secondary-hover);
-		}
-
-		button {
-			padding: 5px 10px;
-			border: none;
-			color: var(--color-text-second);
-			cursor: pointer;
-
-			&.accept {
-				background-color: var(--color-primary);
-
-				&:hover {
-					background-color: var(--color-primary-hover);
-				}
-			}
-
-			&.reject {
-				background-color: var(--color-danger);
-
-				&:hover {
-					background-color: var(--color-danger-hover);
-				}
-			}
-		}
 	}
 </style>

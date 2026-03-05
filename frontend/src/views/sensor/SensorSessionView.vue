@@ -89,8 +89,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		flex-wrap: nowrap;
-		gap: 1.5rem;
+		flex-wrap: wrap;
+		gap: 1rem;
 		margin-bottom: 1.5rem;
 		padding: 1.25rem 1.5rem;
 		background: var(--color-surface);

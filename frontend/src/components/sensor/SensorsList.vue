@@ -1,7 +1,7 @@
 <template>
 	<div class="sensors-list-view">
 		<div class="header">
-			<h2>All sensors you have access to</h2>
+			<h2>Mes capteurs</h2>
 			<hr />
 		</div>
 		<div class="sensors-list">

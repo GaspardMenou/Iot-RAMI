@@ -1,12 +1,12 @@
 <template>
 	<FormVue
-		title="Create an Account"
+		title="Créer un compte"
 		:formFields="formFields"
-		submitButtonText="Sign Up"
+		submitButtonText="S'inscrire"
 		formName="signup"
 		sectionLink="/"
-		sectionLinkText="Log in"
-		sectionText="Already have an account?" />
+		sectionLinkText="Se connecter"
+		sectionText="Déjà un compte ?" />
 </template>
 
 <script lang="ts">
@@ -28,18 +28,18 @@
 		},
 		created() {
 			this.formFields = new FormBuilder()
-				.addTextField(UserFields.FIRST_NAME, "First Name", "Enter your first name")
-				.addTextField(UserFields.LAST_NAME, "Last Name", "Enter your last name")
-				.addDateField(UserFields.DATE_OF_BIRTH, "Date of Birth")
-				.addSelectField(UserFields.SEX, "Sex", [
-					{ value: Sex.MALE, label: "Male" },
-					{ value: Sex.FEMALE, label: "Female" },
-					{ value: Sex.OTHER, label: "Other" },
-					{ value: Sex.NOTSPECIFY, label: "Not Specified" },
+				.addTextField(UserFields.FIRST_NAME, "Prénom", "Entrez votre prénom")
+				.addTextField(UserFields.LAST_NAME, "Nom", "Entrez votre nom")
+				.addDateField(UserFields.DATE_OF_BIRTH, "Date de naissance")
+				.addSelectField(UserFields.SEX, "Sexe", [
+					{ value: Sex.MALE, label: "Homme" },
+					{ value: Sex.FEMALE, label: "Femme" },
+					{ value: Sex.OTHER, label: "Autre" },
+					{ value: Sex.NOTSPECIFY, label: "Non précisé" },
 				])
-				.addTextField(UserFields.EMAIL, "Email", "Enter your email")
-				.addPasswordField(UserFields.PASSWORD, "Password", "Enter your password")
-				.addPasswordField(UserFields.CONFIRM_PASSWORD, "Confirm Password", "Confirm your password")
+				.addTextField(UserFields.EMAIL, "Email", "Entrez votre email")
+				.addPasswordField(UserFields.PASSWORD, "Mot de passe", "Entrez votre mot de passe")
+				.addPasswordField(UserFields.CONFIRM_PASSWORD, "Confirmer le mot de passe", "Confirmez votre mot de passe")
 				.build()
 		},
 	})

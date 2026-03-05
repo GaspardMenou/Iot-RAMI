@@ -1,6 +1,6 @@
 <template>
 	<div class="sessions-by-sensor">
-		<h3>Distribution of your sessions by sensor (Average Session Duration: {{ averageDuration }} minutes)</h3>
+		<h3>Répartition des sessions par capteur (durée moyenne : {{ averageDuration }} min)</h3>
 		<BarChart :chartData="chartDataSessionDistribution" />
 	</div>
 </template>
