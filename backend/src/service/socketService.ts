@@ -188,7 +188,7 @@ class SocketService {
         const idMeasurementType = this.measurementTypesMap.get(measure.measureType);
         if (!idMeasurementType) continue;
         await db.sensordata.create({
-          time: new Date(entry.timestamp),
+          time: new Date(Math.floor(entry.timestamp / 1000)),
           idSensor: sensor.id,
           idMeasurementType,
           value: measure.value,
