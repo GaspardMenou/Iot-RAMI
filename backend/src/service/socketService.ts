@@ -6,7 +6,7 @@ import KafkaService from "@service/kafkaService";
 import db from "@db/index";
 import type { Sensor } from "#/sensor";
 import type { MeasurementTypeModel } from "#/measurementType";
-import { discoveredTopics } from "@service/discorverdSensorSevice";
+import { addDiscoveredTopic } from "@service/discorverdSensorSevice";
 
 const { Sensor: SensorModel, Session, MeasurementType } = db;
 
@@ -152,7 +152,7 @@ class SocketService {
       const sensorInstance = await SensorModel.findOne({ where: { topic: baseTopic } });
       if (!sensorInstance) {
         console.warn(`⚠️ [SessionStart] Capteur inconnu pour topic: ${baseTopic}`);
-        discoveredTopics.add(data.sensorTopic);
+        addDiscoveredTopic(baseTopic);
         return;
       }
       const sensor = sensorInstance.dataValues as Sensor;
@@ -177,7 +177,10 @@ class SocketService {
     }
     const baseTopic = data.sensorTopic.replace("/sensor", "");
     const sensorInstance = await SensorModel.findOne({ where: { topic: baseTopic } });
-    if (!sensorInstance) return;
+    if (!sensorInstance) {
+      addDiscoveredTopic(baseTopic);
+      return;
+    }
     const sensor = sensorInstance.dataValues as Sensor;
 
     for (const entry of data.measures) {

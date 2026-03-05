@@ -141,7 +141,7 @@ const getSensorStatus = async (req: Request, res: Response) => {
 
 const getDiscoveredSensors = async (_: Request, res: Response) => {
   try {
-    return res.status(200).json(Array.from(discoveredTopics));
+    return res.status(200).json(Array.from(discoveredTopics.values()));
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }

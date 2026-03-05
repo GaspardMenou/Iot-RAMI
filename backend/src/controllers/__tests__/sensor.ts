@@ -43,6 +43,12 @@ jest.mock("@db/index", () => ({
   }
 }));
 
+jest.mock("@service/discorverdSensorSevice", () => ({
+  discoveredTopics: new Map([
+    ["esp32-dht22-topic", { baseTopic: "esp32-dht22-topic", firstSeenAt: "2024-01-01T10:00:00.000Z", lastSeenAt: "2024-01-01T10:05:00.000Z", count: 3 }],
+  ]),
+}));
+
 jest.mock("jsonwebtoken", () => {
   return {
     verify: jest.fn().mockImplementation(() => {
@@ -901,6 +907,21 @@ describe("Sensor controller", () => {
       expect(result.status).toBe(500);
       expect(result.body.message).toBe("Server error");
       expect(result.body.codeError).toBe("server.error");
+    });
+  });
+
+  describe("GET /sensors/discovered", () => {
+    test("should return discovered sensors list", async () => {
+      const result = await superTest(app)
+        .get(`${baseUri}/discovered`)
+        .set("Authorization", `Bearer 1234`);
+
+      expect(result.status).toBe(200);
+      expect(result.body).toHaveLength(1);
+      expect(result.body[0].baseTopic).toBe("esp32-dht22-topic");
+      expect(result.body[0].count).toBe(3);
+      expect(result.body[0].firstSeenAt).toBeDefined();
+      expect(result.body[0].lastSeenAt).toBeDefined();
     });
   });
 });
