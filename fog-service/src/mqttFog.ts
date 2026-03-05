@@ -118,7 +118,8 @@ class MqttFog {
   }
   private handleMeasurement(topic: string, data: any): void {
     if (!this.buffer.has(topic)) {
-      this.buffer.set(topic, []);
+      console.warn(`⚠️ [handleMeasurement] Mesures reçues sans session active pour: ${topic} — ignorées`);
+      return;
     }
     if (this.buffer.get(topic)!.length >= this.flushMaxSize) {
       this.flushBuffer(topic).catch((e) => console.error("❌ [flushBuffer]", e));
