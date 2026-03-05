@@ -199,6 +199,34 @@
 		flex-shrink: 0;
 	}
 
+	@media (max-width: 600px) {
+		.sensor-detail {
+			padding: 1rem;
+		}
+
+		.sensor-header {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.btn-new-session {
+			width: 100%;
+		}
+
+		.sessions-section {
+			padding: 1rem;
+		}
+
+		.sessions-list :deep(.session-container) {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.sessions-list :deep(.btn-export) {
+			width: 100%;
+		}
+	}
+
 	.empty-state {
 		color: var(--color-text-muted);
 		text-align: center;

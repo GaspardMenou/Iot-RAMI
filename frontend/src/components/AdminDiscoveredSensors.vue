@@ -136,6 +136,8 @@
 	}
 
 	.description {
+		flex: 1;
+		min-width: 0;
 		font-size: 0.875rem;
 		color: var(--color-text-muted);
 		margin: 0;

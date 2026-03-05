@@ -156,6 +156,24 @@
 		gap: 1rem;
 	}
 
+	@media (max-width: 600px) {
+		.dashboard {
+			padding: 1rem;
+		}
+
+		.stats-row {
+			gap: 0.5rem;
+		}
+
+		.stat-card {
+			padding: 0.75rem;
+		}
+
+		.stat-value {
+			font-size: 1.5rem;
+		}
+	}
+
 	/* Empty state */
 	.empty-state {
 		color: var(--color-text-muted);
