@@ -7,11 +7,11 @@ and closed when the fog sends a STOP event (or via admin).
  */
 
 interface SessionCreation {
-  id: string;
+  id?: string;
   idFog?: string;
   idSensor: string;
   createdAt: Date;
-  endedAt: Date;
+  endedAt?: Date;
 }
 
 interface Session {

@@ -11,6 +11,8 @@ import {
 } from "@utils/exceptions";
 import { Role } from "#/user";
 import { decodeToken, getSensorsAvailable } from "@controllers/measurement";
+import { discoveredTopics } from "@service/discorverdSensorSevice";
+
 
 const checkName = (name: string) => {
   if (!name) {
@@ -139,8 +141,7 @@ const getSensorStatus = async (req: Request, res: Response) => {
 
 const getDiscoveredSensors = async (_: Request, res: Response) => {
   try {
-    // La découverte de capteurs est maintenant déléguée au Fog Service
-    return res.status(200).json([]);
+    return res.status(200).json(Array.from(discoveredTopics));
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }

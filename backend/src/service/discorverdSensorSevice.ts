@@ -1,0 +1,1 @@
+export const discoveredTopics = new Set<string>()
