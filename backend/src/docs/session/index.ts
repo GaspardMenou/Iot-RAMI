@@ -53,9 +53,9 @@ const paths = {
           "application/json": {
             schema: {
               type: "object",
-              required: ["idSensor"],
+              required: ["idSession"],
               properties: {
-                idSensor: { type: "string", format: "uuid" },
+                idSession: { type: "string", format: "uuid", description: "Session UUID to close" },
               },
             },
           },

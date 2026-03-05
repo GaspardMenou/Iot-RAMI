@@ -109,8 +109,9 @@ const components = {
         properties: {
           id: { type: "string", format: "uuid", description: "Session UUID" },
           idSensor: { type: "string", format: "uuid", description: "Sensor UUID" },
-          startedAt: { type: "string", format: "date-time" },
-          endedAt: { type: "string", format: "date-time", nullable: true },
+          idFog: { type: "string", description: "Fog service identifier" },
+          createdAt: { type: "string", format: "date-time", description: "Session start time" },
+          endedAt: { type: "string", format: "date-time", nullable: true, description: "Session end time (null if still active)" },
         },
       },
       User: {

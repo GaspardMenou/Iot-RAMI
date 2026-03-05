@@ -12,6 +12,41 @@ const paths = {
   "/users/update/role": { ...updateRole },
   "/users/verify/adminPanel": { ...verifyAdminPanel },
   "/users/all": { ...getAll },
+  "/users/{id}/sessions": {
+    get: {
+      tags: ["User"],
+      summary: "Get all sessions for a user",
+      operationId: "getUserSessions",
+      parameters: [
+        { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" }, description: "User UUID" },
+      ],
+      responses: {
+        "200": {
+          description: "List of sessions for this user",
+          content: { "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Session" } } } },
+        },
+        "500": { description: "Internal server error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+      },
+    },
+  },
+  "/users/{id}/sessions/on/sensor/{idSensor}": {
+    get: {
+      tags: ["User"],
+      summary: "Get sessions for a user on a specific sensor",
+      operationId: "getUserSessionsOnSensor",
+      parameters: [
+        { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" }, description: "User UUID" },
+        { name: "idSensor", in: "path", required: true, schema: { type: "string", format: "uuid" }, description: "Sensor UUID" },
+      ],
+      responses: {
+        "200": {
+          description: "List of sessions for this user on this sensor",
+          content: { "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Session" } } } },
+        },
+        "500": { description: "Internal server error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+      },
+    },
+  },
   "/users/sensors/access": {
     get: {
       tags: ["User Access Control"],
@@ -103,6 +138,33 @@ const paths = {
       },
     },
   },
+  "/users/sensors/creation/ask": {
+    post: {
+      tags: ["User Access Control"],
+      summary: "Request creation of a new sensor",
+      operationId: "askForSensorCreation",
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["sensorName"],
+              properties: {
+                sensorName: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        "201": { description: "Creation request submitted" },
+        "400": { description: "Validation error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+      },
+    },
+  },
   "/users/sensors/creation": {
     get: {
       tags: ["User Access Control"],
@@ -116,7 +178,7 @@ const paths = {
     },
     post: {
       tags: ["User Access Control"],
-      summary: "Approve or reject a sensor creation request (admin only)",
+      summary: "Approve a sensor creation request (admin only)",
       operationId: "createSensorForUser",
       security: [{ bearerAuth: [] }],
       requestBody: {
@@ -137,6 +199,69 @@ const paths = {
       responses: {
         "200": { description: "Request processed" },
         "400": { description: "Validation error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+      },
+    },
+  },
+  "/users/measurementTypes/creation/ask": {
+    post: {
+      tags: ["User Access Control"],
+      summary: "Request creation of a new measurement type",
+      operationId: "askForMeasurementTypeCreation",
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["measurementTypeName"],
+              properties: {
+                measurementTypeName: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        "201": { description: "Creation request submitted" },
+        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+      },
+    },
+  },
+  "/users/measurementTypes/creation": {
+    get: {
+      tags: ["User Access Control"],
+      summary: "Get measurement type creation requests (admin only)",
+      operationId: "getUserMeasurementTypeRequests",
+      security: [{ bearerAuth: [] }],
+      responses: {
+        "200": { description: "List of pending measurement type creation requests" },
+        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+      },
+    },
+    post: {
+      tags: ["User Access Control"],
+      summary: "Approve a measurement type creation request (admin only)",
+      operationId: "createMeasurementTypeForUser",
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["userName", "measurementTypeName"],
+              properties: {
+                userName: { type: "string" },
+                measurementTypeName: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        "200": { description: "Request processed" },
         "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
       },
     },
