@@ -13,6 +13,7 @@ type APISensorErrors =
   | "sensor.id.required"
   | "sensor.id.not.string"
   | "sensor.id.not.uuid"
+  | "sensor.name.invalid"
   | "sensor.already.exists";
 
 type APISensorDataErrors =

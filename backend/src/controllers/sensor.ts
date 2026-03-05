@@ -111,6 +111,7 @@ const createSensor = async (req: Request, res: Response) => {
         .status(500)
         .json(new ServerErrorException("Server error", "server.error"));
     }
+    discoveredTopics.delete(topic);
     return res.status(201).json(sensor);
   } catch (error) {
     return res
