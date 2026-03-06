@@ -7,6 +7,7 @@ import db from "@db/index";
 import type { Sensor } from "#/sensor";
 import type { MeasurementTypeModel } from "#/measurementType";
 import { addDiscoveredTopic } from "@service/discorverdSensorSevice";
+import * as dlq from "@service/dlqService";
 
 const { Sensor: SensorModel, Session, MeasurementType } = db;
 
@@ -98,11 +99,17 @@ class SocketService {
           }
         } catch (error) {
           console.error("❌ [Kafka] Erreur traitement message:", error);
+          dlq.push(data);
         }
       });
       await kafkaService.startConsuming();
       this.kafkaRetryCount = 0;
       console.log("Kafka consumer started");
+      await dlq.flush(async (data: KafkaPayload) => {
+        if (data.type === "start") await this.handleSessionStart(data);
+        else if (data.type === "data") await this.handleSensorData(data);
+        else if (data.type === "stop") await this.handleSessionStop(data);
+      });
     } catch (error) {
       this.kafkaRetryCount++;
       if (this.kafkaRetryCount > SocketService.KAFKA_MAX_RETRIES) {

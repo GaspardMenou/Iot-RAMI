@@ -78,8 +78,9 @@ export const useSensor = (sensorName: string | undefined) => {
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},
-		})) as { data: Sensor[] }
-		return result.data
+		})) as { data: { data: Sensor[] } | Sensor[] }
+		const payload = result.data
+		return Array.isArray(payload) ? payload : payload.data
 	}
 
 	const fetchSensors = async () => {

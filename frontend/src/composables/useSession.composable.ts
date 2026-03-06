@@ -147,7 +147,8 @@ const useSession = () => {
 	const fetchAllSessionsOfSensor = async (sensorId: string) => {
 		try {
 			const response = await axios.get(getURLForFetchingSensorSessions(sensorId))
-			sessions.value = response.data // Mettre à jour les sessions avec les données de l'API
+			const payload = response.data
+			sessions.value = Array.isArray(payload) ? payload : payload.data
 		} catch (error) {
 			console.error("Error fetching sessions:", error)
 		}
