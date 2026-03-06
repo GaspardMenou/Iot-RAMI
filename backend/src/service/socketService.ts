@@ -7,6 +7,7 @@ import db from "@db/index";
 import type { Sensor } from "#/sensor";
 import type { MeasurementTypeModel } from "#/measurementType";
 import { addDiscoveredTopic } from "@service/discorverdSensorSevice";
+import { now } from "sequelize/types/utils";
 
 const { Sensor: SensorModel, Session, MeasurementType } = db;
 
@@ -132,12 +133,23 @@ class SocketService {
   // Map measureType name → id
   private measurementTypesMap: Map<string, string> = new Map();
 
+  private measurementTypesCacheTime: Date | null = null;
+
+  private TTL = 5 * 60 * 1000; // 5 minutes
+
   private async getMeasurementTypesMap(): Promise<void> {
-    if (this.measurementTypesMap.size > 0) return;
+    const now = new Date();
+    if (
+      this.measurementTypesMap.size > 0 &&
+      this.measurementTypesCacheTime &&
+      now.getTime() - this.measurementTypesCacheTime.getTime() < this.TTL
+    )
+      return;
     const types = await MeasurementType.findAll();
     types.forEach((mt: MeasurementTypeModel) => {
       this.measurementTypesMap.set(mt.dataValues.name, mt.dataValues.id);
     });
+    this.measurementTypesCacheTime = now;
   }
 
   private async handleSessionStart(data: KafkaStartPayload): Promise<void> {

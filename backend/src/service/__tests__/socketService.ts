@@ -40,6 +40,7 @@ describe("SocketService", () => {
     (service as any).sessionCreationInProgress = new Set();
     (service as any).measurementTypesMap = new Map();
     (service as any).kafkaRetryCount = 0;
+    (service as any).measurementTypesCacheTime = null;
   });
 
   // ── handleSessionStart ───────────────────────────────────────────────────
@@ -123,7 +124,10 @@ describe("SocketService", () => {
     });
 
     it("skips if a session already exists for the topic", async () => {
-      (service as any).activeSessions.set("test/topic/sensor", "existing-session");
+      (service as any).activeSessions.set(
+        "test/topic/sensor",
+        "existing-session"
+      );
 
       await (service as any).handleSessionStart({
         type: "start",
@@ -166,6 +170,35 @@ describe("SocketService", () => {
       });
 
       expect(db.Session.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("getMeasurementTypesMap", () => {
+    it("ne recharge pas le cache si le TTL n'est pas expiré", async () => {
+      (db.MeasurementType.findAll as jest.Mock).mockResolvedValue([
+        { dataValues: { name: "ecg", id: "type-uuid" } },
+      ]);
+
+      await (service as any).getMeasurementTypesMap();
+      await (service as any).getMeasurementTypesMap();
+
+      expect(db.MeasurementType.findAll).toHaveBeenCalledTimes(1);
+    });
+
+    it("recharge le cache si le TTL est expiré", async () => {
+      (db.MeasurementType.findAll as jest.Mock).mockResolvedValue([
+        { dataValues: { name: "ecg", id: "type-uuid" } },
+      ]);
+
+      await (service as any).getMeasurementTypesMap();
+
+      (service as any).measurementTypesCacheTime = new Date(
+        Date.now() - 300100
+      );
+
+      await (service as any).getMeasurementTypesMap();
+
+      expect(db.MeasurementType.findAll).toHaveBeenCalledTimes(2);
     });
   });
 
