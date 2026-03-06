@@ -151,6 +151,9 @@ const getDiscoveredSensors = async (_: Request, res: Response) => {
 const getSensor = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name } = req.query;
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const offset = (page - 1) * limit;
   let nameString = "";
   if (name) {
     nameString = name.toString();
@@ -219,20 +222,20 @@ const getSensor = async (req: Request, res: Response) => {
 
   try {
     // find one if there is an id or findAll if there is no id
-    const sensors = id
-      ? await Sensor.findByPk(id)
-      : nameString !== ""
-      ? await Sensor.findOne({ where: { name: nameString } })
-      : isAdmin
-      ? await Sensor.findAll()
-      : await Sensor.findAll({ where: { id: sensorsAvailableId } });
-    // if there is no sensor, throw an exception
-    if (!sensors) {
-      return res
-        .status(404)
-        .json(new NotFoundException("Sensor not found", "sensor.not.found"));
+    if (id) {
+      const sensor = await Sensor.findByPk(id);
+      if (!sensor) return res.status(404).json(new NotFoundException("Sensor not found", "sensor.not.found"));
+      return res.status(200).json(sensor);
     }
-    return res.status(200).json(sensors);
+    if (nameString !== "") {
+      const sensor = await Sensor.findOne({ where: { name: nameString } });
+      if (!sensor) return res.status(404).json(new NotFoundException("Sensor not found", "sensor.not.found"));
+      return res.status(200).json(sensor);
+    }
+    const where = isAdmin ? {} : { id: sensorsAvailableId };
+    const { count, rows } = await Sensor.findAndCountAll({ where, limit, offset });
+    if (!rows) return res.status(404).json(new NotFoundException("Sensor not found", "sensor.not.found"));
+    return res.status(200).json({ data: rows, total: count, page, limit, totalPages: Math.ceil(count / limit) });
   } catch (error) {
     return res
       .status(500)
@@ -375,9 +378,11 @@ const deleteSensor = async (req: Request, res: Response) => {
 
 const getSensorSessions = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const offset = (page - 1) * limit;
 
   try {
-    // Let's find out the sensoer
     const sensor = await Sensor.findByPk(id);
     if (!sensor) {
       return res
@@ -385,11 +390,14 @@ const getSensorSessions = async (req: Request, res: Response) => {
         .json(new NotFoundException("Sensor not found", "sensor.not.found"));
     }
 
-    const sensorSessions = await Session.findAll({
+    const { count, rows } = await Session.findAndCountAll({
       where: { idSensor: sensor.id },
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
     });
 
-    return res.status(200).json(sensorSessions);
+    return res.status(200).json({ data: rows, total: count, page, limit, totalPages: Math.ceil(count / limit) });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }

@@ -14,6 +14,7 @@ jest.mock("@db/index", () => ({
   Session: {
     create: jest.fn(),
     findAll: jest.fn(),
+    findAndCountAll: jest.fn(),
     findByPk: jest.fn(),
     destroy: jest.fn(),
     update: jest.fn(),
@@ -133,12 +134,13 @@ describe("Session Controller", () => {
         },
       ];
 
-      mockDB.Session.findAll.mockResolvedValue(sessions);
+      mockDB.Session.findAndCountAll.mockResolvedValue({ count: sessions.length, rows: sessions });
 
       const res = await request.get(baseUri);
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual(sessions);
+      expect(res.body.data).toEqual(sessions);
+      expect(res.body.total).toBe(sessions.length);
     });
   });
 

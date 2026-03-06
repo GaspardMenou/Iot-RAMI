@@ -217,16 +217,17 @@ describe("Sensor controller", () => {
       jwt.verify = verifyMock;
       jwt.decode = verifyMock;
 
-      const findAllMock = jest.fn();
-      findAllMock.mockResolvedValue(sensors);
-      SensorModel.findAll = findAllMock;
+      const findAndCountAllMock = jest.fn();
+      findAndCountAllMock.mockResolvedValue({ count: sensors.length, rows: sensors });
+      SensorModel.findAndCountAll = findAndCountAllMock;
 
       const result = await superTest(app)
         .get(baseUri)
         .set("Authorization", `Bearer 1234`);
 
       expect(result.status).toBe(200);
-      expect(result.body).toEqual(sensors);
+      expect(result.body.data).toEqual(sensors);
+      expect(result.body.total).toBe(sensors.length);
     });
 
     test("should return a 200 with the sensor with the associated id", async () => {
