@@ -7,7 +7,6 @@ import db from "@db/index";
 import type { Sensor } from "#/sensor";
 import type { MeasurementTypeModel } from "#/measurementType";
 import { addDiscoveredTopic } from "@service/discorverdSensorSevice";
-import { now } from "sequelize/types/utils";
 
 const { Sensor: SensorModel, Session, MeasurementType } = db;
 
@@ -245,6 +244,21 @@ class SocketService {
   public emitSensorStatus(sensorName: string, status: string) {
     this.io.emit("sensor-status", { sensorName, status });
     console.log(`Emitted sensor status for sensor ${sensorName}:`, status);
+  }
+
+  public async close(): Promise<void> {
+    const now = new Date();
+    for (const [, sessionId] of this.activeSessions) {
+      await Session.update({ endedAt: now }, { where: { id: sessionId } });
+    }
+    console.log(`${this.activeSessions.size} session(s) clôturée(s) au shutdown`);
+    this.activeSessions.clear();
+    this.io.close();
+    const kafkaService = await KafkaService.getInstance();
+    if (kafkaService) {
+      await kafkaService.disconnect();
+    }
+    console.log("SocketService fermé proprement");
   }
 }
 

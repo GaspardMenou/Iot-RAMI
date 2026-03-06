@@ -52,3 +52,14 @@ server.on("listening", () => {
 });
 
 server.listen(port);
+
+const shutdown = async () => {
+  console.log("Arrêt du serveur...");
+  server.close(async () => {
+    await socketService.close();
+    process.exit(0);
+  });
+};
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
