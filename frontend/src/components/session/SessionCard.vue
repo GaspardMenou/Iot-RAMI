@@ -63,17 +63,21 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		font-family: var(--font-mono);
 	}
 
 	.session-duration {
 		font-size: 0.75rem;
 		color: var(--color-text-muted);
+		font-family: var(--font-mono);
 	}
 
 	.session-active {
 		font-size: 0.75rem;
 		color: var(--color-success);
 		font-weight: 600;
+		font-family: var(--font-mono);
+		letter-spacing: 0.04em;
 	}
 
 	.btn-export {

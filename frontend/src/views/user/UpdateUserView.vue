@@ -97,6 +97,52 @@
 	}
 
 	.toggle-container .toggle-label {
-		font-size: 1rem;
+		font-size: 0.9rem;
+		color: var(--color-text-muted);
+	}
+
+	/* Toggle switch */
+	.switch {
+		position: relative;
+		display: inline-block;
+		width: 42px;
+		height: 24px;
+		flex-shrink: 0;
+	}
+
+	.switch input {
+		opacity: 0;
+		width: 0;
+		height: 0;
+		position: absolute;
+	}
+
+	.slider {
+		position: absolute;
+		inset: 0;
+		background-color: var(--color-border);
+		border-radius: 24px;
+		cursor: pointer;
+		transition: background-color 0.2s;
+	}
+
+	.slider::before {
+		content: '';
+		position: absolute;
+		width: 18px;
+		height: 18px;
+		left: 3px;
+		top: 3px;
+		background: white;
+		border-radius: 50%;
+		transition: transform 0.2s;
+	}
+
+	input:checked + .slider {
+		background-color: var(--color-primary);
+	}
+
+	input:checked + .slider::before {
+		transform: translateX(18px);
 	}
 </style>

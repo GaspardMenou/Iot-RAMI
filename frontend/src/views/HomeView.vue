@@ -56,7 +56,7 @@
 		<div class="search-nav">
 			<input
 				v-model="searchedSensor"
-				placeholder="Enter a sensor name" />
+				placeholder="Rechercher un capteur..." />
 		</div>
 		<section
 			v-if="searchedSensor !== ''"
@@ -67,7 +67,7 @@
 					:key="filteredSensor.name"
 					class="container">
 					<h3>{{ filteredSensor.name }}</h3>
-					<button @click="setMeasurementAvailable(filteredSensor.name)">Set measurement available</button>
+					<button @click="setMeasurementAvailable(filteredSensor.name)">Activer les mesures</button>
 					<div class="measurement-card-container">
 						<div v-if="filteredSensor.propertyVerified">
 							<measurement-card
@@ -83,7 +83,7 @@
 			<div
 				v-if="filteredSensors.length === 0"
 				class="no-sensor">
-				No sensor found
+				Aucun capteur trouvé
 			</div>
 		</section>
 	</div>
@@ -117,11 +117,25 @@
 	}
 
 	input {
-		font-size: 125%;
-		padding: 0 1vw;
+		font-size: 1rem;
+		padding: 0.6rem 1rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		color: var(--color-text);
+		width: 300px;
+		max-width: 100%;
+		transition: border-color 0.2s, box-shadow 0.2s;
+		font-family: var(--font-sans);
 
 		&::placeholder {
-			text-align: left;
+			color: var(--color-text-muted);
+		}
+
+		&:focus {
+			outline: none;
+			border-color: var(--color-primary);
+			box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
 		}
 	}
 

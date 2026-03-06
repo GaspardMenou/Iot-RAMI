@@ -19,7 +19,7 @@
 				v-if="activeStep === 1">
 				<SensorsList :isForRealTimeSession="true" />
 				<div class="sensor-info">
-					<p>You cannot click on a sensor that is not online{{ selectedSensorName }}</p>
+					<p>Vous ne pouvez pas sélectionner un capteur hors ligne.</p>
 				</div>
 			</div>
 		</div>
@@ -169,11 +169,17 @@
 		cursor: pointer;
 		padding: 15px;
 		margin: 0;
-		font-size: 1.2em;
-		background-color: #f5f5f5;
+		font-size: 1.1em;
+		background-color: var(--color-surface-secondary);
+		color: var(--color-text);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		transition: background-color 0.15s;
+	}
+
+	.step h2:hover {
+		background-color: var(--color-sidebar-hover);
 	}
 
 	.step h2 .arrow {
@@ -186,7 +192,7 @@
 
 	.step-content {
 		padding: 20px;
-		border-top: 1px solid #ddd;
+		border-top: 1px solid var(--color-border);
 	}
 
 	.sensor-info {
@@ -194,13 +200,27 @@
 	}
 
 	.badge-active {
-		display: inline-block;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		padding: 6px 14px;
-		background-color: #4caf50;
-		color: white;
+		background-color: rgba(34, 197, 94, 0.15);
+		color: var(--color-success);
+		border: 1px solid var(--color-success);
 		border-radius: 20px;
-		font-size: 0.85rem;
+		font-size: 0.82rem;
 		font-weight: 600;
+		font-family: var(--font-mono);
+		letter-spacing: 0.04em;
+	}
+
+	.badge-active::before {
+		content: '';
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background-color: var(--color-success);
+		animation: pulse 1.5s ease-in-out infinite;
 	}
 
 	.slider-container {
@@ -227,12 +247,14 @@
 	}
 
 	.info-box {
-		background-color: var(--color-surface);
-		padding: 10px;
-		border: 1px solid #ddd;
-		border-radius: 5px;
+		background-color: var(--color-surface-secondary);
+		padding: 10px 14px;
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
 		width: 48%;
 		text-align: center;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
 	}
 
 	@media (max-width: 768px) {

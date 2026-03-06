@@ -112,13 +112,33 @@
 	}
 
 	.badge-active {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		padding: 6px 14px;
-		background-color: var(--color-success);
-		color: white;
+		background-color: rgba(34, 197, 94, 0.15);
+		color: var(--color-success);
+		border: 1px solid var(--color-success);
 		border-radius: 20px;
-		font-size: 0.85rem;
+		font-size: 0.82rem;
 		font-weight: 600;
+		font-family: var(--font-mono);
+		letter-spacing: 0.04em;
 		white-space: nowrap;
+	}
+
+	.badge-active::before {
+		content: '';
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background-color: var(--color-success);
+		animation: pulse 1.5s ease-in-out infinite;
+	}
+
+	@keyframes pulse {
+		0%, 100% { opacity: 1; transform: scale(1); }
+		50% { opacity: 0.5; transform: scale(1.3); }
 	}
 
 	.badge-inactive {
@@ -135,8 +155,9 @@
 		display: flex;
 		flex-direction: row;
 		gap: 1rem;
-		font-size: 0.85rem;
+		font-size: 0.82rem;
 		color: var(--color-text-muted);
+		font-family: var(--font-mono);
 		white-space: nowrap;
 	}
 
@@ -144,6 +165,7 @@
 		background: var(--color-surface-secondary);
 		padding: 4px 10px;
 		border-radius: 6px;
+		border: 1px solid var(--color-border);
 	}
 
 	.graph-container {

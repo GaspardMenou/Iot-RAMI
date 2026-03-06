@@ -181,6 +181,7 @@
 	.form-input:focus {
 		border-color: var(--color-primary);
 		outline: none;
+		box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
 	}
 
 	.error-message {
