@@ -92,8 +92,8 @@
 			v-else-if="sensor"
 			class="empty-state waiting-state">
 			<div class="wait-icon">◌</div>
-			<p>En attente du démarrage de session…</p>
-			<p class="wait-sub">La session démarrera automatiquement dès que le capteur publiera.</p>
+			<p>EN ATTENTE DE DÉMARRAGE DE SESSION</p>
+			<p class="wait-sub">LA SESSION DÉMARRERA AUTOMATIQUEMENT DÈS RÉCEPTION DU PREMIER SIGNAL.</p>
 		</div>
 	</div>
 </template>

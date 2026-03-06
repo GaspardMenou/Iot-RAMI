@@ -228,7 +228,7 @@
 		justify-content: space-between;
 		padding: 0.9rem 1.25rem;
 		cursor: pointer;
-		background: rgba(0, 0, 0, 0.25);
+		background: var(--color-surface-secondary);
 		border-bottom: 1px solid transparent;
 		transition: background-color 0.15s;
 	}

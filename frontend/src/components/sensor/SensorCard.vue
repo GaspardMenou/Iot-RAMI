@@ -143,7 +143,7 @@
 		align-items: center;
 		justify-content: center;
 		align-self: stretch;
-		background: rgba(0, 0, 0, 0.2);
+		background: var(--color-overlay);
 		border-right: 1px solid var(--color-border);
 	}
 

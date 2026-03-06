@@ -23,7 +23,15 @@
 
 			<!-- Graphique -->
 			<div class="graph-area">
-				<Graph :chartData="chartData" />
+				<div
+					v-if="!selectedSession"
+					class="graph-placeholder">
+					<span class="placeholder-arrow">←</span>
+					<span class="placeholder-text">SÉLECTIONNER UNE SESSION</span>
+				</div>
+				<Graph
+					v-else
+					:chartData="chartData" />
 			</div>
 		</div>
 
@@ -75,7 +83,7 @@
 		justify-content: space-between;
 		padding: 0.75rem 1rem;
 		border-bottom: 1px solid var(--color-border);
-		background: rgba(0, 0, 0, 0.2);
+		background: var(--color-surface-secondary);
 	}
 
 	.panel-header h2 {
@@ -146,6 +154,36 @@
 
 	.graph-area :deep(.chart-wrapper) {
 		height: calc(100% - 44px);
+	}
+
+	/* Placeholder graphique */
+	.graph-placeholder {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		color: var(--color-text-muted);
+		opacity: 0.5;
+	}
+
+	.placeholder-arrow {
+		font-family: var(--font-mono);
+		font-size: 2rem;
+		animation: nudge 2s ease-in-out infinite;
+	}
+
+	.placeholder-text {
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	@keyframes nudge {
+		0%, 100% { transform: translateX(0); }
+		50% { transform: translateX(-6px); }
 	}
 
 	/* Empty */

@@ -65,6 +65,7 @@
 				<div class="panel-header">
 					<h2>SESSIONS PASSÉES</h2>
 					<span class="session-count">{{ sessions.length }} ENREG.</span>
+					<span class="session-hint">→ MES CAPTEURS POUR REJOUER</span>
 				</div>
 
 				<div
@@ -186,7 +187,7 @@
 		justify-content: space-between;
 		padding: 0.75rem 1.25rem;
 		border-bottom: 1px solid var(--color-border);
-		background: rgba(0, 0, 0, 0.2);
+		background: var(--color-surface-secondary);
 	}
 
 	.panel-header h2 {
@@ -202,6 +203,15 @@
 		font-size: 0.62rem;
 		color: var(--color-text-muted);
 		letter-spacing: 0.1em;
+	}
+
+	.session-hint {
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		color: var(--color-primary);
+		letter-spacing: 0.1em;
+		opacity: 0.45;
+		margin-left: auto;
 	}
 
 	.sessions-list {

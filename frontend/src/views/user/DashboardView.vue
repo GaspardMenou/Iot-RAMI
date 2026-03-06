@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { defineComponent, onMounted, ref } from "vue"
+	import { useRouter } from "vue-router"
 	import { useSensor } from "@/composables/useSensor.composable"
 	import { useAxios } from "@/composables/useAxios.composable"
 	import { UserFields } from "#/user"
@@ -12,18 +13,22 @@
 		setup() {
 			const { fetchSensors, sensors } = useSensor(undefined)
 			const { axios } = useAxios()
+			const router = useRouter()
 
 			const allSessions = ref<Session[]>([])
 			const firstName = localStorage.getItem(UserFields.FIRST_NAME) || "vous"
 			const userId = localStorage.getItem(UserFields.ID)
+			const isLoading = ref(true)
 
 			onMounted(async () => {
-				await fetchSensors()
 				try {
+					await fetchSensors()
 					const { data } = await axios.get(`users/${userId}/sessions`)
 					allSessions.value = data
 				} catch (e) {
 					console.error("Erreur lors du chargement des sessions:", e)
+				} finally {
+					isLoading.value = false
 				}
 			})
 
@@ -31,6 +36,8 @@
 				sensors,
 				allSessions,
 				firstName,
+				isLoading,
+				goToSensors: () => router.push({ name: "sensors" }),
 			}
 		},
 	})
@@ -48,16 +55,40 @@
 
 		<!-- Stats -->
 		<div class="stats-row">
-			<div class="stat-card">
-				<span class="stat-num">{{ String(sensors.length).padStart(2, '0') }}</span>
+			<div
+				class="stat-card stat-card--link"
+				title="Voir mes capteurs"
+				@click="goToSensors">
+				<span
+					v-if="isLoading"
+					class="stat-num stat-skeleton">--</span>
+				<span
+					v-else
+					class="stat-num">{{ String(sensors.length).padStart(2, '0') }}</span>
 				<span class="stat-label">CAPTEURS</span>
 			</div>
-			<div class="stat-card">
-				<span class="stat-num">{{ String(allSessions.length).padStart(2, '0') }}</span>
+			<div
+				class="stat-card stat-card--link"
+				title="Voir l'historique des sessions"
+				@click="goToSensors">
+				<span
+					v-if="isLoading"
+					class="stat-num stat-skeleton">--</span>
+				<span
+					v-else
+					class="stat-num">{{ String(allSessions.length).padStart(2, '0') }}</span>
 				<span class="stat-label">SESSIONS TOTAL</span>
 			</div>
-			<div class="stat-card stat-card--live">
-				<span class="stat-num">{{ String(allSessions.filter(s => !s.endedAt).length).padStart(2, '0') }}</span>
+			<div
+				class="stat-card stat-card--live stat-card--link"
+				title="Voir les sessions en cours"
+				@click="goToSensors">
+				<span
+					v-if="isLoading"
+					class="stat-num stat-skeleton">--</span>
+				<span
+					v-else
+					class="stat-num">{{ String(allSessions.filter(s => !s.endedAt).length).padStart(2, '0') }}</span>
 				<span class="stat-label">EN COURS</span>
 			</div>
 		</div>
@@ -70,7 +101,16 @@
 			</div>
 
 			<div
-				v-if="sensors.length === 0"
+				v-if="isLoading"
+				class="sensors-loading">
+				<div
+					v-for="i in 3"
+					:key="i"
+					class="sensor-skeleton" />
+			</div>
+
+			<div
+				v-else-if="sensors.length === 0"
 				class="empty-state">
 				AUCUN CAPTEUR ACCESSIBLE
 			</div>
@@ -148,8 +188,28 @@
 		transition: background-color 0.15s;
 	}
 
-	.stat-card:hover {
+	.stat-card--link {
+		cursor: pointer;
+	}
+
+	.stat-card--link:hover {
 		background: var(--color-surface-secondary);
+		outline: 1px solid var(--color-border-bright);
+	}
+
+	.stat-card--link:hover .stat-label::after {
+		content: " →";
+		opacity: 0.5;
+	}
+
+	.stat-skeleton {
+		opacity: 0.2;
+		animation: pulse 1.5s ease-in-out infinite;
+	}
+
+	@keyframes pulse {
+		0%, 100% { opacity: 0.2; }
+		50% { opacity: 0.5; }
 	}
 
 	.stat-card--live .stat-num {
@@ -186,7 +246,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 0.65rem 1rem;
-		background: rgba(0,0,0,0.2);
+		background: var(--color-surface-secondary);
 		border: 1px solid var(--color-border);
 		border-bottom: none;
 	}
@@ -218,6 +278,37 @@
 
 	.sensors-grid > *:not(:last-child) {
 		border-bottom: 1px solid var(--color-border);
+	}
+
+	/* Skeleton loaders */
+	.sensors-loading {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		border: 1px solid var(--color-border);
+	}
+
+	.sensor-skeleton {
+		height: 64px;
+		background: var(--color-surface);
+		border-bottom: 1px solid var(--color-border);
+		animation: shimmer 1.5s ease-in-out infinite;
+		background-image: linear-gradient(
+			90deg,
+			var(--color-surface) 0%,
+			var(--color-surface-secondary) 50%,
+			var(--color-surface) 100%
+		);
+		background-size: 200% 100%;
+	}
+
+	.sensor-skeleton:last-child {
+		border-bottom: none;
+	}
+
+	@keyframes shimmer {
+		0% { background-position: 200% 0; }
+		100% { background-position: -200% 0; }
 	}
 
 	/* Empty state */

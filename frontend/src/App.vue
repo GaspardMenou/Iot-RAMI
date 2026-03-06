@@ -23,8 +23,8 @@
 				to bottom,
 				transparent,
 				transparent 3px,
-				rgba(0, 0, 0, 0.12) 3px,
-				rgba(0, 0, 0, 0.12) 4px
+				var(--color-overlay-light) 3px,
+				var(--color-overlay-light) 4px
 			);
 	}
 

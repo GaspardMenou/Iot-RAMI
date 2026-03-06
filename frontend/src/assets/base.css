@@ -44,6 +44,10 @@
     /* ── Ombres ── */
     --color-shadow: rgba(255, 159, 10, 0.04);
 
+    /* ── Overlays ── */
+    --color-overlay: rgba(0, 0, 0, 0.22);
+    --color-overlay-light: rgba(0, 0, 0, 0.1);
+
     /* ── Typographie ── */
     --font-display: 'Big Shoulders Display', Impact, condensed, sans-serif;
     --font-sans: 'Martian Mono', 'Courier New', monospace;
@@ -116,6 +120,10 @@ body {
 
         /* Ombres */
         --color-shadow: rgba(0, 0, 0, 0.08);
+
+        /* Overlays */
+        --color-overlay: rgba(0, 0, 0, 0.06);
+        --color-overlay-light: rgba(0, 0, 0, 0.03);
     }
 }
 

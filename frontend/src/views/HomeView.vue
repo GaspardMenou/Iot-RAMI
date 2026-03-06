@@ -218,7 +218,7 @@
 		justify-content: space-between;
 		padding: 0.75rem 1rem;
 		border-bottom: 1px solid var(--color-border);
-		background: rgba(0, 0, 0, 0.2);
+		background: var(--color-surface-secondary);
 	}
 
 	.sensor-block-name {
