@@ -186,6 +186,29 @@
 		50% { transform: translateX(-6px); }
 	}
 
+	@media (max-width: 600px) {
+		.panel-body {
+			flex-direction: column;
+			height: auto;
+		}
+
+		.sessions-list {
+			width: 100%;
+			min-width: unset;
+			max-height: 220px;
+			border-right: none;
+			border-bottom: 1px solid var(--color-border);
+		}
+
+		.graph-area {
+			height: 320px;
+		}
+
+		.graph-placeholder {
+			height: 320px;
+		}
+	}
+
 	/* Empty */
 	.empty-state {
 		padding: 3rem;

@@ -218,6 +218,26 @@
 		transform: translateX(3px);
 	}
 
+	@media (max-width: 500px) {
+		.sensor-name-row {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 3px;
+		}
+
+		.sensor-name {
+			font-size: 0.95rem;
+			white-space: normal;
+			overflow: visible;
+			text-overflow: unset;
+		}
+
+		.sensor-status-bar {
+			width: 36px;
+			min-width: 36px;
+		}
+	}
+
 	/* ── Statuts ── */
 	@keyframes pulse-led {
 		0%, 100% { opacity: 1; box-shadow: 0 0 6px currentColor; }

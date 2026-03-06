@@ -110,6 +110,13 @@
 		text-overflow: ellipsis;
 	}
 
+	@media (max-width: 500px) {
+		.session-date {
+			white-space: normal;
+			font-size: 0.68rem;
+		}
+	}
+
 	.session-duration {
 		font-family: var(--font-mono);
 		font-size: 0.68rem;

@@ -325,11 +325,19 @@
 
 	@media (max-width: 600px) {
 		.stats-row {
-			grid-template-columns: 1fr;
+			grid-template-columns: repeat(3, 1fr);
+		}
+
+		.stat-card {
+			padding: 0.75rem;
 		}
 
 		.stat-num {
 			font-size: 2rem;
+		}
+
+		.section-hint {
+			display: none;
 		}
 	}
 </style>

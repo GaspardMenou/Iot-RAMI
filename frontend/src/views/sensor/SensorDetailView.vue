@@ -236,6 +236,10 @@
 	}
 
 	@media (max-width: 600px) {
+		.session-hint {
+			display: none;
+		}
+
 		.detail-header {
 			flex-direction: column;
 			align-items: flex-start;
