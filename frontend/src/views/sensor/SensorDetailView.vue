@@ -125,6 +125,10 @@
 		padding-left: 0;
 	}
 
+	.detail-sensor-info :deep(.status-tag) {
+		display: none;
+	}
+
 	.btn-session {
 		display: flex;
 		align-items: center;

@@ -130,6 +130,12 @@
 		padding-left: 0;
 	}
 
+	/* Cache le status-tag intégré dans la card quand elle est dans le header
+	   (le statut est déjà affiché par le badge de session à droite) */
+	.header-sensor :deep(.status-tag) {
+		display: none;
+	}
+
 	.session-status {
 		flex-shrink: 0;
 	}

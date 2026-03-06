@@ -79,6 +79,10 @@
 			},
 		},
 		setup(props) {
+			// Lit une variable CSS depuis :root
+			const cssVar = (name: string) =>
+				getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+
 			const title = inject<string>("title")
 			const injectedChartData = inject<ChartData<"line">>("chartData")
 			const chartData = ref<ChartData<"line">>(
@@ -114,14 +118,14 @@
 						type: "time",
 						time: { unit: "second" },
 						grid: {
-							color: "rgba(255, 159, 10, 0.07)",
+							color: cssVar("--color-primary-dim") || "rgba(255,159,10,0.07)",
 							lineWidth: 1,
 						},
 						border: {
-							color: "rgba(255, 159, 10, 0.2)",
+							color: cssVar("--color-border-bright") || "rgba(255,159,10,0.2)",
 						},
 						ticks: {
-							color: "#7a6535",
+							color: cssVar("--color-text-muted") || "#7a6535",
 							font: { family: "Martian Mono", size: 10 },
 							maxTicksLimit: 8,
 						},
@@ -129,14 +133,14 @@
 					},
 					y: {
 						grid: {
-							color: "rgba(255, 159, 10, 0.07)",
+							color: cssVar("--color-primary-dim") || "rgba(255,159,10,0.07)",
 							lineWidth: 1,
 						},
 						border: {
-							color: "rgba(255, 159, 10, 0.2)",
+							color: cssVar("--color-border-bright") || "rgba(255,159,10,0.2)",
 						},
 						ticks: {
-							color: "#7a6535",
+							color: cssVar("--color-text-muted") || "#7a6535",
 							font: { family: "Martian Mono", size: 10 },
 						},
 						title: { display: false },
@@ -147,7 +151,7 @@
 						position: "top",
 						align: "end",
 						labels: {
-							color: "#7a6535",
+							color: cssVar("--color-text-muted") || "#7a6535",
 							font: { family: "Martian Mono", size: 10 },
 							usePointStyle: true,
 							pointStyle: "line",
@@ -156,11 +160,11 @@
 						},
 					},
 					tooltip: {
-						backgroundColor: "#0f0c00",
-						borderColor: "#241c00",
+						backgroundColor: cssVar("--color-surface") || "#0f0c00",
+						borderColor: cssVar("--color-border") || "#241c00",
 						borderWidth: 1,
-						titleColor: "#ff9f0a",
-						bodyColor: "#f0d89a",
+						titleColor: cssVar("--color-primary") || "#ff9f0a",
+						bodyColor: cssVar("--color-text") || "#f0d89a",
 						titleFont: { family: "Martian Mono", size: 11 },
 						bodyFont: { family: "Martian Mono", size: 11 },
 						padding: 10,
@@ -372,8 +376,8 @@
 		box-sizing: border-box;
 		/* Légère grille de fond pour l'effet oscilloscope */
 		background-image:
-			linear-gradient(rgba(255,159,10,0.035) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(255,159,10,0.035) 1px, transparent 1px);
+			linear-gradient(var(--color-primary-dim) 1px, transparent 1px),
+			linear-gradient(90deg, var(--color-primary-dim) 1px, transparent 1px);
 		background-size: 40px 40px;
 	}
 </style>

@@ -33,14 +33,13 @@
 		padding: 2rem 2.5rem;
 		overflow-y: auto;
 		background: transparent;
-		/* Légère grille en arrière-plan */
 		background-image:
-			linear-gradient(rgba(255, 159, 10, 0.03) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(255, 159, 10, 0.03) 1px, transparent 1px);
+			linear-gradient(var(--color-primary-dim) 1px, transparent 1px),
+			linear-gradient(90deg, var(--color-primary-dim) 1px, transparent 1px);
 		background-size: 40px 40px;
 	}
 
-	@media (max-width: 768px) {
+@media (max-width: 768px) {
 		.content {
 			padding: 1rem;
 			padding-top: 4.5rem;

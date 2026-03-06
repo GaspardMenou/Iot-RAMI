@@ -71,6 +71,54 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Thème clair (OS system preference) ── */
+@media (prefers-color-scheme: light) {
+    :root {
+        /* Arrière-plans — parchemin chaud */
+        --color-background: #f2ead8;
+        --color-surface: #ede3cc;
+        --color-surface-secondary: #e5d9bc;
+
+        /* Sidebar */
+        --color-sidebar-bg: #e8deca;
+        --color-sidebar-text: #7a6030;
+        --color-sidebar-text-active: #1a1000;
+        --color-sidebar-hover: rgba(180, 100, 0, 0.08);
+        --color-sidebar-active: #b86e00;
+
+        /* Accent — ambre plus sombre pour fond clair */
+        --color-primary: #b86e00;
+        --color-primary-hover: #9a5c00;
+        --color-primary-glow: rgba(184, 110, 0, 0.22);
+        --color-primary-dim: rgba(184, 110, 0, 0.1);
+
+        /* Secondaire */
+        --color-secondary: #d8ccb0;
+        --color-secondary-hover: #ccc0a0;
+
+        /* Texte */
+        --color-text: #1a1200;
+        --color-text-muted: #7a6030;
+        --color-text-second: #f2ead8;
+
+        /* Bordures */
+        --color-border: #c8b896;
+        --color-border-bright: #b0996e;
+
+        /* Statuts */
+        --color-success: #1a8a00;
+        --color-success-hover: #157000;
+        --color-success-dim: rgba(26, 138, 0, 0.1);
+        --color-danger: #cc2200;
+        --color-danger-hover: #aa1800;
+        --color-danger-dim: rgba(204, 34, 0, 0.1);
+        --color-warning: #b88000;
+
+        /* Ombres */
+        --color-shadow: rgba(0, 0, 0, 0.08);
+    }
+}
+
 /* Scrollbar personnalisée */
 ::-webkit-scrollbar {
     width: 5px;
