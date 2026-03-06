@@ -147,8 +147,11 @@
 	}
 
 	.sensor-topic {
-		font-size: 0.9em;
+		font-size: 0.78em;
 		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		letter-spacing: -0.01em;
+		margin-top: 2px;
 	}
 
 	.sensor-status {
@@ -159,18 +162,35 @@
 	}
 
 	.status-text {
-		font-size: 0.85em;
+		font-size: 0.8em;
 		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
 	}
 
 	.status-indicator {
-		width: 12px;
-		height: 12px;
+		width: 10px;
+		height: 10px;
 		border-radius: 50%;
+		flex-shrink: 0;
 	}
 
-	.status-online .status-indicator { background-color: var(--color-success); }
-	.status-publishing .status-indicator { background-color: var(--color-warning); }
+	@keyframes pulse {
+		0%, 100% { opacity: 1; transform: scale(1); }
+		50% { opacity: 0.5; transform: scale(1.3); }
+	}
+
+	.status-online .status-indicator {
+		background-color: var(--color-success);
+		box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+	}
+	.status-publishing .status-indicator {
+		background-color: var(--color-warning);
+		box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+		animation: pulse 1.5s ease-in-out infinite;
+	}
 	.status-offline .status-indicator { background-color: var(--color-danger); }
 	.status-error .status-indicator { background-color: var(--color-text-muted); }
+	.status-unknown .status-indicator { background-color: var(--color-border); }
 </style>

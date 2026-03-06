@@ -2,62 +2,44 @@
 
 #app {
     margin: 0 auto;
-    padding: 2rem;
     font-weight: normal;
 }
 
-a,
-.green {
+a {
     text-decoration: none;
-    color: hsla(160, 100%, 37%, 1);
-    transition: 0.4s;
+    color: var(--color-primary);
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: var(--color-primary-hover);
 }
 
 button {
     background-color: var(--color-secondary);
     color: var(--color-text-second);
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
-    font-family: 'EB Garamond', serif;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: background-color 0.15s, color 0.15s;
 }
 
 button:hover {
     background-color: var(--color-secondary-hover);
 }
 
-
-@media (hover: hover) {
-    a:hover {
-        background-color: hsla(160, 100%, 37%, 0.2);
-    }
+h1, h2, h3, h4, h5, h6 {
+    color: var(--color-text);
+    line-height: 1.3;
 }
 
-/* Variables for fonts and font sizes */
-:root {
-    --font-family-base: 'Arial, sans-serif';
-    --font-size-base: 16px;
-    --font-size-large: 1.2em;
-  }
-  
-  /* Global font styles */
-  body {
-    font-family: var(--font-family-base);
-    font-size: var(--font-size-base);
+p {
     color: var(--color-text);
-  }
+}
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-family-base);
+.user-detail {
+    font-size: 1.1em;
     color: var(--color-text);
-  }
-
-  p, .user-detail {
-    font-family: var(--font-family-base);
-    font-size: var(--font-size-base);
-    color: var(--color-text);
-  }
-  
-  .user-detail {
-    font-size: var(--font-size-large);
-  }
+}

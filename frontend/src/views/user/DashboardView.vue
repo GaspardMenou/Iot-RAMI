@@ -116,23 +116,32 @@
 		flex: 1;
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
+		border-top: 3px solid var(--color-primary);
 		border-radius: 12px;
 		padding: 1.25rem 1.5rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
+		gap: 0.3rem;
+		transition: border-color 0.2s, box-shadow 0.2s;
+	}
+
+	.stat-card:hover {
+		box-shadow: 0 4px 16px rgba(14, 165, 233, 0.12);
 	}
 
 	.stat-value {
-		font-size: 2rem;
+		font-size: 2.2rem;
 		font-weight: 700;
 		color: var(--color-primary);
 		line-height: 1;
+		font-family: var(--font-mono);
 	}
 
 	.stat-label {
-		font-size: 0.85rem;
+		font-size: 0.8rem;
 		color: var(--color-text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
 	}
 
 	/* Sections */

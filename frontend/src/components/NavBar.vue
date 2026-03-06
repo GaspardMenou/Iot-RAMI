@@ -127,7 +127,9 @@
 		font-size: 1.4rem;
 		font-weight: 700;
 		color: var(--color-sidebar-text-active);
-		letter-spacing: 0.05em;
+		letter-spacing: 0.12em;
+		font-family: var(--font-mono);
+		text-transform: uppercase;
 	}
 
 	.sidebar-nav {
