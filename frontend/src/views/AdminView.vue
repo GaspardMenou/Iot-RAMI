@@ -8,11 +8,11 @@
 	import AdminDiscoveredSensors from "@/components/AdminDiscoveredSensors.vue"
 
 	const tabs = [
-		{ key: "roles", label: "Rôles utilisateurs" },
-		{ key: "access", label: "Accès capteurs" },
-		{ key: "sensor-requests", label: "Création capteurs" },
-		{ key: "measure-requests", label: "Types de mesure" },
-		{ key: "sessions", label: "Sessions actives" },
+		{ key: "roles", label: "Rôles" },
+		{ key: "access", label: "Accès" },
+		{ key: "sensor-requests", label: "Capteurs" },
+		{ key: "measure-requests", label: "Mesures" },
+		{ key: "sessions", label: "Sessions" },
 		{ key: "discover", label: "Découverte" },
 	] as const
 
@@ -30,7 +30,6 @@
 		},
 		setup() {
 			const activeTab = ref<TabKey>("roles")
-
 			return { tabs, activeTab }
 		},
 	})
@@ -38,10 +37,14 @@
 
 <template>
 	<div class="admin">
-		<h1 class="admin-title">Administration</h1>
+		<!-- Titre -->
+		<div class="admin-title-block">
+			<h1>ADMINISTRATION</h1>
+			<span class="admin-sub">PANNEAU DE CONTRÔLE SYSTÈME</span>
+		</div>
 
 		<!-- Tabs -->
-		<div class="tabs">
+		<div class="tabs-bar">
 			<button
 				v-for="tab in tabs"
 				:key="tab.key"
@@ -52,7 +55,7 @@
 			</button>
 		</div>
 
-		<!-- Content -->
+		<!-- Contenu -->
 		<div class="tab-content">
 			<AdminRoleComponent v-if="activeTab === 'roles'" />
 			<AdminSensorAccess v-else-if="activeTab === 'access'" />
@@ -66,118 +69,152 @@
 
 <style scoped>
 	.admin {
-		padding: 2rem;
 		max-width: 1100px;
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
-		gap: 1.5rem;
+		gap: 1.25rem;
 	}
 
-	.admin-title {
-		font-size: 1.8rem;
-		font-weight: 700;
-		margin: 0;
+	/* Titre */
+	.admin-title-block {
+		padding-bottom: 1rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.admin-title-block h1 {
+		font-family: var(--font-display);
+		font-size: 2.4rem;
+		font-weight: 900;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		line-height: 1;
+		color: var(--color-text);
+	}
+
+	.admin-sub {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		display: block;
+		margin-top: 4px;
 	}
 
 	/* Tabs */
-	.tabs {
+	.tabs-bar {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.25rem;
-		border-bottom: 2px solid var(--color-border);
-		padding-bottom: 0;
+		gap: 0;
+		border-bottom: 1px solid var(--color-border);
 	}
 
 	.tab-btn {
-		padding: 0.6rem 1.25rem;
-		font-size: 0.9rem;
-		font-weight: 500;
+		padding: 0.65rem 1.1rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		font-weight: 400;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
 		background: transparent;
 		color: var(--color-text-muted);
 		border: none;
 		border-bottom: 2px solid transparent;
-		margin-bottom: -2px;
-		border-radius: 0;
+		margin-bottom: -1px;
 		cursor: pointer;
 		white-space: nowrap;
 		transition: color 0.15s, border-color 0.15s;
+		border-radius: 0;
 	}
 
 	.tab-btn:hover {
 		color: var(--color-text);
-		background: transparent;
+		background: rgba(255, 159, 10, 0.03);
+		border-color: transparent;
 	}
 
 	.tab-btn.active {
 		color: var(--color-primary);
 		border-bottom-color: var(--color-primary);
-		background: transparent;
+		background: var(--color-primary-dim);
 	}
 
-	/* Content panel */
+	/* Contenu */
 	.tab-content {
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: 12px;
-		padding: 1.5rem 2rem;
+		padding: 1.5rem 1.75rem;
 	}
 
-	/* Dark theme override for all tables inside admin components */
+	/* Styles globaux pour les sous-composants admin */
 	.tab-content :deep(h1),
 	.tab-content :deep(h2) {
-		font-size: 1rem;
-		font-weight: 700;
-		margin: 0 0 1rem;
-		color: var(--color-text);
+		font-family: var(--font-display);
+		font-size: 0.95rem;
+		font-weight: 900;
+		margin: 0 0 1.25rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
 	}
 
 	.tab-content :deep(table) {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.875rem;
+		font-size: 0.78rem;
+		font-family: var(--font-mono);
 	}
 
 	.tab-content :deep(thead tr) {
-		background: var(--color-background);
+		background: rgba(0, 0, 0, 0.3);
 	}
 
 	.tab-content :deep(th) {
-		padding: 0.75rem 1rem;
+		padding: 0.65rem 0.9rem;
 		text-align: left;
-		font-weight: 600;
+		font-weight: 700;
+		font-size: 0.65rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
 		color: var(--color-text-muted);
 		border-bottom: 1px solid var(--color-border);
+		white-space: nowrap;
 		cursor: pointer;
 		user-select: none;
-		white-space: nowrap;
 	}
 
 	.tab-content :deep(th:hover) {
-		color: var(--color-text);
+		color: var(--color-primary);
 	}
 
 	.tab-content :deep(td) {
-		padding: 0.75rem 1rem;
+		padding: 0.65rem 0.9rem;
 		border-bottom: 1px solid var(--color-border);
 		color: var(--color-text);
 		vertical-align: middle;
 	}
 
 	.tab-content :deep(tbody tr:hover) {
-		background: var(--color-surface-secondary);
+		background: rgba(255, 159, 10, 0.03);
 	}
 
-	/* Select filter */
 	.tab-content :deep(select) {
 		background: var(--color-surface-secondary);
 		color: var(--color-text);
-		border: 1px solid var(--color-border);
-		border-radius: 6px;
+		border: 1px solid var(--color-border-bright);
 		padding: 0.4rem 0.75rem;
-		font-size: 0.875rem;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
 		margin-bottom: 1rem;
 		cursor: pointer;
+		border-radius: 0;
+		outline: none;
+	}
+
+	.tab-content :deep(select:focus) {
+		border-color: var(--color-primary);
+		box-shadow: 0 0 0 1px var(--color-primary-glow);
 	}
 
 	.tab-content :deep(label) {
@@ -185,38 +222,46 @@
 		align-items: center;
 		gap: 0.75rem;
 		margin-bottom: 0.5rem;
-		font-size: 0.875rem;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
 		color: var(--color-text-muted);
 	}
 
-	/* Action buttons inside tables */
+	/* Boutons dans les tableaux */
 	.tab-content :deep(td button) {
-		padding: 4px 12px;
-		font-size: 0.8rem;
-		font-weight: 600;
-		border-radius: 5px;
-		border: none;
+		padding: 3px 10px;
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		border: 1px solid rgba(57, 255, 20, 0.35);
+		border-radius: 0;
 		cursor: pointer;
-		transition: background-color 0.15s;
-		/* Default: success (Accept column) */
-		background-color: var(--color-success);
-		color: white;
+		transition: all 0.15s;
+		background: var(--color-success-dim);
+		color: var(--color-success);
 	}
 
 	.tab-content :deep(td button:hover) {
-		background-color: var(--color-success-hover);
+		background: var(--color-success);
+		color: #070600;
+		border-color: var(--color-success);
 	}
 
-	/* 6th column = Reject */
 	.tab-content :deep(tr td:nth-child(6) button) {
-		background-color: var(--color-danger);
+		background: var(--color-danger-dim);
+		color: var(--color-danger);
+		border-color: rgba(255, 64, 64, 0.35);
 	}
 
 	.tab-content :deep(tr td:nth-child(6) button:hover) {
-		background-color: var(--color-danger-hover);
+		background: var(--color-danger);
+		color: white;
+		border-color: var(--color-danger);
 	}
 
-	/* AdminRole form */
+	/* Formulaire admin */
 	.tab-content :deep(form) {
 		display: flex;
 		flex-direction: column;
@@ -236,19 +281,23 @@
 	}
 
 	.tab-content :deep(form button[type="submit"]) {
-		padding: 8px 20px;
-		background-color: var(--color-primary);
-		color: white;
+		padding: 0.6rem 1.25rem;
+		background: var(--color-primary);
+		color: var(--color-text-second);
 		border: none;
-		border-radius: 6px;
-		font-size: 0.9rem;
-		font-weight: 600;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
 		cursor: pointer;
 		align-self: flex-start;
-		transition: background-color 0.2s;
+		transition: all 0.15s;
+		border-radius: 0;
 	}
 
 	.tab-content :deep(form button[type="submit"]:hover) {
-		background-color: var(--color-primary-hover);
+		background: var(--color-primary-hover);
+		box-shadow: 0 0 16px var(--color-primary-glow);
 	}
 </style>

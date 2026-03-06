@@ -1,75 +1,102 @@
 <template>
-	<div class="create-session-container">
-		<h1>Créer une nouvelle session</h1>
+	<div class="session-panel">
+		<div class="panel-title">
+			<h1>NOUVELLE SESSION</h1>
+			<span class="panel-sub">ACQUISITION EN TEMPS RÉEL</span>
+		</div>
 
 		<!-- Étape 1 : Choix du capteur -->
 		<div
-			class="step"
-			:class="{ active: activeStep === 1 }">
-			<h2 @click="toggleStep(1)">
-				<span>Étape 1: Choix du capteur</span>
-				<span
-					class="arrow"
-					:class="{ down: activeStep === 1 }"
-					>▼</span
-				>
-			</h2>
+			class="step-block"
+			:class="{ 'step-block--active': activeStep === 1, 'step-block--done': activeStep > 1 }">
 			<div
-				class="step-content"
-				v-if="activeStep === 1">
+				class="step-header"
+				@click="toggleStep(1)">
+				<div class="step-label">
+					<span class="step-num">01</span>
+					<span class="step-title">SÉLECTION DU CAPTEUR</span>
+				</div>
+				<span
+					class="step-arrow"
+					:class="{ 'step-arrow--open': activeStep === 1 }">›</span>
+			</div>
+			<div
+				v-if="activeStep === 1"
+				class="step-content">
 				<SensorsList :isForRealTimeSession="true" />
-				<div class="sensor-info">
-					<p>Vous ne pouvez pas sélectionner un capteur hors ligne.</p>
+				<p class="step-hint">Seuls les capteurs EN LIGNE peuvent être sélectionnés.</p>
+			</div>
+		</div>
+
+		<!-- Étape 2 : En attente -->
+		<div
+			class="step-block"
+			:class="{ 'step-block--active': activeStep === 2, 'step-block--done': activeStep > 2 }">
+			<div
+				class="step-header"
+				@click="toggleStep(2)">
+				<div class="step-label">
+					<span class="step-num">02</span>
+					<span class="step-title">EN ATTENTE DE SESSION</span>
+				</div>
+				<span
+					class="step-arrow"
+					:class="{ 'step-arrow--open': activeStep === 2 }">›</span>
+			</div>
+			<div
+				v-if="activeStep === 2"
+				class="step-content">
+				<div class="waiting-message">
+					<div class="waiting-icon">◌</div>
+					<p>Aucune session active détectée pour ce capteur.</p>
+					<p class="waiting-sub">La session démarrera automatiquement dès que le capteur commencera à publier.</p>
 				</div>
 			</div>
 		</div>
 
-		<!-- Étape 2 : En attente de session -->
+		<!-- Étape 3 : Session en cours -->
 		<div
-			class="step"
-			:class="{ active: activeStep === 2 }">
-			<h2 @click="toggleStep(2)">
-				<span>Étape 2: En attente de session</span>
-				<span
-					class="arrow"
-					:class="{ down: activeStep === 2 }"
-					>▼</span
-				>
-			</h2>
+			class="step-block"
+			:class="{ 'step-block--active': activeStep === 3 }">
 			<div
-				class="step-content"
-				v-if="activeStep === 2">
-				<p>Aucune session active détectée pour ce capteur. La session démarrera automatiquement dès que le capteur commencera à publier.</p>
+				class="step-header"
+				@click="toggleStep(3)">
+				<div class="step-label">
+					<span class="step-num">03</span>
+					<span class="step-title">ACQUISITION</span>
+				</div>
+				<div class="step-header-right">
+					<span
+						v-if="activeStep === 3"
+						class="badge-live">
+						<span class="live-dot" />
+						LIVE
+					</span>
+					<span
+						class="step-arrow"
+						:class="{ 'step-arrow--open': activeStep === 3 }">›</span>
+				</div>
 			</div>
-		</div>
-
-		<!-- Étape 3 : Déroulement de la session -->
-		<div
-			class="step"
-			:class="{ active: activeStep === 3 }">
-			<h2 @click="toggleStep(3)">
-				<span>Étape 3: Déroulement de la session</span>
-				<span
-					class="arrow"
-					:class="{ down: activeStep === 3 }"
-					>▼</span
-				>
-			</h2>
 			<div
-				class="step-content"
-				v-if="activeStep === 3">
-				<div class="graph-container">
+				v-if="activeStep === 3"
+				class="step-content step-content--graph">
+
+				<!-- Graphique -->
+				<div class="graph-wrap">
 					<Graph :isRealTime="true" />
 				</div>
-				<div class="info-columns">
-					<div class="info-box">
-						<p>Dernière valeur reçue : il y a {{ timeSinceLastValue.toFixed(3) }} secondes</p>
+
+				<!-- Métriques -->
+				<div class="metrics-row">
+					<div class="metric-box">
+						<span class="metric-label">DERNIÈRE VALEUR</span>
+						<span class="metric-value">{{ timeSinceLastValue.toFixed(3) }}<span class="metric-unit">s</span></span>
 					</div>
-					<div class="info-box">
-						<p>Vitesse de transmission : {{ transmissionSpeed.toFixed(3) }} valeurs/seconde</p>
+					<div class="metric-box">
+						<span class="metric-label">FRÉQUENCE</span>
+						<span class="metric-value">{{ transmissionSpeed.toFixed(3) }}<span class="metric-unit">Hz</span></span>
 					</div>
 				</div>
-				<span class="badge-active">Session en cours</span>
 			</div>
 		</div>
 	</div>
@@ -85,10 +112,7 @@
 
 	export default defineComponent({
 		name: "CreateSession",
-		components: {
-			Graph,
-			SensorsList,
-		},
+		components: { Graph, SensorsList },
 		setup() {
 			const { idSensor, chartData, timeSinceLastValue, transmissionSpeed, checkAndJoinActiveSession } = useSession()
 			const { fetchSensors, sensors } = useSensor(undefined)
@@ -96,7 +120,7 @@
 			const activeStep = ref(1)
 			const selectedSensorName = ref("")
 
-			provide("title", "Current session chart")
+			provide("title", "ACQUISITION EN COURS")
 			provide("chartData", chartData)
 
 			const sensorSelectedCallback = async (sensorId: string) => {
@@ -121,17 +145,11 @@
 			})
 
 			const nextStep = () => {
-				if (activeStep.value < 3) {
-					activeStep.value += 1
-				}
+				if (activeStep.value < 3) activeStep.value += 1
 			}
 
 			const toggleStep = (step: number) => {
-				if (activeStep.value === step) {
-					activeStep.value = 0
-				} else {
-					activeStep.value = step
-				}
+				activeStep.value = activeStep.value === step ? 0 : step
 			}
 
 			return {
@@ -147,127 +165,265 @@
 </script>
 
 <style scoped>
-	.create-session-container {
-		width: 100%;
+	.session-panel {
+		max-width: 900px;
 		margin: 0 auto;
-		padding: 20px;
-		border: 1px solid #ccc;
-		border-radius: 10px;
-		background-color: var(--color-surface);
-	}
-
-	.step {
-		margin-bottom: 20px;
-		background-color: var(--color-surface);
-		border-radius: 10px;
-		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-		overflow: hidden;
-		transition: max-height 0.2s ease-out;
-	}
-
-	.step h2 {
-		cursor: pointer;
-		padding: 15px;
-		margin: 0;
-		font-size: 1.1em;
-		background-color: var(--color-surface-secondary);
-		color: var(--color-text);
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		transition: background-color 0.15s;
+		flex-direction: column;
+		gap: 0;
 	}
 
-	.step h2:hover {
-		background-color: var(--color-sidebar-hover);
+	.panel-title {
+		margin-bottom: 1.5rem;
 	}
 
-	.step h2 .arrow {
-		transition: transform 0.2s;
+	.panel-title h1 {
+		font-family: var(--font-display);
+		font-size: 2.4rem;
+		font-weight: 900;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		line-height: 1;
+		color: var(--color-text);
 	}
 
-	.step h2 .arrow.down {
-		transform: rotate(180deg);
+	.panel-sub {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		display: block;
+		margin-top: 4px;
 	}
 
-	.step-content {
-		padding: 20px;
+	/* Blocs d'étape */
+	.step-block {
+		border: 1px solid var(--color-border);
+		border-top: none;
+		overflow: hidden;
+		transition: border-color 0.15s;
+	}
+
+	.step-block:first-of-type {
 		border-top: 1px solid var(--color-border);
 	}
 
-	.sensor-info {
-		margin-top: 10px;
+	.step-block--active {
+		border-color: var(--color-primary);
+		border-left: 2px solid var(--color-primary);
 	}
 
-	.badge-active {
-		display: inline-flex;
+	.step-block--active:first-of-type {
+		border-top-color: var(--color-primary);
+	}
+
+	.step-block--done {
+		border-left: 2px solid rgba(57, 255, 20, 0.4);
+	}
+
+	.step-header {
+		display: flex;
 		align-items: center;
-		gap: 6px;
-		padding: 6px 14px;
-		background-color: rgba(34, 197, 94, 0.15);
-		color: var(--color-success);
-		border: 1px solid var(--color-success);
-		border-radius: 20px;
-		font-size: 0.82rem;
-		font-weight: 600;
+		justify-content: space-between;
+		padding: 0.9rem 1.25rem;
+		cursor: pointer;
+		background: rgba(0, 0, 0, 0.25);
+		border-bottom: 1px solid transparent;
+		transition: background-color 0.15s;
+	}
+
+	.step-block--active .step-header {
+		border-bottom-color: var(--color-border);
+		background: var(--color-primary-dim);
+	}
+
+	.step-header:hover {
+		background: rgba(255, 159, 10, 0.05);
+	}
+
+	.step-label {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.step-num {
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		font-weight: 900;
+		color: var(--color-primary);
+		opacity: 0.4;
+		line-height: 1;
+	}
+
+	.step-block--active .step-num {
+		opacity: 1;
+	}
+
+	.step-title {
 		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	.step-block--active .step-title {
+		color: var(--color-text);
+	}
+
+	.step-arrow {
+		font-size: 1.3rem;
+		color: var(--color-text-muted);
+		transition: transform 0.2s;
+		line-height: 1;
+	}
+
+	.step-arrow--open {
+		transform: rotate(90deg);
+		color: var(--color-primary);
+	}
+
+	.step-header-right {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	/* Contenu étape */
+	.step-content {
+		padding: 1.25rem;
+		background: var(--color-surface);
+	}
+
+	.step-hint {
+		margin-top: 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
 		letter-spacing: 0.04em;
 	}
 
-	.badge-active::before {
-		content: '';
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-		background-color: var(--color-success);
-		animation: pulse 1.5s ease-in-out infinite;
-	}
-
-	.slider-container {
-		margin-top: 20px;
-	}
-
-	.slider {
-		width: 100%;
-	}
-
-	.graph-container {
-		margin-top: 20px;
-		height: clamp(400px, 60vh, 1000px);
-	}
-
-	.end-session {
-		margin-top: 10px;
-	}
-
-	.info-columns {
+	/* Message attente */
+	.waiting-message {
 		display: flex;
-		justify-content: space-between;
-		gap: 10px;
-	}
-
-	.info-box {
-		background-color: var(--color-surface-secondary);
-		padding: 10px 14px;
-		border: 1px solid var(--color-border);
-		border-radius: 8px;
-		width: 48%;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 2rem;
 		text-align: center;
-		font-family: var(--font-mono);
-		font-size: 0.85rem;
 	}
 
-	@media (max-width: 768px) {
-		.info-columns {
-			flex-direction: column;
-		}
+	.waiting-icon {
+		font-size: 2rem;
+		color: var(--color-text-muted);
+		animation: spin 3s linear infinite;
+	}
 
-		.info-box {
-			width: 100%;
-		}
+	@keyframes spin {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
+	}
 
-		.create-session-container {
-			padding: 12px;
+	.waiting-message p {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--color-text);
+	}
+
+	.waiting-sub {
+		color: var(--color-text-muted) !important;
+		font-size: 0.72rem !important;
+		max-width: 420px;
+	}
+
+	/* Contenu graphique */
+	.step-content--graph {
+		padding: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.graph-wrap {
+		height: clamp(350px, 55vh, 600px);
+	}
+
+	/* Métriques */
+	.metrics-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
+	}
+
+	.metric-box {
+		background: var(--color-surface-secondary);
+		border: 1px solid var(--color-border);
+		padding: 0.85rem 1.1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.metric-label {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	.metric-value {
+		font-family: var(--font-display);
+		font-size: 1.6rem;
+		font-weight: 900;
+		color: var(--color-primary);
+		letter-spacing: 0.04em;
+		line-height: 1;
+		text-shadow: 0 0 20px var(--color-primary-glow);
+	}
+
+	.metric-unit {
+		font-size: 0.9rem;
+		opacity: 0.5;
+		margin-left: 3px;
+	}
+
+	/* Badge LIVE */
+	.badge-live {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		color: var(--color-danger);
+		border: 1px solid rgba(255, 64, 64, 0.35);
+		padding: 3px 9px;
+		background: var(--color-danger-dim);
+	}
+
+	.live-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--color-danger);
+		box-shadow: 0 0 5px var(--color-danger);
+		animation: blink 1s step-end infinite;
+	}
+
+	@keyframes blink {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.2; }
+	}
+
+	@media (max-width: 600px) {
+		.metrics-row {
+			grid-template-columns: 1fr;
 		}
 	}
 </style>

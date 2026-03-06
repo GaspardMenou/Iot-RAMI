@@ -42,194 +42,290 @@
 		},
 		computed: {
 			filteredSensors(): SensorWithProperty[] {
-				return this.searchedSensor === "" ? this.sensors : this.sensors.filter(sensor => sensor.name.toLowerCase().includes(this.searchedSensor.toLowerCase()))
+				return this.searchedSensor === ""
+					? this.sensors
+					: this.sensors.filter(s => s.name.toLowerCase().includes(this.searchedSensor.toLowerCase()))
 			},
 		},
 	})
 </script>
 
 <template>
-	<div
-		:class="[displayChart ? ['split', 'left'] : '']"
-		class="home">
-		<h2>Measurements</h2>
-		<div class="search-nav">
-			<input
-				v-model="searchedSensor"
-				placeholder="Rechercher un capteur..." />
+	<div class="home-view">
+		<!-- En-tête -->
+		<div class="home-header">
+			<div class="header-title">
+				<h1>MEASUREMENTS</h1>
+				<span class="header-sub">TABLEAU DE BORD TEMPS RÉEL</span>
+			</div>
+			<div class="search-wrap">
+				<span class="search-icon">⌕</span>
+				<input
+					v-model="searchedSensor"
+					placeholder="Filtrer les capteurs…"
+					class="search-input" />
+			</div>
 		</div>
-		<section
+
+		<!-- Grille capteurs -->
+		<div
 			v-if="searchedSensor !== ''"
-			class="cards-section">
-			<div class="flex-container">
+			:class="[displayChart ? 'layout-split-left' : '']"
+			class="sensors-grid">
+
+			<div
+				v-for="filteredSensor in filteredSensors"
+				:key="filteredSensor.name"
+				class="sensor-block">
+				<div class="sensor-block-header">
+					<span class="sensor-block-name">{{ filteredSensor.name }}</span>
+					<button
+						class="btn-activate"
+						@click="setMeasurementAvailable(filteredSensor.name)">
+						ACTIVER
+					</button>
+				</div>
 				<div
-					v-for="filteredSensor in filteredSensors"
-					:key="filteredSensor.name"
-					class="container">
-					<h3>{{ filteredSensor.name }}</h3>
-					<button @click="setMeasurementAvailable(filteredSensor.name)">Activer les mesures</button>
-					<div class="measurement-card-container">
-						<div v-if="filteredSensor.propertyVerified">
-							<measurement-card
-								v-for="measurementType in measurementTypes"
-								:key="measurementType"
-								:measurement-type="measurementType"
-								:sensor-name="filteredSensor.name"
-								@chart-data-updated="handleChartUpdate"></measurement-card>
-						</div>
-					</div>
+					v-if="filteredSensor.propertyVerified"
+					class="measurement-list">
+					<measurement-card
+						v-for="measurementType in measurementTypes"
+						:key="measurementType"
+						:measurement-type="measurementType"
+						:sensor-name="filteredSensor.name"
+						@chart-data-updated="handleChartUpdate" />
 				</div>
 			</div>
+
 			<div
 				v-if="filteredSensors.length === 0"
-				class="no-sensor">
-				Aucun capteur trouvé
+				class="empty-state">
+				AUCUN CAPTEUR CORRESPONDANT
 			</div>
-		</section>
+		</div>
+
+		<!-- État vide si pas de recherche -->
+		<div
+			v-else
+			class="home-idle">
+			<p class="idle-hint">↑ Entrez un nom de capteur pour afficher ses mesures</p>
+		</div>
 	</div>
+
+	<!-- Graphique latéral -->
 	<line-chart
 		v-show="displayChart"
 		:sensor="sensor"
 		:type="type"
-		class="split right" />
+		class="chart-side" />
 </template>
 
 <style lang="scss" scoped>
-	h2,
-	h3 {
-		text-align: center;
-		font-weight: bold;
+	.home-view {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
 	}
 
-	h2 {
-		font-size: 300%;
+	/* En-tête */
+	.home-header {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 1.5rem;
+		flex-wrap: wrap;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid var(--color-border);
 	}
 
-	h3 {
-		font-size: 175%;
+	.header-title h1 {
+		font-family: var(--font-display);
+		font-size: 2.4rem;
+		font-weight: 900;
+		color: var(--color-text);
+		letter-spacing: 0.06em;
+		line-height: 1;
 	}
 
-	.search-nav {
+	.header-sub {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		display: block;
+		margin-top: 4px;
+	}
+
+	.search-wrap {
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		padding: 1vw;
+		gap: 0;
+		border: 1px solid var(--color-border-bright);
+		background: var(--color-surface);
+		overflow: hidden;
+		max-width: 280px;
+		width: 100%;
 	}
 
-	input {
-		font-size: 1rem;
-		padding: 0.6rem 1rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 8px;
+	.search-icon {
+		padding: 0 0.75rem;
+		color: var(--color-text-muted);
+		font-size: 1.1rem;
+		line-height: 1;
+		flex-shrink: 0;
+		border-right: 1px solid var(--color-border);
+	}
+
+	.search-input {
+		border: none;
+		background: transparent;
+		padding: 0.6rem 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
 		color: var(--color-text);
-		width: 300px;
-		max-width: 100%;
-		transition: border-color 0.2s, box-shadow 0.2s;
-		font-family: var(--font-sans);
+		flex: 1;
+		outline: none;
 
 		&::placeholder {
 			color: var(--color-text-muted);
+			font-size: 0.75rem;
 		}
 
 		&:focus {
-			outline: none;
-			border-color: var(--color-primary);
-			box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+			box-shadow: none;
+			border-color: transparent;
 		}
 	}
 
-	.flex-container {
+	/* Grille capteurs */
+	.sensors-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 1rem;
+	}
+
+	.sensor-block {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-top: 2px solid var(--color-border-bright);
+		overflow: hidden;
+	}
+
+	.sensor-block-header {
 		display: flex;
-		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--color-border);
+		background: rgba(0, 0, 0, 0.2);
+	}
+
+	.sensor-block-name {
+		font-family: var(--font-display);
+		font-size: 1.1rem;
+		font-weight: 900;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-text);
+	}
+
+	.btn-activate {
+		padding: 3px 10px;
+		font-size: 0.65rem;
+		background: transparent;
+		border: 1px solid var(--color-border-bright);
+		color: var(--color-text-muted);
+		cursor: pointer;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		transition: all 0.15s;
+		border-radius: 0;
+
+		&:hover {
+			border-color: var(--color-primary);
+			color: var(--color-primary);
+			background: var(--color-primary-dim);
+		}
+	}
+
+	.measurement-list {
+		padding: 0.75rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	/* État vide */
+	.home-idle {
+		display: flex;
+		align-items: center;
 		justify-content: center;
+		padding: 4rem 2rem;
 	}
 
-	.container {
-		flex: 0 0 30%;
-		margin: 1vw;
-	}
-
-	@media (max-width: 1024px) {
-		.container {
-			flex: 0 0 45%;
-		}
-
-		h2 {
-			font-size: 220%;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.container {
-			flex: 0 0 100%;
-			margin: 0.5rem 0;
-		}
-
-		h2 {
-			font-size: 180%;
-		}
-
-		h3 {
-			font-size: 130%;
-		}
-
-		input {
-			font-size: 100%;
-			width: 100%;
-		}
-	}
-
-	.measurement-card-container {
-		margin-top: 2vh;
-	}
-
-	.no-sensor {
+	.idle-hint {
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.05em;
 		text-align: center;
-		margin: 3vw;
-		color: var(--color-danger);
-		font-size: 200%;
 	}
 
+	.empty-state {
+		grid-column: 1 / -1;
+		text-align: center;
+		padding: 3rem;
+		color: var(--color-danger);
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		border: 1px dashed var(--color-danger-dim);
+	}
+
+	/* Layout split */
 	@media (min-width: 900px) {
-		.split {
-			height: 100%;
-			width: 50%;
+		.layout-split-left {
 			position: fixed;
-			z-index: 1;
 			top: 0;
-			overflow-x: hidden;
-			padding-top: 2vh;
+			left: 220px;
+			width: calc(50% - 110px);
+			height: 100vh;
+			overflow-y: auto;
+			padding: 2rem 2.5rem;
+			z-index: 1;
 		}
 
-		.left {
-			left: 0;
-		}
-
-		.right {
+		.chart-side {
+			position: fixed;
+			top: 0;
 			right: 0;
+			width: 50%;
+			height: 100vh;
+			z-index: 1;
+			padding: 2rem;
+			display: flex;
+			align-items: center;
 		}
 	}
 
 	@media (max-width: 900px) {
-		.left {
-			position: fixed;
-			top: 0;
-			height: 60%;
-			width: 100%;
-			text-align: center;
+		.chart-side {
+			margin-top: 1rem;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.home-header {
+			flex-direction: column;
+			align-items: flex-start;
 		}
 
-		.home {
-			height: 60%;
-			overflow-y: auto;
-		}
-		.right {
-			position: fixed;
-			bottom: 0;
-			height: 40%;
-			width: 100%;
-			text-align: center;
+		.search-wrap {
+			max-width: 100%;
 		}
 	}
 </style>

@@ -1,18 +1,29 @@
 <template>
-	<div class="session-container">
+	<div class="session-card">
+		<div class="session-left">
+			<div
+				class="session-status-bar"
+				:class="{ 'bar-active': !session.endedAt }" />
+		</div>
 		<div class="session-info">
 			<span class="session-date">{{ formatHumanReadableDate(session.createdAt) }}</span>
 			<span
 				v-if="session.endedAt"
-				class="session-duration">{{ calculateDuration(session.createdAt, session.endedAt) }}</span>
+				class="session-duration">
+				<span class="duration-label">DUR.</span>
+				{{ calculateDuration(session.createdAt, session.endedAt) }}
+			</span>
 			<span
 				v-else
-				class="session-active">En cours</span>
+				class="session-active">
+				<span class="active-dot" />
+				EN COURS
+			</span>
 		</div>
 		<button
 			class="btn-export"
 			@click.stop="exportSessionToCsv(session.id)">
-			Export CSV
+			↓ CSV
 		</button>
 	</div>
 </template>
@@ -43,57 +54,125 @@
 </script>
 
 <style scoped>
-	.session-container {
+	.session-card {
 		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		padding: 0.25rem 0;
+		align-items: center;
+		gap: 0;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		overflow: hidden;
+		transition: border-color 0.15s, background-color 0.15s;
+	}
+
+	.session-card:hover {
+		border-color: var(--color-border-bright);
+		background: var(--color-surface-secondary);
+	}
+
+	.session-left {
+		width: 3px;
+		align-self: stretch;
+		flex-shrink: 0;
+	}
+
+	.session-status-bar {
+		width: 100%;
+		height: 100%;
+		background: var(--color-border-bright);
+	}
+
+	.bar-active {
+		background: var(--color-success);
+		box-shadow: 0 0 8px var(--color-success);
+		animation: bar-pulse 2s ease-in-out infinite;
+	}
+
+	@keyframes bar-pulse {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.5; }
 	}
 
 	.session-info {
+		flex: 1;
+		padding: 0.6rem 1rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.1rem;
+		gap: 2px;
 		min-width: 0;
 	}
 
 	.session-date {
-		font-size: 0.78rem;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
 		color: var(--color-text);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		font-family: var(--font-mono);
 	}
 
 	.session-duration {
-		font-size: 0.75rem;
-		color: var(--color-text-muted);
 		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		color: var(--color-text-muted);
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+
+	.duration-label {
+		font-size: 0.6rem;
+		letter-spacing: 0.06em;
+		opacity: 0.6;
 	}
 
 	.session-active {
-		font-size: 0.75rem;
-		color: var(--color-success);
-		font-weight: 600;
 		font-family: var(--font-mono);
-		letter-spacing: 0.04em;
+		font-size: 0.65rem;
+		color: var(--color-success);
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+
+	.active-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--color-success);
+		box-shadow: 0 0 5px var(--color-success);
+		flex-shrink: 0;
+		animation: blink 1s step-end infinite;
+	}
+
+	@keyframes blink {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.2; }
 	}
 
 	.btn-export {
-		padding: 4px 10px;
-		font-size: 0.75rem;
-		font-weight: 600;
-		border: none;
-		border-radius: 6px;
-		background-color: var(--color-primary);
-		color: white;
+		padding: 0.35rem 0.85rem;
+		margin-right: 0.75rem;
+		font-size: 0.68rem;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		border: 1px solid var(--color-border-bright);
+		background: transparent;
+		color: var(--color-text-muted);
 		cursor: pointer;
-		align-self: flex-start;
-		transition: background-color 0.2s;
+		transition: all 0.15s;
+		border-radius: 0;
+		white-space: nowrap;
+		flex-shrink: 0;
 	}
 
 	.btn-export:hover {
-		background-color: var(--color-primary-hover);
+		background: var(--color-primary-dim);
+		border-color: var(--color-primary);
+		color: var(--color-primary);
+		box-shadow: 0 0 8px var(--color-primary-glow);
 	}
 </style>

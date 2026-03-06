@@ -1,17 +1,25 @@
 <template>
 	<div class="sensors-list-view">
-		<div class="header">
-			<h2>Mes capteurs</h2>
-			<hr />
+		<div class="list-header">
+			<h2>MES CAPTEURS</h2>
+			<span class="sensor-count">{{ sensors.length }} UNIT{{ sensors.length > 1 ? 'S' : '' }}</span>
 		</div>
-		<div class="sensors-list">
+		<div
+			class="sensors-list"
+			:class="{ 'sensors-list--empty': sensors.length === 0 }">
 			<SensorCard
 				v-for="sensor in sensors"
 				:key="sensor.id"
 				:sensor="sensor"
 				:isForRealTimeSession="props.isForRealTimeSession"
 				:selectedSensorId="selectedSensor"
+				:isForNavigation="!props.isForRealTimeSession"
 				@click="handleSensorSelect(sensor.id)" />
+			<div
+				v-if="sensors.length === 0"
+				class="empty-state">
+				AUCUN CAPTEUR ASSIGNÉ
+			</div>
 		</div>
 	</div>
 </template>
@@ -23,9 +31,7 @@
 
 	export default defineComponent({
 		name: "SensorsListView",
-		components: {
-			SensorCard,
-		},
+		components: { SensorCard },
 		props: {
 			isForRealTimeSession: {
 				type: Boolean,
@@ -51,38 +57,57 @@
 
 <style scoped>
 	.sensors-list-view {
-		background-color: var(--color-surface);
-		border-radius: 10px;
-		box-shadow: 0 2px 5px var(--color-shadow);
-		padding: 20px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
 	}
 
-	.header {
+	.list-header {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		margin-bottom: 10px;
+		justify-content: space-between;
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--color-border);
+		background: rgba(0, 0, 0, 0.2);
 	}
 
-	.header h2 {
-		font-size: 1.2em;
-		font-weight: bold;
-		margin: 0;
-		color: var(--color-text);
+	.list-header h2 {
+		font-family: var(--font-display);
+		font-size: 0.9rem;
+		font-weight: 900;
+		letter-spacing: 0.15em;
+		color: var(--color-text-muted);
 	}
 
-	.header hr {
-		width: 100%;
-		border: none;
-		border-top: 1px solid var(--color-border);
-		margin: 10px 0;
+	.sensor-count {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		color: var(--color-primary);
+		letter-spacing: 0.1em;
+		opacity: 0.7;
 	}
 
 	.sensors-list {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
-		max-height: 240px;
+		gap: 0;
+		max-height: 300px;
 		overflow-y: auto;
+	}
+
+	.sensors-list > *:not(:last-child) {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.sensors-list--empty {
+		padding: 2rem;
+	}
+
+	.empty-state {
+		text-align: center;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
 	}
 </style>

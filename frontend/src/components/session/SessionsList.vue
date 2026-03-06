@@ -1,26 +1,36 @@
 <template>
-	<div class="container">
-		<div class="header">
-			<h2 v-if="sessions.length > 0">There are {{ sessions.length }} sessions</h2>
-			<h2 v-else>There are no sessions</h2>
-			<hr />
+	<div class="sessions-panel">
+		<div class="panel-header">
+			<h2>HISTORIQUE DES SESSIONS</h2>
+			<span class="session-count">{{ sessions.length }} ENREG.</span>
 		</div>
+
 		<div
-			class="content"
-			v-if="sessions.length > 0">
+			v-if="sessions.length > 0"
+			class="panel-body">
+
+			<!-- Liste des sessions -->
 			<div class="sessions-list">
 				<div
 					v-for="session in sessions"
 					:key="session.id"
-					@click="handleSessionSelect(session.id)"
-					:class="{ 'session-card--selected': selectedSession === session.id }"
-					class="session-card">
+					class="session-row"
+					:class="{ 'session-row--selected': selectedSession === session.id }"
+					@click="handleSessionSelect(session.id)">
 					<SessionCard :session="session" />
 				</div>
 			</div>
-			<div class="graph">
+
+			<!-- Graphique -->
+			<div class="graph-area">
 				<Graph :chartData="chartData" />
 			</div>
+		</div>
+
+		<div
+			v-else
+			class="empty-state">
+			AUCUNE SESSION ENREGISTRÉE
 		</div>
 	</div>
 </template>
@@ -32,23 +42,15 @@
 	import { useSession } from "@/composables/useSession.composable"
 
 	export default defineComponent({
-		components: {
-			SessionCard,
-			Graph,
-		},
+		components: { SessionCard, Graph },
 		setup() {
 			const { chartData, sessions, selectedSession, handleSessionSelect, registerOrRemoveEventHandlers } = useSession()
 
-			provide("title", "Session Chart")
+			provide("title", "HISTORIQUE SESSION")
 			provide("chartData", chartData)
 
-			onMounted(() => {
-				registerOrRemoveEventHandlers("on")
-			})
-
-			onUnmounted(() => {
-				registerOrRemoveEventHandlers("off")
-			})
+			onMounted(() => registerOrRemoveEventHandlers("on"))
+			onUnmounted(() => registerOrRemoveEventHandlers("off"))
 
 			return {
 				sessions,
@@ -61,76 +63,99 @@
 </script>
 
 <style scoped>
-	.container {
-		display: flex;
-		flex-direction: column;
-		background-color: var(--color-surface);
-		border-radius: 12px;
-		box-shadow: 0 2px 8px var(--color-shadow);
-		padding: 1.5rem;
+	.sessions-panel {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
 		width: 100%;
-		margin: auto;
 	}
 
-	.header {
+	.panel-header {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
-		margin-bottom: 1rem;
+		justify-content: space-between;
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--color-border);
+		background: rgba(0, 0, 0, 0.2);
 	}
 
-	.header h2 {
-		font-size: 1.1rem;
-		font-weight: 700;
-		margin: 0;
-		color: var(--color-text);
+	.panel-header h2 {
+		font-family: var(--font-display);
+		font-size: 0.9rem;
+		font-weight: 900;
+		letter-spacing: 0.15em;
+		color: var(--color-text-muted);
 	}
 
-	.header hr {
-		width: 100%;
-		border: none;
-		border-top: 1px solid var(--color-border);
-		margin: 0.75rem 0;
+	.session-count {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.1em;
 	}
 
-	.content {
+	.panel-body {
 		display: flex;
 		flex-direction: row;
-		gap: 1rem;
-		width: 100%;
-		height: 520px;
+		gap: 0;
+		height: 500px;
 		overflow: hidden;
 	}
 
+	/* Liste */
 	.sessions-list {
-		display: flex;
-		flex-direction: column;
 		width: 220px;
 		min-width: 220px;
 		overflow-y: auto;
-		gap: 0.5rem;
+		border-right: 1px solid var(--color-border);
+		display: flex;
+		flex-direction: column;
+		gap: 0;
 	}
 
-	.graph {
+	.sessions-list > *:not(:last-child) {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.session-row {
+		cursor: pointer;
+		transition: background-color 0.1s;
+		border-left: 2px solid transparent;
+	}
+
+	.session-row:hover {
+		background: rgba(255, 159, 10, 0.04);
+	}
+
+	.session-row--selected {
+		background: var(--color-primary-dim);
+		border-left-color: var(--color-primary);
+	}
+
+	/* Graphique */
+	.graph-area {
 		flex: 1;
 		min-width: 0;
+		padding: 0;
 	}
 
-	.session-card {
-		border: 1px solid var(--color-border);
-		padding: 0.75rem;
-		background-color: var(--color-surface-secondary);
-		border-radius: 8px;
-		cursor: pointer;
-		transition: background-color 0.2s, border-color 0.2s;
+	.graph-area :deep(.graph-container) {
+		height: 100%;
+		border: none;
+		border-top: none;
 	}
 
-	.session-card:hover {
-		border-color: var(--color-primary);
+	.graph-area :deep(.chart-wrapper) {
+		height: calc(100% - 44px);
 	}
 
-	.session-card--selected {
-		border-color: var(--color-primary);
-		background-color: rgba(14, 165, 233, 0.1);
+	/* Empty */
+	.empty-state {
+		padding: 3rem;
+		text-align: center;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
 	}
 </style>

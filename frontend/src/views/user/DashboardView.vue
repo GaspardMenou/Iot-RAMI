@@ -38,38 +38,43 @@
 
 <template>
 	<div class="dashboard">
-		<!-- Greeting -->
-		<div class="greeting">
-			<h1>Bonjour, {{ firstName }}</h1>
-			<p class="subtitle">Voici un aperçu de vos capteurs et sessions.</p>
+
+		<!-- Accueil -->
+		<div class="greeting-block">
+			<div class="greeting-label">TERMINAL RAMI — ACCÈS AUTORISÉ</div>
+			<h1 class="greeting-name">{{ firstName.toUpperCase() }}</h1>
+			<div class="greeting-line" />
 		</div>
 
 		<!-- Stats -->
 		<div class="stats-row">
 			<div class="stat-card">
-				<span class="stat-value">{{ sensors.length }}</span>
-				<span class="stat-label">Capteur{{ sensors.length !== 1 ? "s" : "" }}</span>
+				<span class="stat-num">{{ String(sensors.length).padStart(2, "0") }}</span>
+				<span class="stat-label">CAPTEURS</span>
 			</div>
 			<div class="stat-card">
-				<span class="stat-value">{{ allSessions.length }}</span>
-				<span class="stat-label">Session{{ allSessions.length !== 1 ? "s" : "" }}</span>
+				<span class="stat-num">{{ String(allSessions.length).padStart(2, "0") }}</span>
+				<span class="stat-label">SESSIONS TOTAL</span>
 			</div>
-			<div class="stat-card">
-				<span class="stat-value">
-					{{ allSessions.filter(s => !s.endedAt).length }}
-				</span>
-				<span class="stat-label">En cours</span>
+			<div class="stat-card stat-card--live">
+				<span class="stat-num">{{ String(allSessions.filter(s => !s.endedAt).length).padStart(2, "0") }}</span>
+				<span class="stat-label">EN COURS</span>
 			</div>
 		</div>
 
-		<!-- Sensors -->
+		<!-- Capteurs -->
 		<section class="section">
-			<h2 class="section-title">Mes capteurs</h2>
+			<div class="section-header">
+				<h2>CAPTEURS ASSIGNÉS</h2>
+				<span class="section-count">{{ sensors.length }} UNIT{{ sensors.length > 1 ? "S" : "" }}</span>
+			</div>
+
 			<div
 				v-if="sensors.length === 0"
 				class="empty-state">
-				Aucun capteur accessible.
+				AUCUN CAPTEUR ACCESSIBLE
 			</div>
+
 			<div
 				v-else
 				class="sensors-grid">
@@ -80,13 +85,11 @@
 					:is-for-navigation="true" />
 			</div>
 		</section>
-
 	</div>
 </template>
 
 <style scoped>
 	.dashboard {
-		padding: 2rem;
 		max-width: 1100px;
 		margin: 0 auto;
 		display: flex;
@@ -95,101 +98,144 @@
 	}
 
 	/* Greeting */
-	.greeting h1 {
-		font-size: 1.8rem;
-		font-weight: 700;
-		margin: 0 0 0.25rem;
+	.greeting-block {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
 	}
 
-	.subtitle {
-		color: var(--color-text-muted);
-		margin: 0;
+	.greeting-label {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		color: var(--color-primary);
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		opacity: 0.6;
+	}
+
+	.greeting-name {
+		font-family: var(--font-display);
+		font-size: clamp(2.5rem, 6vw, 4rem);
+		font-weight: 900;
+		color: var(--color-text);
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		line-height: 1;
+		text-shadow: 0 0 40px rgba(255, 159, 10, 0.08);
+	}
+
+	.greeting-line {
+		height: 1px;
+		background: linear-gradient(to right, var(--color-primary), rgba(255, 159, 10, 0.15), transparent);
+		margin-top: 4px;
 	}
 
 	/* Stats */
 	.stats-row {
-		display: flex;
-		gap: 1rem;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1px;
+		background: var(--color-border);
+		border: 1px solid var(--color-border);
 	}
 
 	.stat-card {
-		flex: 1;
 		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-top: 3px solid var(--color-primary);
-		border-radius: 12px;
 		padding: 1.25rem 1.5rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.3rem;
-		transition: border-color 0.2s, box-shadow 0.2s;
+		gap: 6px;
+		transition: background-color 0.15s;
 	}
 
 	.stat-card:hover {
-		box-shadow: 0 4px 16px rgba(14, 165, 233, 0.12);
+		background: var(--color-surface-secondary);
 	}
 
-	.stat-value {
-		font-size: 2.2rem;
-		font-weight: 700;
+	.stat-card--live .stat-num {
+		color: var(--color-success);
+		text-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+	}
+
+	.stat-num {
+		font-family: var(--font-display);
+		font-size: 3rem;
+		font-weight: 900;
 		color: var(--color-primary);
 		line-height: 1;
-		font-family: var(--font-mono);
+		text-shadow: 0 0 20px var(--color-primary-glow);
 	}
 
 	.stat-label {
-		font-size: 0.8rem;
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
 		color: var(--color-text-muted);
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		letter-spacing: 0.06em;
 	}
 
-	/* Sections */
+	/* Section */
 	.section {
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
+		gap: 0.75rem;
 	}
 
-	.section-title {
-		font-size: 1.1rem;
-		font-weight: 700;
-		margin: 0;
-		color: var(--color-text);
+	.section-header {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid var(--color-border);
 	}
 
-	/* Sensors grid */
+	.section-header h2 {
+		font-family: var(--font-display);
+		font-size: 1rem;
+		font-weight: 900;
+		letter-spacing: 0.14em;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+	}
+
+	.section-count {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		color: var(--color-primary);
+		opacity: 0.6;
+		letter-spacing: 0.1em;
+	}
+
+	/* Grille capteurs */
 	.sensors-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-		gap: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0;
 	}
 
-	@media (max-width: 600px) {
-		.dashboard {
-			padding: 1rem;
-		}
-
-		.stats-row {
-			gap: 0.5rem;
-		}
-
-		.stat-card {
-			padding: 0.75rem;
-		}
-
-		.stat-value {
-			font-size: 1.5rem;
-		}
+	.sensors-grid > *:not(:last-child) {
+		border-bottom: 1px solid var(--color-border);
 	}
 
 	/* Empty state */
 	.empty-state {
-		color: var(--color-text-muted);
+		padding: 2.5rem;
 		text-align: center;
-		padding: 2rem;
-		border: 1px dashed var(--color-border);
-		border-radius: 10px;
-		background: var(--color-surface);
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		border: 1px dashed var(--color-border-bright);
+	}
+
+	@media (max-width: 600px) {
+		.stats-row {
+			grid-template-columns: 1fr;
+		}
+
+		.stat-num {
+			font-size: 2rem;
+		}
 	}
 </style>

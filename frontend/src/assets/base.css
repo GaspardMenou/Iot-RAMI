@@ -1,48 +1,53 @@
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=JetBrains+Mono:wght@400;500&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Martian+Mono:wght@300;400;500;600;700&display=swap');
 
 :root {
-    /* Palette principale */
-    --color-background: #0f172a;
-    --color-surface: #1e293b;
-    --color-surface-secondary: #263347;
+    /* ── Arrière-plans ── */
+    --color-background: #070600;
+    --color-surface: #0f0c00;
+    --color-surface-secondary: #181300;
 
-    /* Sidebar */
-    --color-sidebar-bg: #162032;
-    --color-sidebar-text: #cbd5e1;
-    --color-sidebar-text-active: #ffffff;
-    --color-sidebar-hover: #334155;
-    --color-sidebar-active: #0ea5e9;
+    /* ── Sidebar ── */
+    --color-sidebar-bg: #090800;
+    --color-sidebar-text: #7a6535;
+    --color-sidebar-text-active: #f0d89a;
+    --color-sidebar-hover: rgba(255, 159, 10, 0.07);
+    --color-sidebar-active: #ff9f0a;
 
-    /* Accent principal (bleu) */
-    --color-primary: #0ea5e9;
-    --color-primary-hover: #0284c7;
+    /* ── Accent principal (ambre phosphore) ── */
+    --color-primary: #ff9f0a;
+    --color-primary-hover: #e08c00;
+    --color-primary-glow: rgba(255, 159, 10, 0.18);
+    --color-primary-dim: rgba(255, 159, 10, 0.08);
 
-    /* Bouton secondaire */
-    --color-secondary: #64748b;
-    --color-secondary-hover: #475569;
+    /* ── Secondaire ── */
+    --color-secondary: #241c00;
+    --color-secondary-hover: #332800;
 
-    /* Texte */
-    --color-text: #e2e8f0;
-    --color-text-muted: #94a3b8;
-    --color-text-second: #ffffff;
+    /* ── Texte ── */
+    --color-text: #f0d89a;
+    --color-text-muted: #7a6535;
+    --color-text-second: #070600;
 
-    /* Bordures */
-    --color-border: #334155;
+    /* ── Bordures ── */
+    --color-border: #241c00;
+    --color-border-bright: #3a2e00;
 
-    /* Statuts */
-    --color-success: #22c55e;
-    --color-success-hover: #16a34a;
-    --color-danger: #ef4444;
-    --color-danger-hover: #dc2626;
-    --color-warning: #f59e0b;
+    /* ── Statuts ── */
+    --color-success: #39ff14;
+    --color-success-hover: #2aeb0d;
+    --color-success-dim: rgba(57, 255, 20, 0.12);
+    --color-danger: #ff4040;
+    --color-danger-hover: #e02020;
+    --color-danger-dim: rgba(255, 64, 64, 0.12);
+    --color-warning: #ffcc00;
 
-    /* Ombres */
-    --color-shadow: rgba(0, 0, 0, 0.06);
+    /* ── Ombres ── */
+    --color-shadow: rgba(255, 159, 10, 0.04);
 
-    /* Typographie */
-    --font-sans: 'EB Garamond', Georgia, serif;
-    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    /* ── Typographie ── */
+    --font-display: 'Big Shoulders Display', Impact, condensed, sans-serif;
+    --font-sans: 'Martian Mono', 'Courier New', monospace;
+    --font-mono: 'Martian Mono', 'Courier New', monospace;
 }
 
 *,
@@ -60,8 +65,30 @@ body {
     background: var(--color-background);
     line-height: 1.6;
     font-family: var(--font-sans);
-    font-size: 16px;
+    font-size: 13px;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+::-webkit-scrollbar-track {
+    background: var(--color-background);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--color-border-bright);
+    border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+}
+
+/* Sélection de texte */
+::selection {
+    background: var(--color-primary);
+    color: var(--color-text-second);
 }

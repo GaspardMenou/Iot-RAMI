@@ -4,6 +4,7 @@
 	import { useSensor } from "@/composables/useSensor.composable"
 	import SensorCard from "@/components/sensor/SensorCard.vue"
 	import Graph from "@/components/session/Graph.vue"
+
 	export default defineComponent({
 		name: "SensorSessionView",
 		components: { SensorCard, Graph },
@@ -17,7 +18,7 @@
 			const isSessionActive = ref(false)
 			const sensor = ref<any>(null)
 
-			provide("title", "Session en cours")
+			provide("title", "ACQUISITION EN COURS")
 			provide("chartData", chartData)
 
 			onMounted(async () => {
@@ -29,11 +30,12 @@
 				const alreadyActive = await checkAndJoinActiveSession(props.id, sensorTopic)
 				if (alreadyActive) isSessionActive.value = true
 			})
+
 			onUnmounted(async () => {
 				endSession()
 			})
 
-				return {
+			return {
 				sensor,
 				isSessionActive,
 				timeSinceLastValue,
@@ -47,132 +49,223 @@
 	<div class="session-view">
 		<div
 			v-if="sensor"
-			class="sensor-header">
-			<SensorCard
-				:sensor="sensor"
-				:is-for-navigation="false" />
+			class="session-header">
+			<div class="header-sensor">
+				<SensorCard
+					:sensor="sensor"
+					:is-for-navigation="false" />
+			</div>
 
-			<div class="session-controls">
+			<div class="session-status">
 				<div
 					v-if="isSessionActive"
-					class="active-controls">
-					<div class="transmission-info">
-						<span>Dernière valeur : {{ timeSinceLastValue.toFixed(2) }}s</span>
-						<span>Vitesse : {{ transmissionSpeed.toFixed(2) }} val/s</span>
+					class="metrics-row">
+					<div class="metric-chip">
+						<span class="chip-label">DERNIÈRE VALEUR</span>
+						<span class="chip-value">{{ timeSinceLastValue.toFixed(2) }}<span class="chip-unit">s</span></span>
 					</div>
-					<span class="badge-active">Session en cours</span>
+					<div class="metric-chip">
+						<span class="chip-label">FRÉQUENCE</span>
+						<span class="chip-value">{{ transmissionSpeed.toFixed(2) }}<span class="chip-unit">Hz</span></span>
+					</div>
+					<div class="badge-live">
+						<span class="live-dot" />
+						SESSION EN COURS
+					</div>
 				</div>
-				<span
+				<div
 					v-else
 					class="badge-inactive">
-					Aucune session active
-				</span>
+					<span class="inactive-dot" />
+					AUCUNE SESSION ACTIVE
+				</div>
 			</div>
 		</div>
 
 		<div
 			v-if="isSessionActive"
-			class="graph-container">
+			class="graph-section">
 			<Graph :is-real-time="true" />
+		</div>
+
+		<div
+			v-else-if="sensor"
+			class="empty-state waiting-state">
+			<div class="wait-icon">◌</div>
+			<p>En attente du démarrage de session…</p>
+			<p class="wait-sub">La session démarrera automatiquement dès que le capteur publiera.</p>
 		</div>
 	</div>
 </template>
 
 <style scoped>
 	.session-view {
-		padding: 2rem;
 		max-width: 1000px;
 		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
 	}
 
-	.sensor-header {
+	.session-header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		flex-wrap: wrap;
 		gap: 1rem;
-		margin-bottom: 1.5rem;
-		padding: 1.25rem 1.5rem;
 		background: var(--color-surface);
-		border-radius: 12px;
-		box-shadow: 0 2px 8px var(--color-shadow);
+		border: 1px solid var(--color-border);
+		padding: 1rem 1.25rem;
 	}
 
-	.session-controls {
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
+	.header-sensor {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.header-sensor :deep(.sensor-card) {
+		border: none;
+		background: transparent;
+		box-shadow: none;
+		padding-left: 0;
+	}
+
+	.session-status {
 		flex-shrink: 0;
 	}
 
-	.active-controls {
+	.metrics-row {
 		display: flex;
 		align-items: center;
-		gap: 1.5rem;
+		gap: 0.75rem;
+		flex-wrap: wrap;
 	}
 
-	.badge-active {
-		display: inline-flex;
+	.metric-chip {
+		background: var(--color-surface-secondary);
+		border: 1px solid var(--color-border);
+		padding: 0.5rem 0.9rem;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.chip-label {
+		font-family: var(--font-mono);
+		font-size: 0.55rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	.chip-value {
+		font-family: var(--font-display);
+		font-size: 1.2rem;
+		font-weight: 900;
+		color: var(--color-primary);
+		line-height: 1;
+	}
+
+	.chip-unit {
+		font-size: 0.7rem;
+		opacity: 0.5;
+		margin-left: 2px;
+	}
+
+	.badge-live {
+		display: flex;
 		align-items: center;
 		gap: 6px;
-		padding: 6px 14px;
-		background-color: rgba(34, 197, 94, 0.15);
+		padding: 5px 12px;
+		background: var(--color-success-dim);
+		border: 1px solid rgba(57, 255, 20, 0.3);
 		color: var(--color-success);
-		border: 1px solid var(--color-success);
-		border-radius: 20px;
-		font-size: 0.82rem;
-		font-weight: 600;
 		font-family: var(--font-mono);
-		letter-spacing: 0.04em;
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
 		white-space: nowrap;
 	}
 
-	.badge-active::before {
-		content: '';
+	.live-dot {
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
-		background-color: var(--color-success);
-		animation: pulse 1.5s ease-in-out infinite;
-	}
-
-	@keyframes pulse {
-		0%, 100% { opacity: 1; transform: scale(1); }
-		50% { opacity: 0.5; transform: scale(1.3); }
+		background: var(--color-success);
+		box-shadow: 0 0 6px var(--color-success);
+		flex-shrink: 0;
+		animation: blink 1s step-end infinite;
 	}
 
 	.badge-inactive {
-		padding: 6px 14px;
-		background-color: var(--color-surface-secondary);
-		color: var(--color-text-muted);
-		border-radius: 20px;
-		font-size: 0.85rem;
-		font-weight: 500;
-		white-space: nowrap;
-	}
-
-	.transmission-info {
 		display: flex;
-		flex-direction: row;
-		gap: 1rem;
-		font-size: 0.82rem;
+		align-items: center;
+		gap: 6px;
+		padding: 5px 12px;
+		background: var(--color-surface-secondary);
+		border: 1px solid var(--color-border-bright);
 		color: var(--color-text-muted);
 		font-family: var(--font-mono);
-		white-space: nowrap;
+		font-size: 0.65rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
 	}
 
-	.transmission-info span {
-		background: var(--color-surface-secondary);
-		padding: 4px 10px;
-		border-radius: 6px;
-		border: 1px solid var(--color-border);
+	.inactive-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--color-text-muted);
+		flex-shrink: 0;
 	}
 
-	.graph-container {
-		background: var(--color-surface);
-		border-radius: 12px;
-		padding: 1.5rem;
-		box-shadow: 0 2px 8px var(--color-shadow);
+	@keyframes blink {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.2; }
+	}
+
+	.graph-section {
 		min-height: 450px;
+	}
+
+	/* Attente */
+	.waiting-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 4rem 2rem;
+		border: 1px dashed var(--color-border-bright);
+		color: var(--color-text-muted);
+	}
+
+	.wait-icon {
+		font-size: 2.5rem;
+		animation: spin 3s linear infinite;
+	}
+
+	@keyframes spin {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
+	}
+
+	.waiting-state p {
+		font-family: var(--font-mono);
+		font-size: 0.82rem;
+		color: var(--color-text-muted);
+		text-align: center;
+	}
+
+	.wait-sub {
+		font-size: 0.72rem !important;
+		max-width: 400px;
+	}
+
+	@media (max-width: 600px) {
+		.session-header {
+			flex-direction: column;
+			align-items: flex-start;
+		}
 	}
 </style>

@@ -89,24 +89,33 @@
 	.toggle-container {
 		display: flex;
 		align-items: center;
+		gap: 0.75rem;
 		margin-bottom: 1rem;
+		padding: 0.6rem 1rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		max-width: 480px;
+		width: 100%;
 	}
 
 	.toggle-container .switch {
-		margin-right: 0.5rem;
+		flex-shrink: 0;
 	}
 
 	.toggle-container .toggle-label {
-		font-size: 0.9rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
 		color: var(--color-text-muted);
 	}
 
-	/* Toggle switch */
+	/* Toggle switch — style phosphore */
 	.switch {
 		position: relative;
 		display: inline-block;
-		width: 42px;
-		height: 24px;
+		width: 38px;
+		height: 20px;
 		flex-shrink: 0;
 	}
 
@@ -120,29 +129,33 @@
 	.slider {
 		position: absolute;
 		inset: 0;
-		background-color: var(--color-border);
-		border-radius: 24px;
+		background-color: var(--color-border-bright);
+		border-radius: 0;
 		cursor: pointer;
-		transition: background-color 0.2s;
+		transition: background-color 0.2s, box-shadow 0.2s;
+		border: 1px solid var(--color-border-bright);
 	}
 
 	.slider::before {
 		content: '';
 		position: absolute;
-		width: 18px;
-		height: 18px;
-		left: 3px;
-		top: 3px;
-		background: white;
-		border-radius: 50%;
-		transition: transform 0.2s;
+		width: 14px;
+		height: 14px;
+		left: 2px;
+		top: 2px;
+		background: var(--color-text-muted);
+		border-radius: 0;
+		transition: transform 0.2s, background-color 0.2s;
 	}
 
 	input:checked + .slider {
-		background-color: var(--color-primary);
+		background-color: var(--color-primary-dim);
+		border-color: var(--color-primary);
+		box-shadow: 0 0 8px var(--color-primary-glow);
 	}
 
 	input:checked + .slider::before {
 		transform: translateX(18px);
+		background: var(--color-primary);
 	}
 </style>

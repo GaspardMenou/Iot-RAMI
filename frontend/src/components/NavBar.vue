@@ -16,8 +16,15 @@
 	<aside
 		class="sidebar"
 		:class="{ open: isOpen }">
+
+		<!-- Header -->
 		<div class="sidebar-header">
-			<h2>RAMI</h2>
+			<div class="sidebar-logo">
+				<span class="logo-bracket">[</span>
+				<span class="logo-text">RAMI</span>
+				<span class="logo-bracket">]</span>
+			</div>
+			<p class="logo-sub">SENSOR MONITOR v1.0</p>
 			<button
 				class="close-btn"
 				aria-label="Close menu"
@@ -25,6 +32,10 @@
 				✕
 			</button>
 		</div>
+
+		<div class="sidebar-divider" />
+
+		<!-- Navigation -->
 		<nav class="sidebar-nav">
 			<ul>
 				<li
@@ -34,16 +45,24 @@
 						:class="[isActive(item.path) ? 'active-link' : '']"
 						:to="item.path"
 						@click="closeSidebarOnMobile">
-						{{ item.name }}
+						<span class="nav-indicator" />
+						<span class="nav-icon">{{ item.icon }}</span>
+						<span class="nav-label">{{ item.name }}</span>
 					</router-link>
 				</li>
 			</ul>
 		</nav>
+
+		<!-- Footer -->
 		<div class="sidebar-footer">
+			<div class="system-status">
+				<span class="status-dot" />
+				<span class="status-label">SYS ONLINE</span>
+			</div>
 			<button
 				class="logout-button"
 				@click="logout">
-				Log out
+				<span>⏻</span> DÉCONNECTER
 			</button>
 		</div>
 	</aside>
@@ -63,6 +82,7 @@
 	interface MenuItem {
 		path: string
 		name: string
+		icon: string
 	}
 
 	export default defineComponent({
@@ -73,14 +93,14 @@
 			const isOpen = window.innerWidth > 768
 
 			const items: MenuItem[] = [
-				{ path: "/home", name: "Dashboard" },
-				{ path: "/sensors", name: "Mes capteurs" },
-				{ path: "/user", name: "Mon profil" },
+				{ path: "/home", name: "Dashboard", icon: "◈" },
+				{ path: "/sensors", name: "Mes capteurs", icon: "⬡" },
+				{ path: "/user", name: "Mon profil", icon: "◎" },
 			]
 
 			if (isAdmin) {
-				items.push({ path: "/users/all", name: "Tous les utilisateurs" })
-				items.push({ path: "/admin", name: "Administration" })
+				items.push({ path: "/users/all", name: "Utilisateurs", icon: "⬟" })
+				items.push({ path: "/admin", name: "Administration", icon: "⬠" })
 			}
 
 			return { items: reactive(items), isOpen }
@@ -103,37 +123,77 @@
 </script>
 
 <style scoped>
-	/* ── Desktop sidebar (unchanged) ── */
+	/* ── Sidebar ── */
 	.sidebar {
-		width: 240px;
-		min-width: 240px;
+		width: 220px;
+		min-width: 220px;
 		background-color: var(--color-sidebar-bg);
+		border-right: 1px solid var(--color-border);
 		display: flex;
 		flex-direction: column;
-		padding: 1.5rem 1rem;
+		padding: 0;
 		box-sizing: border-box;
+		overflow: hidden;
 	}
 
+	/* ── Header ── */
 	.sidebar-header {
-		margin-bottom: 2rem;
-		padding: 0 0.5rem;
+		padding: 1.5rem 1.25rem 1rem;
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		flex-direction: column;
+		gap: 2px;
 	}
 
-	.sidebar-header h2 {
-		margin: 0;
-		font-size: 1.4rem;
-		font-weight: 700;
-		color: var(--color-sidebar-text-active);
-		letter-spacing: 0.12em;
+	.sidebar-logo {
+		display: flex;
+		align-items: baseline;
+		gap: 1px;
+		line-height: 1;
+	}
+
+	.logo-bracket {
 		font-family: var(--font-mono);
-		text-transform: uppercase;
+		font-size: 1.4rem;
+		color: var(--color-primary);
+		font-weight: 700;
+		opacity: 0.6;
 	}
 
+	.logo-text {
+		font-family: var(--font-display);
+		font-size: 2.2rem;
+		font-weight: 900;
+		color: var(--color-primary);
+		letter-spacing: 0.12em;
+		text-shadow: 0 0 20px var(--color-primary-glow);
+		line-height: 1;
+	}
+
+	.logo-sub {
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		font-weight: 300;
+		margin-top: 4px;
+	}
+
+	.close-btn {
+		display: none;
+	}
+
+	.sidebar-divider {
+		height: 1px;
+		background: linear-gradient(to right, var(--color-primary-dim), var(--color-border), transparent);
+		margin: 0 1.25rem 1rem;
+		flex-shrink: 0;
+	}
+
+	/* ── Navigation ── */
 	.sidebar-nav {
 		flex: 1;
+		padding: 0 0.5rem;
 	}
 
 	.sidebar-nav ul {
@@ -142,60 +202,122 @@
 		margin: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
+		gap: 2px;
 	}
 
 	.sidebar-nav ul li a {
 		text-decoration: none;
 		color: var(--color-sidebar-text);
-		display: block;
-		padding: 0.6rem 0.75rem;
-		border-radius: 8px;
-		font-size: 0.95rem;
-		transition: background-color 0.15s, color 0.15s;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.65rem 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		font-weight: 400;
+		transition: color 0.15s, background-color 0.15s;
+		border-left: 2px solid transparent;
+	}
+
+	.nav-indicator {
+		width: 0;
+		height: 0;
+	}
+
+	.nav-icon {
+		font-size: 0.9rem;
+		width: 16px;
+		text-align: center;
+		flex-shrink: 0;
+	}
+
+	.nav-label {
+		flex: 1;
 	}
 
 	.sidebar-nav ul li a:hover {
 		background-color: var(--color-sidebar-hover);
-		color: var(--color-sidebar-text-active);
+		color: var(--color-primary);
+		border-left-color: rgba(255, 159, 10, 0.4);
 	}
 
 	.sidebar-nav ul li a.active-link {
-		background-color: var(--color-primary);
-		color: var(--color-sidebar-text-active);
+		color: var(--color-primary);
+		background-color: var(--color-primary-dim);
+		border-left-color: var(--color-primary);
+		font-weight: 700;
+		box-shadow: inset 0 0 20px rgba(255, 159, 10, 0.04);
+	}
+
+	/* ── Footer ── */
+	.sidebar-footer {
+		padding: 1rem 1.25rem 1.5rem;
+		border-top: 1px solid var(--color-border);
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.system-status {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.status-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--color-success);
+		box-shadow: 0 0 6px var(--color-success);
+		flex-shrink: 0;
+		animation: pulse-dot 2s ease-in-out infinite;
+	}
+
+	@keyframes pulse-dot {
+		0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--color-success); }
+		50% { opacity: 0.6; box-shadow: 0 0 2px var(--color-success); }
+	}
+
+	.status-label {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		color: var(--color-success);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
 		font-weight: 600;
 	}
 
-	.sidebar-footer {
-		margin-top: 1.5rem;
-		padding-top: 1rem;
-		border-top: 1px solid var(--color-border);
-	}
-
 	.logout-button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
 		width: 100%;
-		padding: 0.6rem;
+		padding: 0.55rem;
 		background-color: transparent;
-		border: 1px solid var(--color-secondary-hover);
-		border-radius: 8px;
+		border: 1px solid var(--color-border-bright);
 		cursor: pointer;
-		color: var(--color-sidebar-text);
-		font-size: 0.9rem;
-		transition: background-color 0.15s, color 0.15s;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		transition: all 0.15s;
+		border-radius: 0;
 	}
 
 	.logout-button:hover {
-		background-color: var(--color-danger);
+		background-color: var(--color-danger-dim);
 		border-color: var(--color-danger);
-		color: white;
+		color: var(--color-danger);
+		box-shadow: 0 0 10px rgba(255, 64, 64, 0.15);
 	}
 
-	/* ── Hidden on desktop ── */
+	/* ── Hamburger ── */
 	.hamburger {
-		display: none;
-	}
-
-	.close-btn {
 		display: none;
 	}
 
@@ -210,11 +332,11 @@
 			flex-direction: column;
 			justify-content: space-between;
 			position: fixed;
-			top: 0.9rem;
-			left: 0.9rem;
+			top: 1rem;
+			left: 1rem;
 			z-index: 200;
-			width: 2.2rem;
-			height: 1.6rem;
+			width: 2rem;
+			height: 1.4rem;
 			background: none;
 			border: none;
 			cursor: pointer;
@@ -225,8 +347,8 @@
 			display: block;
 			width: 100%;
 			height: 2px;
-			background-color: var(--color-text);
-			border-radius: 2px;
+			background-color: var(--color-primary);
+			border-radius: 0;
 		}
 
 		.sidebar {
@@ -247,23 +369,25 @@
 			display: block;
 			position: fixed;
 			inset: 0;
-			background: rgba(0, 0, 0, 0.5);
+			background: rgba(0, 0, 0, 0.7);
 			z-index: 99;
 		}
 
 		.close-btn {
 			display: block;
+			position: absolute;
+			top: 1.5rem;
+			right: 1.25rem;
 			background: none;
 			border: none;
-			color: var(--color-sidebar-text);
-			font-size: 1.1rem;
+			color: var(--color-text-muted);
+			font-size: 1rem;
 			cursor: pointer;
 			padding: 0.25rem;
-			line-height: 1;
 		}
 
 		.close-btn:hover {
-			color: var(--color-sidebar-text-active);
+			color: var(--color-primary);
 		}
 	}
 </style>

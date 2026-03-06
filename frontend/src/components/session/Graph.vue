@@ -1,26 +1,58 @@
 <template>
 	<div class="graph-container">
-		<h2>{{ title }}</h2>
+		<div class="graph-header">
+			<span class="graph-title">{{ title }}</span>
+			<div
+				v-if="!props.isRealTime"
+				class="chart-controls">
+				<button
+					class="ctrl-btn"
+					title="Rewind"
+					@click="rewind">⏮</button>
+				<button
+					class="ctrl-btn"
+					title="Play"
+					@click="play">▶</button>
+				<button
+					class="ctrl-btn"
+					title="Pause"
+					@click="pause">⏸</button>
+				<button
+					class="ctrl-btn"
+					title="Fast forward"
+					@click="fastForward">⏭</button>
+			</div>
+			<div
+				v-else
+				class="live-indicator">
+				<span class="live-dot" />
+				LIVE
+			</div>
+		</div>
 		<div class="chart-wrapper">
 			<LineChart
 				ref="chartRef"
 				:data="chartData"
 				:options="chartOptions" />
 		</div>
-		<div
-			v-if="!props.isRealTime"
-			class="chart-controls">
-			<button @click="rewind">⏪️</button>
-			<button @click="play">▶️</button>
-			<button @click="pause">⏸️</button>
-			<button @click="fastForward">⏩️</button>
-		</div>
 	</div>
 </template>
 
 <script lang="ts">
 	import { defineComponent, inject, onMounted, onUnmounted, ref } from "vue"
-	import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale, type ChartOptions, type ChartData } from "chart.js"
+	import {
+		Chart as ChartJS,
+		CategoryScale,
+		LinearScale,
+		PointElement,
+		LineElement,
+		Title,
+		Tooltip,
+		Legend,
+		TimeScale,
+		type ChartOptions,
+		type ChartData,
+	} from "chart.js"
 	import { Line as LineChart } from "vue-chartjs"
 	import zoomPlugin from "chartjs-plugin-zoom"
 	import "chartjs-adapter-date-fns"
@@ -28,11 +60,18 @@
 
 	ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale, zoomPlugin)
 
+	// Palette ambre phosphore pour les datasets multiples
+	const PHOSPHOR_COLORS = [
+		{ line: "#ff9f0a", fill: "rgba(255,159,10,0.08)" },   // Ambre
+		{ line: "#39ff14", fill: "rgba(57,255,20,0.06)" },     // Vert
+		{ line: "#00cfff", fill: "rgba(0,207,255,0.06)" },     // Cyan
+		{ line: "#ff4f80", fill: "rgba(255,79,128,0.06)" },    // Rose
+		{ line: "#ffcc00", fill: "rgba(255,204,0,0.06)" },     // Jaune
+	]
+
 	export default defineComponent({
 		name: "SessionGraph",
-		components: {
-			LineChart,
-		},
+		components: { LineChart },
 		props: {
 			isRealTime: {
 				type: Boolean,
@@ -45,12 +84,7 @@
 			const chartData = ref<ChartData<"line">>(
 				injectedChartData || {
 					labels: [],
-					datasets: [
-						{
-							label: "Dataset",
-							data: [],
-						},
-					],
+					datasets: [{ label: "Dataset", data: [] }],
 				}
 			)
 			const chartRef = ref<InstanceType<typeof LineChart> | null>(null)
@@ -59,47 +93,102 @@
 			const chartOptions: ChartOptions<"line"> = {
 				responsive: true,
 				maintainAspectRatio: false,
+				animation: { duration: props.isRealTime ? 0 : 300 },
+				interaction: {
+					mode: "index",
+					intersect: false,
+				},
 				elements: {
 					line: {
-						tension: 0.4,
+						tension: 0.2,
+						borderWidth: 2,
+					},
+					point: {
+						radius: 0,
+						hitRadius: 10,
+						hoverRadius: 4,
 					},
 				},
 				scales: {
 					x: {
 						type: "time",
-						time: {
-							unit: "second",
+						time: { unit: "second" },
+						grid: {
+							color: "rgba(255, 159, 10, 0.07)",
+							lineWidth: 1,
 						},
-						title: {
-							display: true,
-							text: "Time",
+						border: {
+							color: "rgba(255, 159, 10, 0.2)",
 						},
+						ticks: {
+							color: "#7a6535",
+							font: { family: "Martian Mono", size: 10 },
+							maxTicksLimit: 8,
+						},
+						title: { display: false },
 					},
 					y: {
-						beginAtZero: true,
-						title: {
-							display: true,
-							text: "Value",
+						grid: {
+							color: "rgba(255, 159, 10, 0.07)",
+							lineWidth: 1,
 						},
+						border: {
+							color: "rgba(255, 159, 10, 0.2)",
+						},
+						ticks: {
+							color: "#7a6535",
+							font: { family: "Martian Mono", size: 10 },
+						},
+						title: { display: false },
 					},
 				},
 				plugins: {
+					legend: {
+						position: "top",
+						align: "end",
+						labels: {
+							color: "#7a6535",
+							font: { family: "Martian Mono", size: 10 },
+							usePointStyle: true,
+							pointStyle: "line",
+							boxWidth: 18,
+							padding: 16,
+						},
+					},
+					tooltip: {
+						backgroundColor: "#0f0c00",
+						borderColor: "#241c00",
+						borderWidth: 1,
+						titleColor: "#ff9f0a",
+						bodyColor: "#f0d89a",
+						titleFont: { family: "Martian Mono", size: 11 },
+						bodyFont: { family: "Martian Mono", size: 11 },
+						padding: 10,
+						cornerRadius: 0,
+					},
 					zoom: {
 						pan: {
 							enabled: !props.isRealTime,
 							mode: "x",
 						},
 						zoom: {
-							wheel: {
-								enabled: !props.isRealTime,
-							},
-							pinch: {
-								enabled: !props.isRealTime,
-							},
+							wheel: { enabled: !props.isRealTime },
+							pinch: { enabled: !props.isRealTime },
 							mode: "x",
 						},
 					},
 				},
+			}
+
+			// Applique les couleurs phosphore aux datasets au montage
+			const applyDatasetColors = () => {
+				if (chartData.value?.datasets) {
+					chartData.value.datasets.forEach((ds, i) => {
+						const palette = PHOSPHOR_COLORS[i % PHOSPHOR_COLORS.length]
+						if (!ds.borderColor) ds.borderColor = palette.line
+						if (!ds.backgroundColor) ds.backgroundColor = palette.fill
+					})
+				}
 			}
 
 			const updateScale = (direction: "forward" | "backward", stepFactor: number) => {
@@ -109,9 +198,7 @@
 					if (scales && scales.x) {
 						const xScale = scales.x
 						if (typeof xScale.min === "number" && typeof xScale.max === "number") {
-							const maxX = xScale.max
-							const minX = xScale.min
-							const step = (maxX - minX) / stepFactor
+							const step = (xScale.max - xScale.min) / stepFactor
 							if (direction === "forward") {
 								xScale.min += step
 								xScale.max += step
@@ -136,16 +223,11 @@
 				if (animationInterval) return
 				animationInterval = setInterval(() => updateScale("forward", 100), 100)
 			}
-
-			const pause = () => {
-				clearAnimationInterval()
-			}
-
+			const pause = () => clearAnimationInterval()
 			const fastForward = () => {
 				clearAnimationInterval()
 				updateScale("forward", 10)
 			}
-
 			const rewind = () => {
 				clearAnimationInterval()
 				updateScale("backward", 10)
@@ -163,21 +245,23 @@
 				}
 			}
 
+			const handleSessionSelected = (session: { id: string; startDate: string; endDate: string }) => {
+				chooseNewXScale(session.startDate, session.endDate)
+			}
+
 			onMounted(() => {
+				applyDatasetColors()
 				if (!props.isRealTime) {
 					handleEvent("on", EventTypes.SESSION_SELECTED, handleSessionSelected)
 				}
 			})
 
 			onUnmounted(() => {
+				clearAnimationInterval()
 				if (!props.isRealTime) {
 					handleEvent("off", EventTypes.SESSION_SELECTED, handleSessionSelected)
 				}
 			})
-
-			const handleSessionSelected = (session: { id: string; startDate: string; endDate: string }) => {
-				chooseNewXScale(session.startDate, session.endDate)
-			}
 
 			return {
 				title,
@@ -197,44 +281,99 @@
 
 <style scoped>
 	.graph-container {
-		margin-top: 20px;
-		background-color: var(--color-surface);
-		padding: 20px;
-		border-radius: 10px;
-		width: 100%; /* Ajout d'une largeur maximale pour le conteneur */
-		overflow: hidden; /* Gestion du débordement pour empêcher le graphique de sortir du conteneur */
-		box-sizing: border-box; /* Assurez-vous que le padding est inclus dans la hauteur et la largeur */
-		display: flex; /* Ajouté pour utiliser flexbox */
-		flex-direction: column; /* Ajouté pour que les enfants soient en colonne */
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-top: 2px solid var(--color-primary);
+		width: 100%;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
 	}
 
+	.graph-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--color-border);
+		background: rgba(0, 0, 0, 0.25);
+		gap: 1rem;
+		flex-shrink: 0;
+	}
+
+	.graph-title {
+		font-family: var(--font-display);
+		font-size: 0.95rem;
+		font-weight: 900;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+	}
+
+	/* Contrôles */
+	.chart-controls {
+		display: flex;
+		gap: 4px;
+	}
+
+	.ctrl-btn {
+		background: var(--color-surface-secondary);
+		border: 1px solid var(--color-border-bright);
+		color: var(--color-text-muted);
+		padding: 4px 10px;
+		font-size: 0.75rem;
+		cursor: pointer;
+		transition: all 0.15s;
+		border-radius: 0;
+		font-family: var(--font-mono);
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	.ctrl-btn:hover {
+		background: var(--color-primary-dim);
+		border-color: var(--color-primary);
+		color: var(--color-primary);
+		box-shadow: 0 0 8px var(--color-primary-glow);
+	}
+
+	/* Indicateur LIVE */
+	.live-indicator {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		color: var(--color-danger);
+		text-transform: uppercase;
+	}
+
+	.live-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--color-danger);
+		box-shadow: 0 0 6px var(--color-danger);
+		animation: blink 1s step-end infinite;
+	}
+
+	@keyframes blink {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.2; }
+	}
+
+	/* Zone graphique */
 	.chart-wrapper {
 		height: 400px;
 		width: 100%;
+		padding: 1rem 0.5rem 0.75rem;
 		box-sizing: border-box;
-	}
-
-	.chart-controls {
-		display: flex;
-		justify-content: center;
-		margin-top: 10px;
-	}
-
-	.chart-controls button {
-		background-color: var(--color-surface-secondary);
-		border: 1px solid var(--color-border);
-		color: var(--color-text);
-		padding: 5px 12px;
-		margin: 0 4px;
-		font-size: 14px;
-		border-radius: 6px;
-		cursor: pointer;
-		transition: background-color 0.2s;
-	}
-
-	.chart-controls button:hover {
-		background-color: var(--color-primary);
-		color: white;
-		border-color: var(--color-primary);
+		/* Légère grille de fond pour l'effet oscilloscope */
+		background-image:
+			linear-gradient(rgba(255,159,10,0.035) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255,159,10,0.035) 1px, transparent 1px);
+		background-size: 40px 40px;
 	}
 </style>

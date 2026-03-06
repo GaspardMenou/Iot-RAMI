@@ -32,13 +32,8 @@
 				}
 			})
 
-			const sensor = computed(() => {
-				return sensors.value.find((s: Sensor) => s.id === props.id)
-			})
-
-			const goToSession = () => {
-				router.push({ name: "newsession", params: { id: props.id } })
-			}
+			const sensor = computed(() => sensors.value.find((s: Sensor) => s.id === props.id))
+			const goToSession = () => router.push({ name: "newsession", params: { id: props.id } })
 
 			return { sensor, sessions, goToSession, hasActiveSession }
 		},
@@ -48,27 +43,34 @@
 <template>
 	<div class="sensor-detail">
 		<div v-if="sensor">
-			<!-- Header : infos capteur -->
-			<div class="sensor-header">
-				<SensorCard
-					:sensor="sensor"
-					:is-for-navigation="false" />
+
+			<!-- En-tête capteur -->
+			<div class="detail-header">
+				<div class="detail-sensor-info">
+					<SensorCard
+						:sensor="sensor"
+						:is-for-navigation="false" />
+				</div>
 				<button
-					class="btn-new-session"
-					:class="{ 'btn-active-session': hasActiveSession }"
+					class="btn-session"
+					:class="{ 'btn-session--active': hasActiveSession }"
 					@click="goToSession">
-					{{ hasActiveSession ? "Voir la session actuelle" : "+ Nouvelle session" }}
+					<span class="btn-session-icon">{{ hasActiveSession ? '◉' : '+' }}</span>
+					{{ hasActiveSession ? "SESSION EN COURS" : "NOUVELLE SESSION" }}
 				</button>
 			</div>
 
 			<!-- Sessions -->
-			<div class="sessions-section">
-				<h2>Sessions passées</h2>
+			<div class="sessions-panel">
+				<div class="panel-header">
+					<h2>SESSIONS PASSÉES</h2>
+					<span class="session-count">{{ sessions.length }} ENREG.</span>
+				</div>
 
 				<div
 					v-if="sessions.length === 0"
 					class="empty-state">
-					Aucune session pour ce capteur.
+					AUCUNE SESSION ENREGISTRÉE POUR CE CAPTEUR
 				</div>
 
 				<div
@@ -85,154 +87,149 @@
 		<div
 			v-else
 			class="empty-state">
-			Capteur introuvable.
+			CAPTEUR INTROUVABLE
 		</div>
 	</div>
 </template>
 
 <style scoped>
 	.sensor-detail {
-		padding: 2rem;
-		max-width: 960px;
+		max-width: 900px;
 		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
 	}
 
-	/* Header */
-	.sensor-header {
+	/* En-tête */
+	.detail-header {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		justify-content: space-between;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		padding: 1rem 1.25rem;
+		flex-wrap: wrap;
+	}
+
+	.detail-sensor-info {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.detail-sensor-info :deep(.sensor-card) {
+		border: none;
+		background: transparent;
+		box-shadow: none;
+		padding-left: 0;
+	}
+
+	.btn-session {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.65rem 1.25rem;
+		background: var(--color-success-dim);
+		border: 1px solid rgba(57, 255, 20, 0.35);
+		color: var(--color-success);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: all 0.15s;
+		border-radius: 0;
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
+	.btn-session:hover {
+		background: var(--color-success);
+		border-color: var(--color-success);
+		color: #070600;
+		box-shadow: 0 0 16px rgba(57, 255, 20, 0.25);
+	}
+
+	.btn-session--active {
+		background: var(--color-primary-dim);
+		border-color: rgba(255, 159, 10, 0.35);
+		color: var(--color-primary);
+	}
+
+	.btn-session--active:hover {
+		background: var(--color-primary);
+		border-color: var(--color-primary);
+		color: var(--color-text-second);
+		box-shadow: 0 0 16px var(--color-primary-glow);
+	}
+
+	.btn-session-icon {
+		font-size: 0.85rem;
+	}
+
+	/* Panel sessions */
+	.sessions-panel {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		overflow: hidden;
+	}
+
+	.panel-header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 1rem;
-		background: var(--color-surface);
-		border-radius: 12px;
-		padding: 1.25rem 1.5rem;
-		margin-bottom: 1.5rem;
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+		padding: 0.75rem 1.25rem;
+		border-bottom: 1px solid var(--color-border);
+		background: rgba(0, 0, 0, 0.2);
 	}
 
-	/* Retire le style "card" du SensorCard quand il est dans le header */
-	.sensor-header :deep(.sensor-card) {
-		border: none;
-		box-shadow: none;
-		padding: 0;
-		margin: 0;
-		background: transparent;
+	.panel-header h2 {
+		font-family: var(--font-display);
+		font-size: 0.9rem;
+		font-weight: 900;
+		letter-spacing: 0.15em;
+		color: var(--color-text-muted);
 	}
 
-	.sensor-header :deep(.sensor-name) {
-		white-space: nowrap;
-		font-size: 1.2rem;
-	}
-
-	.btn-new-session {
-		padding: 10px 20px;
-		background-color: var(--color-success);
-		color: white;
-		border: none;
-		border-radius: 8px;
-		cursor: pointer;
-		font-weight: 600;
-		font-size: 0.95rem;
-		white-space: nowrap;
-		flex-shrink: 0;
-		transition: background-color 0.2s;
-	}
-
-	.btn-new-session:hover {
-		background-color: var(--color-success-hover);
-	}
-
-	.btn-active-session {
-		background-color: var(--color-primary);
-	}
-
-	.btn-active-session:hover {
-		background-color: var(--color-primary-hover, var(--color-primary));
-	}
-
-	/* Sessions */
-	.sessions-section {
-		background: var(--color-surface);
-		border-radius: 12px;
-		padding: 1.5rem 2rem;
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-	}
-
-	.sessions-section h2 {
-		font-size: 1.1rem;
-		font-weight: 700;
-		margin-bottom: 1rem;
-		color: var(--color-text);
+	.session-count {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.1em;
 	}
 
 	.sessions-list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: 0;
 	}
 
-	/* Override SessionCard style for this page only */
-	.sessions-list :deep(.session-container) {
-		background: var(--color-surface-secondary);
-		border: 1px solid var(--color-border);
-		border-radius: 10px;
-		padding: 1rem 1.25rem;
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-	}
-
-	.sessions-list :deep(.session-date) {
-		font-size: 0.95rem;
-		font-weight: 600;
-	}
-
-	.sessions-list :deep(.session-duration),
-	.sessions-list :deep(.session-active) {
-		font-size: 0.85rem;
-	}
-
-	.sessions-list :deep(.btn-export) {
-		padding: 8px 16px;
-		font-size: 0.85rem;
-		flex-shrink: 0;
-	}
-
-	@media (max-width: 600px) {
-		.sensor-detail {
-			padding: 1rem;
-		}
-
-		.sensor-header {
-			flex-direction: column;
-			align-items: flex-start;
-		}
-
-		.btn-new-session {
-			width: 100%;
-		}
-
-		.sessions-section {
-			padding: 1rem;
-		}
-
-		.sessions-list :deep(.session-container) {
-			flex-direction: column;
-			align-items: flex-start;
-		}
-
-		.sessions-list :deep(.btn-export) {
-			width: 100%;
-		}
+	.sessions-list > *:not(:last-child) {
+		border-bottom: 1px solid var(--color-border);
 	}
 
 	.empty-state {
-		color: var(--color-text-muted);
+		padding: 3rem;
 		text-align: center;
-		padding: 3rem 2rem;
-		border-radius: 12px;
-		border: 1px dashed var(--color-border);
-		background: var(--color-surface);
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		border: 1px dashed var(--color-border-bright);
+	}
+
+	@media (max-width: 600px) {
+		.detail-header {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.btn-session {
+			width: 100%;
+			justify-content: center;
+		}
 	}
 </style>
