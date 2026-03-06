@@ -13,7 +13,6 @@
 				:sensor="sensor"
 				:isForRealTimeSession="props.isForRealTimeSession"
 				:selectedSensorId="selectedSensor"
-				:isForNavigation="!props.isForRealTimeSession"
 				@click="handleSensorSelect(sensor.id)" />
 			<div
 				v-if="sensors.length === 0"

@@ -39,7 +39,7 @@
 <template>
 	<div class="dashboard">
 
-		<!-- Accueil -->
+		<!-- Greeting -->
 		<div class="greeting-block">
 			<div class="greeting-label">TERMINAL RAMI — ACCÈS AUTORISÉ</div>
 			<h1 class="greeting-name">{{ firstName.toUpperCase() }}</h1>
@@ -49,24 +49,24 @@
 		<!-- Stats -->
 		<div class="stats-row">
 			<div class="stat-card">
-				<span class="stat-num">{{ String(sensors.length).padStart(2, "0") }}</span>
+				<span class="stat-num">{{ String(sensors.length).padStart(2, '0') }}</span>
 				<span class="stat-label">CAPTEURS</span>
 			</div>
 			<div class="stat-card">
-				<span class="stat-num">{{ String(allSessions.length).padStart(2, "0") }}</span>
+				<span class="stat-num">{{ String(allSessions.length).padStart(2, '0') }}</span>
 				<span class="stat-label">SESSIONS TOTAL</span>
 			</div>
 			<div class="stat-card stat-card--live">
-				<span class="stat-num">{{ String(allSessions.filter(s => !s.endedAt).length).padStart(2, "0") }}</span>
+				<span class="stat-num">{{ String(allSessions.filter(s => !s.endedAt).length).padStart(2, '0') }}</span>
 				<span class="stat-label">EN COURS</span>
 			</div>
 		</div>
 
-		<!-- Capteurs -->
+		<!-- Capteurs — navigation rapide -->
 		<section class="section">
 			<div class="section-header">
-				<h2>CAPTEURS ASSIGNÉS</h2>
-				<span class="section-count">{{ sensors.length }} UNIT{{ sensors.length > 1 ? "S" : "" }}</span>
+				<h2>ACCÈS RAPIDE AUX CAPTEURS</h2>
+				<span class="section-hint">CLIQUER POUR ACCÉDER AU DÉTAIL</span>
 			</div>
 
 			<div
@@ -90,7 +90,7 @@
 
 <style scoped>
 	.dashboard {
-		max-width: 1100px;
+		max-width: 1000px;
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
@@ -144,7 +144,7 @@
 		padding: 1.25rem 1.5rem;
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
+		gap: 4px;
 		transition: background-color 0.15s;
 	}
 
@@ -174,43 +174,46 @@
 		text-transform: uppercase;
 	}
 
-	/* Section */
+	/* Section capteurs */
 	.section {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: 0;
 	}
 
 	.section-header {
 		display: flex;
-		align-items: baseline;
+		align-items: center;
 		justify-content: space-between;
-		padding-bottom: 0.75rem;
-		border-bottom: 1px solid var(--color-border);
+		padding: 0.65rem 1rem;
+		background: rgba(0,0,0,0.2);
+		border: 1px solid var(--color-border);
+		border-bottom: none;
 	}
 
 	.section-header h2 {
 		font-family: var(--font-display);
-		font-size: 1rem;
+		font-size: 0.85rem;
 		font-weight: 900;
-		letter-spacing: 0.14em;
+		letter-spacing: 0.15em;
 		color: var(--color-text-muted);
 		text-transform: uppercase;
 	}
 
-	.section-count {
+	.section-hint {
 		font-family: var(--font-mono);
-		font-size: 0.62rem;
+		font-size: 0.6rem;
 		color: var(--color-primary);
-		opacity: 0.6;
 		letter-spacing: 0.1em;
+		opacity: 0.5;
 	}
 
-	/* Grille capteurs */
+	/* Grille capteurs — navigation */
 	.sensors-grid {
 		display: flex;
 		flex-direction: column;
 		gap: 0;
+		border: 1px solid var(--color-border);
 	}
 
 	.sensors-grid > *:not(:last-child) {
