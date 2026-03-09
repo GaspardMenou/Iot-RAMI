@@ -105,14 +105,14 @@
 		display: flex;
 		flex-direction: row;
 		gap: 0;
-		height: 500px;
+		height: calc(100vh - 500px);
 		overflow: hidden;
 	}
 
 	/* Liste */
 	.sessions-list {
-		width: 220px;
-		min-width: 220px;
+		width: 260px;
+		min-width: 260px;
 		overflow-y: auto;
 		border-right: 1px solid var(--color-border);
 		display: flex;
