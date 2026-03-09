@@ -8,18 +8,22 @@
 				<button
 					class="ctrl-btn"
 					title="Rewind"
+					aria-label="Reculer"
 					@click="rewind">⏮</button>
 				<button
 					class="ctrl-btn"
 					title="Play"
+					aria-label="Lecture"
 					@click="play">▶</button>
 				<button
 					class="ctrl-btn"
 					title="Pause"
+					aria-label="Pause"
 					@click="pause">⏸</button>
 				<button
 					class="ctrl-btn"
 					title="Fast forward"
+					aria-label="Avancer"
 					@click="fastForward">⏭</button>
 			</div>
 			<div

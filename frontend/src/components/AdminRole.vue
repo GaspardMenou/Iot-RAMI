@@ -1,14 +1,12 @@
 <template>
 	<div class="admin-role">
-		<p class="description">Modifier le rôle d'un utilisateur existant.</p>
+		<p class="description">MODIFIER LE RÔLE D'UN UTILISATEUR</p>
 		<form
 			class="role-form"
 			@submit.prevent="submitUpdateUserRole">
-			<div class="field">
-				<label class="field-label">Utilisateur</label>
-				<select
-					v-model="userSelected"
-					class="field-select">
+			<label>
+				Utilisateur
+				<select v-model="userSelected">
 					<option
 						value=""
 						disabled>
@@ -21,12 +19,10 @@
 						{{ user.email }} — {{ user.role }}
 					</option>
 				</select>
-			</div>
-			<div class="field">
-				<label class="field-label">Nouveau rôle</label>
-				<select
-					v-model="roleSelected"
-					class="field-select">
+			</label>
+			<label>
+				Nouveau rôle
+				<select v-model="roleSelected">
 					<option
 						value=""
 						disabled>
@@ -39,12 +35,16 @@
 						{{ role }}
 					</option>
 				</select>
+			</label>
+			<div
+				v-if="errorMsg"
+				class="inline-error">
+				{{ errorMsg }}
 			</div>
 			<button
 				type="submit"
-				class="btn-submit"
 				:disabled="!userSelected || !roleSelected">
-				Mettre à jour
+				METTRE À JOUR
 			</button>
 		</form>
 	</div>
@@ -60,6 +60,7 @@
 		userSelected: string
 		roles: Role[]
 		roleSelected: string
+		errorMsg: string
 	}
 
 	const token = localStorage.getItem("token")
@@ -72,22 +73,24 @@
 				userSelected: "",
 				roles: [Role.REGULAR, Role.PRIVILEGED, Role.ADMIN],
 				roleSelected: "",
+				errorMsg: "",
 			}
 		},
 		methods: {
 			async submitUpdateUserRole(e: Event) {
 				e.preventDefault()
+				this.errorMsg = ""
 				const email = this.userSelected
 				const role = this.roleSelected as Role
 				if (!useUser().canUpdateUserRole(token, { email: email, role: role })) {
-					alert("You are not allowed to update this user's role")
+					this.errorMsg = "ACCÈS REFUSÉ : opération non autorisée."
 					return
 				} else {
 					const result = await useUser().updateRole(token as string, { email: email, role: role })
 					if (result.valid) {
 						await this.refreshUsers(token as string)
 					} else {
-						alert(result.error)
+						this.errorMsg = result.error || "ERREUR : impossible de mettre à jour le rôle."
 					}
 				}
 			},
@@ -114,7 +117,9 @@
 	}
 
 	.description {
-		font-size: 0.875rem;
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		letter-spacing: 0.12em;
 		color: var(--color-text-muted);
 		margin: 0;
 	}
@@ -126,54 +131,13 @@
 		max-width: 480px;
 	}
 
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-	}
-
-	.field-label {
-		font-size: 0.85rem;
-		font-weight: 600;
-		color: var(--color-text-muted);
-	}
-
-	.field-select {
-		padding: 8px 12px;
-		background: var(--color-surface-secondary);
-		color: var(--color-text);
-		border: 1px solid var(--color-border);
-		border-radius: 8px;
-		font-size: 0.9rem;
-		width: 100%;
-		cursor: pointer;
-	}
-
-	.field-select:focus {
-		outline: none;
-		border-color: var(--color-primary);
-	}
-
-	.btn-submit {
-		padding: 9px 20px;
-		background: var(--color-primary);
-		color: white;
-		border: none;
-		border-radius: 8px;
-		font-size: 0.875rem;
-		font-weight: 600;
-		cursor: pointer;
-		width: fit-content;
-		align-self: center;
-		transition: background-color 0.15s;
-	}
-
-	.btn-submit:hover:not(:disabled) {
-		background: var(--color-primary-hover, var(--color-primary));
-	}
-
-	.btn-submit:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
+	.inline-error {
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.08em;
+		color: var(--color-danger);
+		padding: 0.5rem 0.75rem;
+		border: 1px solid var(--color-danger-dim);
+		background: var(--color-danger-dim);
 	}
 </style>

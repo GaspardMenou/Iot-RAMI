@@ -27,6 +27,7 @@
 	.users-sessions-view {
 		display: flex;
 		flex-direction: column;
+		gap: 1.5rem;
 		width: 100%;
 	}
 
@@ -36,6 +37,5 @@
 
 	.sessions-list-container {
 		width: 100%;
-		padding-top: 20px;
 	}
 </style>

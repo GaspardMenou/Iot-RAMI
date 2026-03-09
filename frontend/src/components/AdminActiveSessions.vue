@@ -43,7 +43,7 @@
 		<div
 			v-if="activeSessions.length === 0"
 			class="empty-state">
-			Aucune session active en ce moment.
+			AUCUNE SESSION ACTIVE EN CE MOMENT
 		</div>
 		<div class="table-wrapper">
 			<table
@@ -66,9 +66,9 @@
 						<td>{{ new Date(session.createdAt).toLocaleString() }}</td>
 						<td>
 							<button
-								class="btn-end"
+								class="btn-danger"
 								@click="forceEndSession(session)">
-								Terminer
+								TERMINER
 							</button>
 						</td>
 					</tr>
@@ -98,28 +98,12 @@
 	}
 
 	.id-cell {
-		font-family: monospace;
-		font-size: 0.78rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
 		color: var(--color-text-muted);
 		max-width: 180px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-	}
-
-	.btn-end {
-		padding: 4px 12px;
-		font-size: 0.8rem;
-		font-weight: 600;
-		background-color: var(--color-danger);
-		color: white;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: background-color 0.15s;
-	}
-
-	.btn-end:hover {
-		background-color: var(--color-danger-hover);
 	}
 </style>

@@ -6,7 +6,7 @@
 				:class="{ 'bar-active': !session.endedAt }" />
 		</div>
 		<div class="session-info">
-			<span class="session-date">{{ formatHumanReadableDate(session.createdAt) }}</span>
+			<span class="session-date">{{ formatHumanReadableDate(session.createdAt, false, true) }}</span>
 			<span
 				v-if="session.endedAt"
 				class="session-duration">
@@ -22,14 +22,19 @@
 		</div>
 		<button
 			class="btn-export"
-			@click.stop="exportSessionToCsv(session.id)">
-			↓ CSV
+			:class="`btn-export--${csvState}`"
+			:disabled="csvState === 'loading'"
+			@click.stop="handleExport(session.id)">
+			<span v-if="csvState === 'loading'">…</span>
+			<span v-else-if="csvState === 'done'">✓ OK</span>
+			<span v-else-if="csvState === 'error'">✗ ERR</span>
+			<span v-else>↓ CSV</span>
 		</button>
 	</div>
 </template>
 
 <script lang="ts">
-	import { defineComponent } from "vue"
+	import { defineComponent, ref } from "vue"
 	import { useSensor } from "@/composables/useSensor.composable"
 	import { useSession } from "@/composables/useSession.composable"
 
@@ -43,11 +48,26 @@
 		setup() {
 			const { calculateDuration, formatHumanReadableDate } = useSensor(undefined)
 			const { exportSessionToCsv } = useSession()
+			const csvState = ref<"idle" | "loading" | "done" | "error">("idle")
+
+			const handleExport = async (sessionId: string) => {
+				if (csvState.value === "loading") return
+				csvState.value = "loading"
+				try {
+					await exportSessionToCsv(sessionId)
+					csvState.value = "done"
+					setTimeout(() => { csvState.value = "idle" }, 2000)
+				} catch {
+					csvState.value = "error"
+					setTimeout(() => { csvState.value = "idle" }, 2000)
+				}
+			}
 
 			return {
 				calculateDuration,
 				formatHumanReadableDate,
-				exportSessionToCsv,
+				handleExport,
+				csvState,
 			}
 		},
 	})
@@ -176,10 +196,27 @@
 		flex-shrink: 0;
 	}
 
-	.btn-export:hover {
+	.btn-export:hover:not(:disabled) {
 		background: var(--color-primary-dim);
 		border-color: var(--color-primary);
 		color: var(--color-primary);
 		box-shadow: 0 0 8px var(--color-primary-glow);
+	}
+
+	.btn-export--loading {
+		opacity: 0.5;
+		cursor: wait;
+	}
+
+	.btn-export--done {
+		border-color: var(--color-success) !important;
+		color: var(--color-success) !important;
+		background: var(--color-success-dim) !important;
+	}
+
+	.btn-export--error {
+		border-color: var(--color-danger) !important;
+		color: var(--color-danger) !important;
+		background: var(--color-danger-dim) !important;
 	}
 </style>

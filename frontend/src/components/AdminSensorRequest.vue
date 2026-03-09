@@ -15,6 +15,7 @@
 				sortColumn: "User.email",
 				statusDisplay: "all",
 				status: ["all", Status.ACCEPTED, Status.PENDING, Status.REJECTED],
+			errorMsg: "",
 			}
 		},
 		computed: {
@@ -53,7 +54,7 @@
 			},
 			async submitUpdateUserRequest(userSensor: UserSensorRequest, accessApi: string) {
 				const result = await useUserSensorOrMeasurementType().updateUserSensorRequest(userSensor.User.email, userSensor.sensorName, accessApi)
-				if (result.httpStatus && [401, 403].includes(result.httpStatus) && result.error) alert(result.error)
+				if (result.httpStatus && [401, 403].includes(result.httpStatus) && result.error) this.errorMsg = result.error
 				else if (result.error) console.error(result.error)
 				this.usersSensor = useUserSensorOrMeasurementTypeStore().getUserSensorRequest()
 			},
@@ -71,6 +72,11 @@
 
 <template>
 	<div class="admin-sensor-request">
+		<div
+			v-if="errorMsg"
+			class="inline-error">
+			{{ errorMsg }}
+		</div>
 		<div class="toolbar">
 			<label class="filter-label">
 				Filtrer :
@@ -102,8 +108,8 @@
 						<td>{{ user.sensorName }}</td>
 						<td>{{ user.status }}</td>
 						<td>{{ beautifulDate(user.createdAt) }}</td>
-						<td><button @click="submitUpdateUserRequest(user, 'false')">Accepter</button></td>
-						<td><button @click="submitUpdateUserRequest(user, 'true')">Refuser</button></td>
+						<td><button @click="submitUpdateUserRequest(user, 'false')">ACCEPTER</button></td>
+						<td><button class="btn-danger" @click="submitUpdateUserRequest(user, 'true')">REFUSER</button></td>
 					</tr>
 				</tbody>
 			</table>
@@ -128,8 +134,20 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		font-size: 0.875rem;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
 		color: var(--color-text-muted);
+	}
+
+	.inline-error {
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.08em;
+		color: var(--color-danger);
+		padding: 0.5rem 0.75rem;
+		border: 1px solid var(--color-danger-dim);
+		background: var(--color-danger-dim);
+		margin-bottom: 0.5rem;
 	}
 
 	.table-wrapper {

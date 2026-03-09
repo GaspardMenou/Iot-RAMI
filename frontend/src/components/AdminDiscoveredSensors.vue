@@ -16,6 +16,7 @@
 			const discovered = ref<DiscoveredSensor[]>([])
 			const names = ref<Record<string, string>>({})
 			const registering = ref<Record<string, boolean>>({})
+			const registerError = ref("")
 
 			const fetch = async () => {
 				try {
@@ -35,7 +36,7 @@
 					await fetch()
 				} catch (e: any) {
 					if (e.response?.status === 401 || e.response?.status === 403) {
-						alert("Vous n'avez pas les droits pour enregistrer un capteur.")
+						registerError.value = "ACCÈS REFUSÉ : droits insuffisants pour enregistrer un capteur."
 					} else {
 						console.error("Erreur register:", e)
 					}
@@ -55,7 +56,7 @@
 
 			onMounted(fetch)
 
-			return { discovered, names, registering, register, formatDate, fetch }
+			return { discovered, names, registering, registerError, register, formatDate, fetch }
 		},
 	})
 </script>
@@ -63,18 +64,24 @@
 <template>
 	<div class="discovered">
 		<div class="header-row">
-			<p class="description">Capteurs qui ont publié des données sur MQTT mais ne sont pas encore enregistrés dans la base.</p>
+			<p class="description">CAPTEURS DÉTECTÉS VIA MQTT — NON ENREGISTRÉS EN BASE</p>
 			<button
 				class="btn-refresh"
 				@click="fetch">
-				Rafraîchir
+				↺ RAFRAÎCHIR
 			</button>
+		</div>
+
+		<div
+			v-if="registerError"
+			class="inline-error">
+			{{ registerError }}
 		</div>
 
 		<div
 			v-if="discovered.length === 0"
 			class="empty-state">
-			Aucun nouveau capteur détecté pour le moment.
+			AUCUN NOUVEAU CAPTEUR DÉTECTÉ POUR LE MOMENT
 		</div>
 
 		<div class="table-wrapper">
@@ -111,7 +118,7 @@
 								class="btn-register"
 								:disabled="!names[sensor.baseTopic]?.trim() || registering[sensor.baseTopic]"
 								@click="register(sensor)">
-								{{ registering[sensor.baseTopic] ? "..." : "Enregistrer" }}
+								{{ registering[sensor.baseTopic] ? "…" : "ENREGISTRER" }}
 							</button>
 						</td>
 					</tr>
@@ -138,36 +145,42 @@
 	.description {
 		flex: 1;
 		min-width: 0;
-		font-size: 0.875rem;
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		letter-spacing: 0.1em;
 		color: var(--color-text-muted);
 		margin: 0;
 	}
 
 	.btn-refresh {
-		padding: 6px 14px;
-		font-size: 0.8rem;
-		font-weight: 600;
+		padding: 4px 12px;
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
 		background: var(--color-surface-secondary);
-		color: var(--color-text);
-		border: 1px solid var(--color-border);
-		border-radius: 6px;
+		color: var(--color-text-muted);
+		border: 1px solid var(--color-border-bright);
+		border-radius: 0;
 		cursor: pointer;
 		white-space: nowrap;
-		transition: background-color 0.15s;
+		transition: all 0.15s;
 	}
 
 	.btn-refresh:hover {
-		background: var(--color-primary);
-		color: white;
+		background: var(--color-primary-dim);
+		color: var(--color-primary);
 		border-color: var(--color-primary);
 	}
 
 	.empty-state {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
 		color: var(--color-text-muted);
 		text-align: center;
 		padding: 2rem;
-		border: 1px dashed var(--color-border);
-		border-radius: 8px;
+		border: 1px dashed var(--color-border-bright);
 	}
 
 	.table-wrapper {
@@ -179,77 +192,44 @@
 	.discovered-table {
 		width: 100%;
 		min-width: 650px;
-		border-collapse: collapse;
-		font-size: 0.875rem;
-	}
-
-	.discovered-table th {
-		padding: 0.75rem 1rem;
-		text-align: left;
-		font-weight: 600;
-		color: var(--color-text-muted);
-		border-bottom: 1px solid var(--color-border);
-		white-space: nowrap;
-		background: var(--color-background);
-	}
-
-	.discovered-table td {
-		padding: 0.75rem 1rem;
-		border-bottom: 1px solid var(--color-border);
-		color: var(--color-text);
-		vertical-align: middle;
-	}
-
-	.discovered-table tbody tr:hover {
-		background: var(--color-surface-secondary);
 	}
 
 	.topic-cell {
-		font-family: monospace;
-		font-size: 0.82rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
 		color: var(--color-primary);
 	}
 
 	.count-cell {
 		text-align: center;
-		font-weight: 600;
 	}
 
 	.name-input {
 		background: var(--color-surface-secondary);
 		color: var(--color-text);
-		border: 1px solid var(--color-border);
-		border-radius: 6px;
-		padding: 5px 10px;
-		font-size: 0.85rem;
+		border: 1px solid var(--color-border-bright);
+		border-radius: 0;
+		padding: 3px 8px;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
 		width: 100%;
 		min-width: 120px;
+		outline: none;
+		transition: border-color 0.15s;
 	}
 
 	.name-input:focus {
-		outline: none;
 		border-color: var(--color-primary);
+		box-shadow: 0 0 0 1px var(--color-primary-glow);
 	}
 
-	.btn-register {
-		padding: 5px 14px;
-		font-size: 0.8rem;
-		font-weight: 600;
-		background: var(--color-success);
-		color: white;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-		white-space: nowrap;
-		transition: background-color 0.15s;
-	}
-
-	.btn-register:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
-
-	.btn-register:not(:disabled):hover {
-		background: var(--color-success-hover);
+	.inline-error {
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.08em;
+		color: var(--color-danger);
+		padding: 0.5rem 0.75rem;
+		border: 1px solid var(--color-danger-dim);
+		background: var(--color-danger-dim);
 	}
 </style>

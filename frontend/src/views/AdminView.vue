@@ -130,7 +130,7 @@
 
 	.tab-btn:hover {
 		color: var(--color-text);
-		background: rgba(255, 159, 10, 0.03);
+		background: var(--color-primary-dim);
 		border-color: transparent;
 	}
 
@@ -167,7 +167,7 @@
 	}
 
 	.tab-content :deep(thead tr) {
-		background: rgba(0, 0, 0, 0.3);
+		background: var(--color-surface-secondary);
 	}
 
 	.tab-content :deep(th) {
@@ -196,7 +196,7 @@
 	}
 
 	.tab-content :deep(tbody tr:hover) {
-		background: rgba(255, 159, 10, 0.03);
+		background: var(--color-primary-dim);
 	}
 
 	.tab-content :deep(select) {
@@ -235,7 +235,7 @@
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		border: 1px solid rgba(57, 255, 20, 0.35);
+		border: 1px solid var(--color-success-dim);
 		border-radius: 0;
 		cursor: pointer;
 		transition: all 0.15s;
@@ -245,19 +245,19 @@
 
 	.tab-content :deep(td button:hover) {
 		background: var(--color-success);
-		color: #070600;
+		color: var(--color-text-second);
 		border-color: var(--color-success);
 	}
 
-	.tab-content :deep(tr td:nth-child(6) button) {
+	.tab-content :deep(td button.btn-danger) {
 		background: var(--color-danger-dim);
 		color: var(--color-danger);
-		border-color: rgba(255, 64, 64, 0.35);
+		border-color: var(--color-danger-dim);
 	}
 
-	.tab-content :deep(tr td:nth-child(6) button:hover) {
+	.tab-content :deep(td button.btn-danger:hover) {
 		background: var(--color-danger);
-		color: white;
+		color: var(--color-text-second);
 		border-color: var(--color-danger);
 	}
 

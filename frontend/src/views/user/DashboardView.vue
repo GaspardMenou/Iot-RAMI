@@ -5,7 +5,6 @@
 	import { useAxios } from "@/composables/useAxios.composable"
 	import { UserFields } from "#/user"
 	import SensorCard from "@/components/sensor/SensorCard.vue"
-	import type { Session } from "#/session"
 
 	export default defineComponent({
 		name: "DashboardView",
@@ -15,7 +14,8 @@
 			const { axios } = useAxios()
 			const router = useRouter()
 
-			const allSessions = ref<Session[]>([])
+			const totalSessions = ref(0)
+			const activeSessions = ref(0)
 			const firstName = localStorage.getItem(UserFields.FIRST_NAME) || "vous"
 			const userId = localStorage.getItem(UserFields.ID)
 			const isLoading = ref(true)
@@ -23,8 +23,13 @@
 			onMounted(async () => {
 				try {
 					await fetchSensors()
-					const { data } = await axios.get(`users/${userId}/sessions`)
-					allSessions.value = data
+					const [sessionsRes, activeRes] = await Promise.all([
+						axios.get(`users/${userId}/sessions?page=1&limit=1`),
+						axios.get("sessions/active"),
+					])
+					const payload = sessionsRes.data
+					totalSessions.value = payload.total ?? (Array.isArray(payload) ? payload.length : 0)
+					activeSessions.value = Array.isArray(activeRes.data) ? activeRes.data.length : 0
 				} catch (e) {
 					console.error("Erreur lors du chargement des sessions:", e)
 				} finally {
@@ -34,7 +39,8 @@
 
 			return {
 				sensors,
-				allSessions,
+				totalSessions,
+				activeSessions,
 				firstName,
 				isLoading,
 				goToSensors: () => router.push({ name: "sensors" }),
@@ -76,7 +82,7 @@
 					class="stat-num stat-skeleton">--</span>
 				<span
 					v-else
-					class="stat-num">{{ String(allSessions.length).padStart(2, '0') }}</span>
+					class="stat-num">{{ String(totalSessions).padStart(2, '0') }}</span>
 				<span class="stat-label">SESSIONS TOTAL</span>
 			</div>
 			<div
@@ -88,7 +94,7 @@
 					class="stat-num stat-skeleton">--</span>
 				<span
 					v-else
-					class="stat-num">{{ String(allSessions.filter(s => !s.endedAt).length).padStart(2, '0') }}</span>
+					class="stat-num">{{ String(activeSessions).padStart(2, '0') }}</span>
 				<span class="stat-label">EN COURS</span>
 			</div>
 		</div>
@@ -214,7 +220,7 @@
 
 	.stat-card--live .stat-num {
 		color: var(--color-success);
-		text-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+		text-shadow: 0 0 20px var(--color-success-dim);
 	}
 
 	.stat-num {
