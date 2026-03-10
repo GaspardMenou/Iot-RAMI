@@ -188,10 +188,14 @@
 		flex: 1;
 		min-width: 0;
 		padding: 0;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
 	}
 
 	.graph-area :deep(.graph-container) {
-		height: 100%;
+		flex: 1;
+		min-height: 0;
 		border: none;
 		border-top: none;
 	}
