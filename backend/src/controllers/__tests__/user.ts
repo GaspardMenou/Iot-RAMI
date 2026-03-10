@@ -12,6 +12,7 @@ import { generateUserResponse } from "@/controllers/user";
 import { Role, Sex, User as UserType } from "#/user";
 
 const baseUri = "/api/v1/users";
+const authBaseUri = "/api/v1/auth";
 
 jest.mock("@db/index", () => {
   // Due to the establishment of associations with RAMI1, the models are now imported from the db
@@ -98,13 +99,14 @@ const token = { token: "token" };
 
 describe("generateUserResponse", () => {
   const mockToken = "existing-token";
+  const mockRes = { cookie: jest.fn() } as any;
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   test("should return user response with provided token", () => {
-    const response = generateUserResponse(mockUserOfUserType, mockToken);
+    const response = generateUserResponse(mockUserOfUserType, mockRes, mockToken);
 
     expect(response).toEqual({
       id: mockUserOfUserType.id,
@@ -124,7 +126,7 @@ describe("generateUserResponse", () => {
   test("should generate and return new token if not provided", () => {
     (jwt.sign as jest.Mock).mockReturnValue("new-token");
 
-    const response = generateUserResponse(mockUserOfUserType);
+    const response = generateUserResponse(mockUserOfUserType, mockRes);
 
     expect(jwt.sign).toHaveBeenCalledWith(
       { userId: mockUserOfUserType.id, role: mockUserOfUserType.role },
@@ -147,8 +149,25 @@ describe("generateUserResponse", () => {
     expect(response.expiresAt).toBeGreaterThan(Date.now());
   });
 
+  test("should set refresh token cookie when no token provided", () => {
+    (jwt.sign as jest.Mock).mockReturnValue("new-token");
+
+    generateUserResponse(mockUserOfUserType, mockRes);
+
+    expect(mockRes.cookie).toHaveBeenCalledWith(
+      "refreshToken",
+      expect.any(String),
+      expect.objectContaining({ httpOnly: true, sameSite: "strict" })
+    );
+  });
+
+  test("should not set cookie when token is provided", () => {
+    generateUserResponse(mockUserOfUserType, mockRes, mockToken);
+    expect(mockRes.cookie).not.toHaveBeenCalled();
+  });
+
   test("should correctly calculate token expiration time", () => {
-    const response = generateUserResponse(mockUserOfUserType, mockToken);
+    const response = generateUserResponse(mockUserOfUserType, mockRes, mockToken);
 
     const expectedExpiration = Date.now() + 12 * 60 * 60 * 1000;
 
@@ -183,7 +202,7 @@ describe("User controller", () => {
         .post(`${baseUri}/signup`)
         .send(mockUserOfUserType);
 
-      const expectedResponse = generateUserResponse(mockUserOfUserType);
+      const expectedResponse = generateUserResponse(mockUserOfUserType, { cookie: jest.fn() } as any);
 
       expect(response.body).toEqual({
         id: expectedResponse.id,
@@ -370,7 +389,7 @@ describe("User controller", () => {
         password: "password", // Original password, not hashed
       });
 
-      const expectedResponse = generateUserResponse(userTest, token.token);
+      const expectedResponse = generateUserResponse(userTest, { cookie: jest.fn() } as any, token.token);
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual({
@@ -495,6 +514,7 @@ describe("User controller", () => {
           email: userTest.email,
           password: "hashedpassword",
         },
+        { cookie: jest.fn() } as any,
         "1234"
       );
 
@@ -995,6 +1015,82 @@ describe("User controller", () => {
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toBe("No token provided !");
       expect(response.body.codeError).toBe("auth.token.not.found");
+    });
+  });
+
+  describe("/auth/refresh", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test("should return 401 if no refresh token cookie", async () => {
+      const response = await superTest(app).post(`${authBaseUri}/refresh`);
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe("No refresh token provided !");
+      expect(response.body.codeError).toBe("auth.token.not.found");
+    });
+
+    test("should return 401 if refresh token is invalid", async () => {
+      (jwt.verify as jest.Mock).mockImplementation(() => {
+        throw new Error("invalid token");
+      });
+
+      const response = await superTest(app)
+        .post(`${authBaseUri}/refresh`)
+        .set("Cookie", "refreshToken=invalid-token");
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe("Invalid or expired refresh token !");
+      expect(response.body.codeError).toBe("auth.token.invalid");
+    });
+
+    test("should return 200 with new token if refresh token is valid", async () => {
+      (jwt.verify as jest.Mock).mockReturnValue({
+        userId: mockUserOfUserType.id,
+        role: mockUserOfUserType.role,
+      });
+      (jwt.sign as jest.Mock).mockReturnValue("new-access-token");
+
+      const response = await superTest(app)
+        .post(`${authBaseUri}/refresh`)
+        .set("Cookie", "refreshToken=valid-refresh-token");
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.token).toBe("new-access-token");
+      expect(response.body.expiresAt).toBeGreaterThan(Date.now());
+    });
+
+    test("should set a new refresh token cookie on success", async () => {
+      (jwt.verify as jest.Mock).mockReturnValue({
+        userId: mockUserOfUserType.id,
+        role: mockUserOfUserType.role,
+      });
+      (jwt.sign as jest.Mock).mockReturnValue("new-token");
+
+      const response = await superTest(app)
+        .post(`${authBaseUri}/refresh`)
+        .set("Cookie", "refreshToken=valid-refresh-token");
+
+      expect(response.statusCode).toBe(200);
+      const setCookieHeader = response.headers["set-cookie"];
+      expect(setCookieHeader).toBeDefined();
+      expect(setCookieHeader[0]).toContain("refreshToken");
+    });
+  });
+
+  describe("/auth/logout", () => {
+    test("should return 200 and clear the refresh token cookie", async () => {
+      const response = await superTest(app)
+        .post(`${authBaseUri}/logout`)
+        .set("Cookie", "refreshToken=some-token");
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.message).toBe("Logged out successfully");
+
+      const setCookieHeader = response.headers["set-cookie"];
+      expect(setCookieHeader).toBeDefined();
+      expect(setCookieHeader[0]).toContain("refreshToken=;");
     });
   });
 });

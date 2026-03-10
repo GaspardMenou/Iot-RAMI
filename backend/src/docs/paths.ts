@@ -3,6 +3,7 @@ import { measurementTypePaths } from "@docs/measurementType";
 import { measurementPaths } from "@docs/measurement";
 import { userPaths } from "@docs/user";
 import { sessionPaths } from "@docs/session";
+import { authPaths } from "@docs/auth";
 
 const paths = {
   paths: {
@@ -11,6 +12,7 @@ const paths = {
     ...measurementPaths,
     ...userPaths,
     ...sessionPaths,
+    ...authPaths,
   },
 };
 

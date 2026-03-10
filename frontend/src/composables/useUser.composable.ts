@@ -294,9 +294,9 @@ const useUser = () => {
 	}
 
 	/**
-	 * Deletes the user login data to localStorage.
+	 * Deletes the user login data from localStorage and clears the refresh token cookie.
 	 */
-	const cleanUserLocalStorage = () => {
+	const cleanUserLocalStorage = async () => {
 		const fieldsToRemove: (keyof UserIsConnected)[] = [
 			UserFields.TOKEN,
 			UserFields.EXPIRES_AT,
@@ -314,6 +314,9 @@ const useUser = () => {
 		})
 
 		useMeasurementStore().reset()
+
+		// Efface le cookie refreshToken côté serveur
+		await axios.post("/auth/logout").catch(() => {})
 	}
 
 	const getAllUsers = async () => {

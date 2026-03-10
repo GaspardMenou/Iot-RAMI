@@ -33,6 +33,8 @@ const envs = {
   MQTT_PORT: env("MQTT_PORT", 1883, true) as number,
   MQTT_USERNAME: env("MQTT_USERNAME", "test") as string,
   MQTT_PASSWORD: env("MQTT_PASSWORD", "test") as string,
+  REFRESH_TOKEN_SECRET: env("REFRESH_TOKEN_SECRET", "refresh_secret") as string,
+  REFRESH_TOKEN_EXPIRATION: env("REFRESH_TOKEN_EXPIRATION", "7d") as string,
 };
 
 export { envs };

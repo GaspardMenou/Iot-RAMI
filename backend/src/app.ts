@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express, { Express } from "express";
 import swaggerUi from "swagger-ui-express";
+import cookieparser from "cookie-parser";
 import { openApiDocumentation } from "@docs/index";
 
 import { routes } from "@routes/routes";
@@ -15,6 +16,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(
   express.urlencoded({ limit: "10mb", extended: true, parameterLimit: 50000 })
 );
+app.use(cookieparser());
 
 app.use(
   (

@@ -91,7 +91,11 @@ const checkDate = (date: string) => {
   }
 };
 
-const generateUserResponse = (user: UserType, token?: string) => {
+const generateUserResponse = (
+  user: UserType,
+  res: Response,
+  token?: string
+) => {
   if (!token) {
     const secret = envs.JWT_SECRET;
     const payload = {
@@ -99,7 +103,16 @@ const generateUserResponse = (user: UserType, token?: string) => {
       role: user.role,
     };
     token = jwt.sign(payload, secret, {
-      expiresIn: envs.JWT_EXPIRATION,
+      expiresIn: envs.JWT_EXPIRATION as any,
+    });
+    const refreshToken = jwt.sign(payload, envs.REFRESH_TOKEN_SECRET, {
+      expiresIn: envs.REFRESH_TOKEN_EXPIRATION as any,
+    });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
   }
 
@@ -171,7 +184,7 @@ const signup = async (req: Request, res: Response) => {
       role: Role.REGULAR,
     });
 
-    const responseData = generateUserResponse(newUser);
+    const responseData = generateUserResponse(newUser, res);
     return res.status(201).json(responseData);
   } catch (error) {
     if (error instanceof BadRequestException) {
@@ -217,7 +230,7 @@ const login = async (req: Request, res: Response) => {
           result = await bcrypt.compare(password, user.dataValues.password);
         }
         if (result) {
-          responseData = generateUserResponse(user);
+          responseData = generateUserResponse(user, res);
         } else {
           statusCode = 400;
           responseData = new BadRequestException(
@@ -365,7 +378,7 @@ const updateUserInformation = async (req: Request, res: Response) => {
         .json(new ServerErrorException("Server error !", "server.error"));
     }
 
-    const responseData = generateUserResponse(updatedUser, token);
+    const responseData = generateUserResponse(updatedUser, res, token);
     return res.status(200).json(responseData);
   } catch (error) {
     return res
@@ -580,6 +593,66 @@ const getUserSessions = async (req: Request, res: Response) => {
   }
 };
 
+const logout = (_req: Request, res: Response) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  return res.status(200).json({ message: "Logged out successfully" });
+};
+
+const refresh = (req: Request, res: Response) => {
+  try {
+    const token = req.cookies.refreshToken;
+    if (!token) {
+      return res
+        .status(401)
+        .json(
+          new UnauthorizedException(
+            "No refresh token provided !",
+            "auth.token.not.found"
+          )
+        );
+    }
+    const secret = envs.REFRESH_TOKEN_SECRET;
+    const payload = jwt.verify(token, secret) as UserPayload;
+    const newToken = jwt.sign(
+      { userId: payload.userId, role: payload.role },
+      envs.JWT_SECRET,
+      {
+        expiresIn: envs.JWT_EXPIRATION as any,
+      }
+    );
+    const newRefreshToken = jwt.sign(
+      { userId: payload.userId, role: payload.role },
+      envs.REFRESH_TOKEN_SECRET,
+      {
+        expiresIn: envs.REFRESH_TOKEN_EXPIRATION as any,
+      }
+    );
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+    return res.status(200).json({
+      token: newToken,
+      expiresAt: Date.now() + 15 * 60 * 1000,
+    });
+  } catch (error) {
+    return res
+      .status(401)
+      .json(
+        new UnauthorizedException(
+          "Invalid or expired refresh token !",
+          "auth.token.invalid"
+        )
+      );
+  }
+};
+
 export {
   signup,
   login,
@@ -589,4 +662,6 @@ export {
   getAllRoleWithWorseRole,
   getUserSessions,
   generateUserResponse,
+  refresh,
+  logout,
 };
