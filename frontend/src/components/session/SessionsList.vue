@@ -138,8 +138,8 @@
 		display: flex;
 		flex-direction: row;
 		gap: 0;
-		height: calc(100vh - 500px);
-		min-height: 300px;
+		height: calc(100vh - 380px);
+		min-height: 320px;
 		overflow: hidden;
 	}
 
