@@ -22,6 +22,9 @@ jest.mock("@db/index", () => ({
   sensordata: {
     findAll: jest.fn(),
   },
+  sequelize: {
+    query: jest.fn(),
+  },
 }));
 
 // On cast DB en any pour pouvoir utiliser .mockResolvedValue sur ses propriétés
@@ -331,6 +334,74 @@ describe("Session Controller", () => {
       expect(res.status).toBe(404);
       expect(res.body.message).toBe("Sensor not found");
       expect(res.body.codeError).toBe("sensor.not.found");
+    });
+  });
+
+  describe("GET /:id/aggregate", () => {
+    const session = {
+      id: "session1",
+      idSensor: sensors[0].id,
+      dataValues: {
+        id: "session1",
+        idSensor: sensors[0].id,
+        createdAt: new Date("2024-01-01T00:00:00Z"),
+        endedAt: new Date("2024-01-01T01:00:00Z"),
+      },
+    };
+
+    const aggregateRows = [
+      {
+        bucket: new Date("2024-01-01T00:00:00Z"),
+        avg_value: 1.5,
+        min_value: 1.0,
+        max_value: 2.0,
+        count: 10,
+        idMeasurementType: "type-uuid-1",
+      },
+    ];
+
+    test("should return 200 with aggregated rows", async () => {
+      mockDB.Session.findByPk.mockResolvedValue(session);
+      mockDB.Sensor.findByPk.mockResolvedValue({
+        dataValues: { id: sensors[0].id },
+      });
+      mockDB.sequelize.query.mockResolvedValue(aggregateRows);
+
+      const res = await request.get(`${baseUri}/${session.id}/aggregate`);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(JSON.parse(JSON.stringify(aggregateRows)));
+    });
+
+    test("should return 404 if session not found", async () => {
+      mockDB.Session.findByPk.mockResolvedValue(null);
+
+      const res = await request.get(`${baseUri}/nonexistent/aggregate`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.codeError).toBe("session.not.found");
+    });
+
+    test("should return 404 if sensor not found", async () => {
+      mockDB.Session.findByPk.mockResolvedValue(session);
+      mockDB.Sensor.findByPk.mockResolvedValue(null);
+
+      const res = await request.get(`${baseUri}/${session.id}/aggregate`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.codeError).toBe("sensor.not.found");
+    });
+
+    test("should return 500 if query fails", async () => {
+      mockDB.Session.findByPk.mockResolvedValue(session);
+      mockDB.Sensor.findByPk.mockResolvedValue({
+        dataValues: { id: sensors[0].id },
+      });
+      mockDB.sequelize.query.mockRejectedValue(new Error("DB error"));
+
+      const res = await request.get(`${baseUri}/${session.id}/aggregate`);
+
+      expect(res.status).toBe(500);
     });
   });
 });

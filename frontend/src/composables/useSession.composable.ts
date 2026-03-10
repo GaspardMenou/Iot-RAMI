@@ -14,6 +14,7 @@ enum SessionControllerPaths {
 	GET_USER_SESSIONS_ON_A_SENSOR = "users/:userId/sessions/on/sensor/:sensorId",
 	GET_SENSOR_SESSIONS = "sensors/:sensorId/sessions",
 	EXPORT_SESSION_CSV = "sessions/:id/export/csv",
+	GET_SESSION_AGGREGATE = "sessions/:id/aggregate"
 }
 
 const isValidDate = (date: any): date is Date => {
@@ -46,6 +47,10 @@ const getURLForFetchingUserSessionsOnASensor = (idUser: string, idSensor: string
 
 const getURLForExportingSessionAsCsv = (idSession: string): string => {
 	return getCorrectUrl(SessionControllerPaths.EXPORT_SESSION_CSV, ":id", idSession)
+}
+
+const getURLForGettingSessionAggregate = (idSession: string): string => {
+	return getCorrectUrl(SessionControllerPaths.GET_SESSION_AGGREGATE, ":id", idSession)
 }
 
 const useDistributionSessionBySensor = () => {
@@ -366,6 +371,17 @@ const useSession = () => {
 		}
 	}
 
+	const fetchAggregateData = async (sessionId: string) => {
+		try {
+			const url = getURLForGettingSessionAggregate(sessionId)
+			const response = await axios.get(url)
+			return response.data
+		} catch (error) {
+			console.error("Error fetching session aggregate data:", error)
+			return null
+		}
+	}
+
 	return {
 		idSensor,
 		idSession,
@@ -384,6 +400,7 @@ const useSession = () => {
 		registerOrRemoveEventHandlers,
 		exportSessionToCsv,
 		endSession,
+		fetchAggregateData,
 	}
 }
 export { useDistributionSessionBySensor, useSession }

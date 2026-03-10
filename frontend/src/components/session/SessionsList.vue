@@ -28,9 +28,36 @@
 					<span class="placeholder-arrow">←</span>
 					<span class="placeholder-text">SÉLECTIONNER UNE SESSION</span>
 				</div>
-				<Graph
-					v-else
-					:chartData="chartData" />
+				<template v-else>
+					<Graph :chartData="chartData" />
+					<div class="aggregate-panel">
+						<div class="aggregate-header">RÉSUMÉ PAR MINUTE</div>
+						<div v-if="aggregateLoading" class="aggregate-loading">CHARGEMENT...</div>
+						<div v-else-if="aggregateRows.length === 0" class="aggregate-empty">AUCUNE DONNÉE AGRÉGÉE</div>
+						<table v-else class="aggregate-table">
+							<thead>
+								<tr>
+									<th>BUCKET</th>
+									<th>TYPE</th>
+									<th>MOY</th>
+									<th>MIN</th>
+									<th>MAX</th>
+									<th>N</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="(row, i) in aggregateRows" :key="i">
+									<td>{{ formatBucket(row.bucket) }}</td>
+									<td>{{ row.idMeasurementType }}</td>
+									<td>{{ row.avg_value?.toFixed(2) }}</td>
+									<td>{{ row.min_value?.toFixed(2) }}</td>
+									<td>{{ row.max_value?.toFixed(2) }}</td>
+									<td>{{ row.count }}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</template>
 			</div>
 		</div>
 
@@ -43,7 +70,7 @@
 </template>
 
 <script lang="ts">
-	import { defineComponent, provide, onMounted, onUnmounted } from "vue"
+	import { defineComponent, provide, onMounted, onUnmounted, ref, watch } from "vue"
 	import SessionCard from "@/components/session/SessionCard.vue"
 	import Graph from "@/components/session/Graph.vue"
 	import { useSession } from "@/composables/useSession.composable"
@@ -51,7 +78,21 @@
 	export default defineComponent({
 		components: { SessionCard, Graph },
 		setup() {
-			const { chartData, sessions, selectedSession, handleSessionSelect, registerOrRemoveEventHandlers } = useSession()
+			const { chartData, sessions, selectedSession, handleSessionSelect, registerOrRemoveEventHandlers, fetchAggregateData } = useSession()
+
+			const aggregateRows = ref<any[]>([])
+			const aggregateLoading = ref(false)
+
+			const formatBucket = (bucket: string) => {
+				return new Date(bucket).toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+			}
+
+			watch(selectedSession, async (id) => {
+				if (!id) { aggregateRows.value = []; return }
+				aggregateLoading.value = true
+				aggregateRows.value = (await fetchAggregateData(id)) ?? []
+				aggregateLoading.value = false
+			})
 
 			provide("title", "HISTORIQUE SESSION")
 			provide("chartData", chartData)
@@ -64,6 +105,9 @@
 				chartData,
 				selectedSession,
 				handleSessionSelect,
+				aggregateRows,
+				aggregateLoading,
+				formatBucket,
 			}
 		},
 	})
@@ -212,6 +256,60 @@
 		.graph-placeholder {
 			height: 320px;
 		}
+	}
+
+	/* Agrégats */
+	.aggregate-panel {
+		border-top: 1px solid var(--color-border);
+		background: var(--color-surface);
+		overflow-y: auto;
+		max-height: 160px;
+	}
+
+	.aggregate-header {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		letter-spacing: 0.15em;
+		color: var(--color-text-muted);
+		padding: 0.4rem 0.75rem;
+		background: var(--color-surface-secondary);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.aggregate-loading,
+	.aggregate-empty {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		color: var(--color-text-muted);
+		padding: 0.75rem;
+		text-align: center;
+		letter-spacing: 0.1em;
+	}
+
+	.aggregate-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+	}
+
+	.aggregate-table th {
+		background: var(--color-surface-secondary);
+		color: var(--color-text-muted);
+		padding: 0.3rem 0.5rem;
+		text-align: left;
+		letter-spacing: 0.08em;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.aggregate-table td {
+		padding: 0.25rem 0.5rem;
+		border-bottom: 1px solid var(--color-border);
+		color: var(--color-text);
+	}
+
+	.aggregate-table tr:hover td {
+		background: var(--color-primary-dim);
 	}
 
 	/* Empty */

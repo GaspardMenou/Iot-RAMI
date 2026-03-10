@@ -10,9 +10,10 @@ import {
 } from "@controllers/sensorData";
 
 // Model import
+import { QueryTypes } from "sequelize";
 import db from "@db/index";
 const DB: any = db;
-const { User, Sensor, Session } = DB;
+const { User, Sensor, Session, sequelize } = DB;
 // --- end of model import
 
 /** ============================ PLEASE READ THIS PART IN ORDER TO UNDERSTAND THE SESSION MODEL MANAGEMENT ============================
@@ -295,6 +296,42 @@ const exportSessionAsCsv = async (req: Request, res: Response) => {
     return handleDealingWithSensorDataError(res, error);
   }
 };
+const getSessionAggregate = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  try {
+    const session = await Session.findByPk(id);
+    if (!session) {
+      return res
+        .status(404)
+        .json(new NotFoundException("Session not found", "session.not.found"));
+    }
+    const sensor = await Sensor.findByPk(session.idSensor);
+    if (!sensor) {
+      return res
+        .status(404)
+        .json(new NotFoundException("Sensor not found", "sensor.not.found"));
+    }
+    const rows = await sequelize.query(
+      `SELECT bucket, avg_value, min_value, max_value, count, "idMeasurementType"
+     FROM sensordata_1min
+     WHERE "idSensor" = :idSensor
+       AND bucket >= :start
+       AND bucket <= :end
+     ORDER BY bucket ASC`,
+      {
+        replacements: {
+          idSensor: sensor.dataValues.id,
+          start: session.dataValues.createdAt,
+          end: session.dataValues.endedAt ?? new Date(),
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+    return res.status(200).json(rows);
+  } catch (error) {
+    return handleDealingWithSensorDataError(res, error);
+  }
+};
 
 export {
   createSessionOnClientSide,
@@ -306,4 +343,5 @@ export {
   deleteSessionAndItsCorrespondingData,
   deleteAllSessions,
   getAllActiveSessions,
+  getSessionAggregate,
 };

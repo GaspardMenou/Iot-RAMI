@@ -9,6 +9,7 @@ import {
   deleteSessionAndItsCorrespondingData,
   deleteAllSessions,
   getAllActiveSessions,
+  getSessionAggregate,
 } from "@controllers/session";
 
 const router = express.Router();
@@ -23,5 +24,6 @@ router.delete("/", deleteAllSessions);
 // Depend at least on two models
 router.get("/:id/export/csv", exportSessionAsCsv);
 router.get("/:id/data", getSessionData);
+router.get("/:id/aggregate", getSessionAggregate);
 
 export { router as sessionRoutes };
