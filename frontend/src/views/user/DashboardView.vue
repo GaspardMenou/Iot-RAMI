@@ -144,7 +144,7 @@
 
 <style scoped>
 	.dashboard {
-		max-width: 1000px;
+		max-width: 1400px;
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
@@ -195,7 +195,7 @@
 
 	.stat-card {
 		background: var(--color-surface);
-		padding: 1.25rem 1.5rem;
+		padding: 2rem 2.5rem;
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
@@ -238,7 +238,7 @@
 
 	.stat-num {
 		font-family: var(--font-display);
-		font-size: 3rem;
+		font-size: 4rem;
 		font-weight: 900;
 		color: var(--color-primary);
 		line-height: 1;
@@ -289,14 +289,19 @@
 
 	/* Grille capteurs — navigation */
 	.sensors-grid {
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
 		gap: 0;
 		border: 1px solid var(--color-border);
 	}
 
-	.sensors-grid > *:not(:last-child) {
+	.sensors-grid > * {
 		border-bottom: 1px solid var(--color-border);
+		border-right: 1px solid var(--color-border);
+	}
+
+	.sensors-grid > *:nth-child(2n) {
+		border-right: none;
 	}
 
 	/* Skeleton loaders */
