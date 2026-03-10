@@ -191,30 +191,24 @@ describe("useUser — isBetterThan (via canUpdateUserRole)", () => {
 		getItemMock.mockReset()
 	})
 
-	it("should not allow update if token is null", () => {
-		const { canUpdateUserRole } = useUser()
-		const result = canUpdateUserRole(null, { email: "x@x.com", role: Role.REGULAR })
-		expect(result).toBe(false)
-	})
-
 	it("should not allow update if role is not in localStorage", () => {
 		getItemMock.mockReturnValue(null)
 		const { canUpdateUserRole } = useUser()
-		const result = canUpdateUserRole("some-token", { email: "x@x.com", role: Role.REGULAR })
+		const result = canUpdateUserRole({ email: "x@x.com", role: Role.REGULAR })
 		expect(result).toBe(false)
 	})
 
 	it("should allow admin to update a regular user", () => {
 		getItemMock.mockReturnValue(Role.ADMIN)
 		const { canUpdateUserRole } = useUser()
-		const result = canUpdateUserRole("some-token", { email: "x@x.com", role: Role.REGULAR })
+		const result = canUpdateUserRole({ email: "x@x.com", role: Role.REGULAR })
 		expect(result).toBe(true)
 	})
 
 	it("should not allow regular user to update an admin", () => {
 		getItemMock.mockReturnValue(Role.REGULAR)
 		const { canUpdateUserRole } = useUser()
-		const result = canUpdateUserRole("some-token", { email: "x@x.com", role: Role.ADMIN })
+		const result = canUpdateUserRole({ email: "x@x.com", role: Role.ADMIN })
 		expect(result).toBe(false)
 	})
 })

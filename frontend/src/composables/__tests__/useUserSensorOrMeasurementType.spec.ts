@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { setActivePinia, createPinia } from "pinia"
 
 const mockGet = vi.fn()
@@ -15,35 +15,15 @@ vi.mock("@/stores/userSensorOrMeasurementType", () => ({
 
 import useUserSensorOrMeasurementType from "@/composables/useUserSensorOrMeasurementType.composable"
 
-const getItemMock = vi.fn()
-
 describe("useUserSensorOrMeasurementType", () => {
-	beforeAll(() => {
-		Object.defineProperty(window, "localStorage", {
-			value: { getItem: getItemMock, setItem: vi.fn(), removeItem: vi.fn(), clear: vi.fn() },
-			writable: true,
-			configurable: true,
-		})
-	})
-
 	beforeEach(() => {
 		setActivePinia(createPinia())
 		mockGet.mockReset()
 		mockPost.mockReset()
-		getItemMock.mockReset()
 	})
 
 	describe("getAllUserSensorAccess()", () => {
-		it("should return 401 when no token in localStorage", async () => {
-			getItemMock.mockReturnValue(null)
-			const { getAllUserSensorAccess } = useUserSensorOrMeasurementType()
-			const result = await getAllUserSensorAccess()
-			expect(result.httpStatus).toBe(401)
-			expect(result.error).toBe("No token")
-		})
-
 		it("should return data on success", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockGet.mockResolvedValue({ data: [{ id: "1", sensor: "s1" }] })
 			const { getAllUserSensorAccess } = useUserSensorOrMeasurementType()
 			const result = await getAllUserSensorAccess()
@@ -53,7 +33,6 @@ describe("useUserSensorOrMeasurementType", () => {
 		})
 
 		it("should handle API errors with correct status", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockGet.mockRejectedValue({ response: { status: 403, data: { message: "Forbidden", status: 403 } } })
 			const { getAllUserSensorAccess } = useUserSensorOrMeasurementType()
 			const result = await getAllUserSensorAccess()
@@ -63,7 +42,6 @@ describe("useUserSensorOrMeasurementType", () => {
 		})
 
 		it("should fallback to 500 on error without response", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockGet.mockRejectedValue(new Error("Network error"))
 			const { getAllUserSensorAccess } = useUserSensorOrMeasurementType()
 			const result = await getAllUserSensorAccess()
@@ -72,15 +50,7 @@ describe("useUserSensorOrMeasurementType", () => {
 	})
 
 	describe("getAllUserSensorRequest()", () => {
-		it("should return 401 when no token", async () => {
-			getItemMock.mockReturnValue(null)
-			const { getAllUserSensorRequest } = useUserSensorOrMeasurementType()
-			const result = await getAllUserSensorRequest()
-			expect(result.httpStatus).toBe(401)
-		})
-
 		it("should return data on success", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockGet.mockResolvedValue({ data: [{ id: "r1" }] })
 			const { getAllUserSensorRequest } = useUserSensorOrMeasurementType()
 			const result = await getAllUserSensorRequest()
@@ -90,15 +60,7 @@ describe("useUserSensorOrMeasurementType", () => {
 	})
 
 	describe("getAllUserMeasurementTypeRequest()", () => {
-		it("should return 401 when no token", async () => {
-			getItemMock.mockReturnValue(null)
-			const { getAllUserMeasurementTypeRequest } = useUserSensorOrMeasurementType()
-			const result = await getAllUserMeasurementTypeRequest()
-			expect(result.httpStatus).toBe(401)
-		})
-
 		it("should return data on success", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockGet.mockResolvedValue({ data: [{ id: "m1", type: "ecg" }] })
 			const { getAllUserMeasurementTypeRequest } = useUserSensorOrMeasurementType()
 			const result = await getAllUserMeasurementTypeRequest()
@@ -108,15 +70,7 @@ describe("useUserSensorOrMeasurementType", () => {
 	})
 
 	describe("updateUserSensorAccess()", () => {
-		it("should return 401 when no token", async () => {
-			getItemMock.mockReturnValue(null)
-			const { updateUserSensorAccess } = useUserSensorOrMeasurementType()
-			const result = await updateUserSensorAccess("user1", "sensor1", "false")
-			expect(result.httpStatus).toBe(401)
-		})
-
 		it("should post and return message on success", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockPost.mockResolvedValue({ data: { message: "Access updated" } })
 			const { updateUserSensorAccess } = useUserSensorOrMeasurementType()
 			const result = await updateUserSensorAccess("user1", "sensor1", "false")
@@ -126,15 +80,7 @@ describe("useUserSensorOrMeasurementType", () => {
 	})
 
 	describe("updateUserSensorRequest()", () => {
-		it("should return 401 when no token", async () => {
-			getItemMock.mockReturnValue(null)
-			const { updateUserSensorRequest } = useUserSensorOrMeasurementType()
-			const result = await updateUserSensorRequest("user1", "sensor1", "true")
-			expect(result.httpStatus).toBe(401)
-		})
-
 		it("should post and return message on success", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockPost.mockResolvedValue({ data: { message: "Request updated" } })
 			const { updateUserSensorRequest } = useUserSensorOrMeasurementType()
 			const result = await updateUserSensorRequest("user1", "sensor1", "true")
@@ -144,15 +90,7 @@ describe("useUserSensorOrMeasurementType", () => {
 	})
 
 	describe("updateUserMeasurementTypeRequest()", () => {
-		it("should return 401 when no token", async () => {
-			getItemMock.mockReturnValue(null)
-			const { updateUserMeasurementTypeRequest } = useUserSensorOrMeasurementType()
-			const result = await updateUserMeasurementTypeRequest("user1", "ecg", "false")
-			expect(result.httpStatus).toBe(401)
-		})
-
 		it("should post and return message on success", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockPost.mockResolvedValue({ data: { message: "Type updated" } })
 			const { updateUserMeasurementTypeRequest } = useUserSensorOrMeasurementType()
 			const result = await updateUserMeasurementTypeRequest("user1", "ecg", "false")
@@ -163,7 +101,6 @@ describe("useUserSensorOrMeasurementType", () => {
 
 	describe("submitForm()", () => {
 		it("should call createUserSensorAccess for sensor.access", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockPost.mockResolvedValue({ data: { message: "ok" } })
 			const { submitForm } = useUserSensorOrMeasurementType()
 			const result = await submitForm("user1", "sensor1", "sensor.access")
@@ -171,7 +108,6 @@ describe("useUserSensorOrMeasurementType", () => {
 		})
 
 		it("should call createUserSensorRequest for sensor.request", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockPost.mockResolvedValue({ data: { message: "ok" } })
 			const { submitForm } = useUserSensorOrMeasurementType()
 			const result = await submitForm("user1", "sensor1", "sensor.request")
@@ -179,7 +115,6 @@ describe("useUserSensorOrMeasurementType", () => {
 		})
 
 		it("should call createUserMeasurementTypeRequest for measurementType.request", async () => {
-			getItemMock.mockReturnValue("fake-token")
 			mockPost.mockResolvedValue({ data: { message: "ok" } })
 			const { submitForm } = useUserSensorOrMeasurementType()
 			const result = await submitForm("user1", "type1", "measurementType.request")
