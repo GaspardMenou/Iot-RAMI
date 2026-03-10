@@ -56,10 +56,14 @@
 				try {
 					await exportSessionToCsv(sessionId)
 					csvState.value = "done"
-					setTimeout(() => { csvState.value = "idle" }, 2000)
+					setTimeout(() => {
+						csvState.value = "idle"
+					}, 2000)
 				} catch {
 					csvState.value = "error"
-					setTimeout(() => { csvState.value = "idle" }, 2000)
+					setTimeout(() => {
+						csvState.value = "idle"
+					}, 2000)
 				}
 			}
 
@@ -108,8 +112,13 @@
 	}
 
 	@keyframes bar-pulse {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.5; }
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.5;
+		}
 	}
 
 	.session-info {
@@ -174,8 +183,13 @@
 	}
 
 	@keyframes blink {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.2; }
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.2;
+		}
 	}
 
 	.btn-export {

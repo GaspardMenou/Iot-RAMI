@@ -43,7 +43,6 @@
 <template>
 	<div class="sensor-detail">
 		<div v-if="sensor">
-
 			<!-- En-tête capteur -->
 			<div class="detail-header">
 				<div class="detail-sensor-info">
@@ -55,7 +54,7 @@
 					class="btn-session"
 					:class="{ 'btn-session--active': hasActiveSession }"
 					@click="goToSession">
-					<span class="btn-session-icon">{{ hasActiveSession ? '◉' : '+' }}</span>
+					<span class="btn-session-icon">{{ hasActiveSession ? "◉" : "+" }}</span>
 					{{ hasActiveSession ? "SESSION EN COURS" : "NOUVELLE SESSION" }}
 				</button>
 			</div>

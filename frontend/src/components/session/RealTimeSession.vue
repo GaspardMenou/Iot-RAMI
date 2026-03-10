@@ -18,7 +18,9 @@
 				</div>
 				<span
 					class="step-arrow"
-					:class="{ 'step-arrow--open': activeStep === 1 }">›</span>
+					:class="{ 'step-arrow--open': activeStep === 1 }"
+					>›</span
+				>
 			</div>
 			<div
 				v-if="activeStep === 1"
@@ -41,7 +43,9 @@
 				</div>
 				<span
 					class="step-arrow"
-					:class="{ 'step-arrow--open': activeStep === 2 }">›</span>
+					:class="{ 'step-arrow--open': activeStep === 2 }"
+					>›</span
+				>
 			</div>
 			<div
 				v-if="activeStep === 2"
@@ -74,13 +78,14 @@
 					</span>
 					<span
 						class="step-arrow"
-						:class="{ 'step-arrow--open': activeStep === 3 }">›</span>
+						:class="{ 'step-arrow--open': activeStep === 3 }"
+						>›</span
+					>
 				</div>
 			</div>
 			<div
 				v-if="activeStep === 3"
 				class="step-content step-content--graph">
-
 				<!-- Graphique -->
 				<div class="graph-wrap">
 					<Graph :isRealTime="true" />
@@ -323,8 +328,12 @@
 	}
 
 	@keyframes spin {
-		from { transform: rotate(0deg); }
-		to { transform: rotate(360deg); }
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.waiting-message p {
@@ -417,8 +426,13 @@
 	}
 
 	@keyframes blink {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.2; }
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.2;
+		}
 	}
 
 	@media (max-width: 600px) {

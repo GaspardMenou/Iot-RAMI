@@ -24,7 +24,9 @@ const push = (message: any): void => {
   console.warn(`[DLQ] Message sauvegardé (total: ${messages.length})`);
 };
 
-const flush = async (handler: (message: any) => Promise<void>): Promise<void> => {
+const flush = async (
+  handler: (message: any) => Promise<void>
+): Promise<void> => {
   const messages = readDlq();
   if (messages.length === 0) return;
   console.log(`[DLQ] ${messages.length} message(s) à retraiter...`);
@@ -38,7 +40,11 @@ const flush = async (handler: (message: any) => Promise<void>): Promise<void> =>
     }
   }
   writeDlq(failed);
-  console.log(`[DLQ] Retraitement terminé — ${messages.length - failed.length} ok, ${failed.length} encore en échec`);
+  console.log(
+    `[DLQ] Retraitement terminé — ${messages.length - failed.length} ok, ${
+      failed.length
+    } encore en échec`
+  );
 };
 
 export { push, flush };

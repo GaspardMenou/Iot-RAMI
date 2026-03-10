@@ -193,16 +193,11 @@ describe("useUserSensorOrMeasurementType", () => {
 			expect(result.error).toBe("No function")
 		})
 
-		it("should pass token in Authorization header", async () => {
-			getItemMock.mockReturnValue("my-jwt")
+		it("should call post without manual Authorization header", async () => {
 			mockPost.mockResolvedValue({ data: { message: "ok" } })
 			const { submitForm } = useUserSensorOrMeasurementType()
 			await submitForm("user1", "sensor1", "sensor.access")
-			expect(mockPost).toHaveBeenCalledWith(
-				expect.any(String),
-				expect.any(Object),
-				expect.objectContaining({ headers: { Authorization: "Bearer my-jwt" } })
-			)
+			expect(mockPost).toHaveBeenCalledWith(expect.any(String), expect.any(Object))
 		})
 	})
 })

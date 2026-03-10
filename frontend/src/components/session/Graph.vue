@@ -9,22 +9,30 @@
 					class="ctrl-btn"
 					title="Rewind"
 					aria-label="Reculer"
-					@click="rewind">⏮</button>
+					@click="rewind">
+					⏮
+				</button>
 				<button
 					class="ctrl-btn"
 					title="Play"
 					aria-label="Lecture"
-					@click="play">▶</button>
+					@click="play">
+					▶
+				</button>
 				<button
 					class="ctrl-btn"
 					title="Pause"
 					aria-label="Pause"
-					@click="pause">⏸</button>
+					@click="pause">
+					⏸
+				</button>
 				<button
 					class="ctrl-btn"
 					title="Fast forward"
 					aria-label="Avancer"
-					@click="fastForward">⏭</button>
+					@click="fastForward">
+					⏭
+				</button>
 			</div>
 			<div
 				v-else
@@ -44,19 +52,7 @@
 
 <script lang="ts">
 	import { defineComponent, inject, onMounted, onUnmounted, ref } from "vue"
-	import {
-		Chart as ChartJS,
-		CategoryScale,
-		LinearScale,
-		PointElement,
-		LineElement,
-		Title,
-		Tooltip,
-		Legend,
-		TimeScale,
-		type ChartOptions,
-		type ChartData,
-	} from "chart.js"
+	import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale, type ChartOptions, type ChartData } from "chart.js"
 	import { Line as LineChart } from "vue-chartjs"
 	import zoomPlugin from "chartjs-plugin-zoom"
 	import "chartjs-adapter-date-fns"
@@ -66,11 +62,11 @@
 
 	// Palette ambre phosphore pour les datasets multiples
 	const PHOSPHOR_COLORS = [
-		{ line: "#ff9f0a", fill: "rgba(255,159,10,0.08)" },   // Ambre
-		{ line: "#39ff14", fill: "rgba(57,255,20,0.06)" },     // Vert
-		{ line: "#00cfff", fill: "rgba(0,207,255,0.06)" },     // Cyan
-		{ line: "#ff4f80", fill: "rgba(255,79,128,0.06)" },    // Rose
-		{ line: "#ffcc00", fill: "rgba(255,204,0,0.06)" },     // Jaune
+		{ line: "#ff9f0a", fill: "rgba(255,159,10,0.08)" }, // Ambre
+		{ line: "#39ff14", fill: "rgba(57,255,20,0.06)" }, // Vert
+		{ line: "#00cfff", fill: "rgba(0,207,255,0.06)" }, // Cyan
+		{ line: "#ff4f80", fill: "rgba(255,79,128,0.06)" }, // Rose
+		{ line: "#ffcc00", fill: "rgba(255,204,0,0.06)" }, // Jaune
 	]
 
 	export default defineComponent({
@@ -84,8 +80,7 @@
 		},
 		setup(props) {
 			// Lit une variable CSS depuis :root
-			const cssVar = (name: string) =>
-				getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+			const cssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 			const title = inject<string>("title")
 			const injectedChartData = inject<ChartData<"line">>("chartData")
@@ -368,8 +363,13 @@
 	}
 
 	@keyframes blink {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.2; }
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.2;
+		}
 	}
 
 	/* Zone graphique */
@@ -379,9 +379,7 @@
 		padding: 1rem 0.5rem 0.75rem;
 		box-sizing: border-box;
 		/* Légère grille de fond pour l'effet oscilloscope */
-		background-image:
-			linear-gradient(var(--color-primary-dim) 1px, transparent 1px),
-			linear-gradient(90deg, var(--color-primary-dim) 1px, transparent 1px);
+		background-image: linear-gradient(var(--color-primary-dim) 1px, transparent 1px), linear-gradient(90deg, var(--color-primary-dim) 1px, transparent 1px);
 		background-size: 40px 40px;
 	}
 </style>

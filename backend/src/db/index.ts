@@ -95,7 +95,9 @@ addModelToDb(sequelize, DataTypes, defineUserSensorRequestModel, db);
 
 // run `.associate` if applicable
 Object.keys(db).map((modelName) => {
-  const entry = db[modelName] as { associate?: (models: Record<string, unknown>) => void };
+  const entry = db[modelName] as {
+    associate?: (models: Record<string, unknown>) => void;
+  };
   if (entry.associate) {
     entry.associate(db);
   }

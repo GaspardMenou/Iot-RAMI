@@ -36,23 +36,39 @@ const components = {
       SensorTopic: {
         type: "object",
         properties: {
-          topic: { type: "string", description: "Full MQTT topic for this sensor" },
+          topic: {
+            type: "string",
+            description: "Full MQTT topic for this sensor",
+          },
         },
       },
       DiscoveredSensor: {
         type: "object",
         properties: {
-          baseTopic: { type: "string", description: "MQTT base topic seen via PING" },
+          baseTopic: {
+            type: "string",
+            description: "MQTT base topic seen via PING",
+          },
           firstSeenAt: { type: "string", format: "date-time" },
           lastSeenAt: { type: "string", format: "date-time" },
-          count: { type: "integer", description: "Number of PING messages received" },
+          count: {
+            type: "integer",
+            description: "Number of PING messages received",
+          },
         },
       },
       MeasurementType: {
         type: "object",
         properties: {
-          id: { type: "string", format: "uuid", description: "MeasurementType UUID" },
-          name: { type: "string", description: "Measurement type name (e.g. ecg, temperature)" },
+          id: {
+            type: "string",
+            format: "uuid",
+            description: "MeasurementType UUID",
+          },
+          name: {
+            type: "string",
+            description: "Measurement type name (e.g. ecg, temperature)",
+          },
         },
       },
       MeasurementTypeCreate: {
@@ -71,10 +87,22 @@ const components = {
       Measurement: {
         type: "object",
         properties: {
-          id: { type: "string", format: "uuid", description: "Measurement UUID" },
-          date: { type: "string", format: "date-time", description: "Measurement timestamp (ISO 8601)" },
+          id: {
+            type: "string",
+            format: "uuid",
+            description: "Measurement UUID",
+          },
+          date: {
+            type: "string",
+            format: "date-time",
+            description: "Measurement timestamp (ISO 8601)",
+          },
           value: { type: "number", description: "Measured value" },
-          sensor: { type: "string", format: "uuid", description: "Sensor UUID" },
+          sensor: {
+            type: "string",
+            format: "uuid",
+            description: "Sensor UUID",
+          },
           type: { type: "string", description: "Measurement type name" },
         },
       },
@@ -95,7 +123,11 @@ const components = {
           date: { type: "string", format: "date-time" },
           value: { type: "number" },
           sensor: { type: "string", format: "uuid" },
-          type: { type: "string", format: "uuid", description: "MeasurementType UUID" },
+          type: {
+            type: "string",
+            format: "uuid",
+            description: "MeasurementType UUID",
+          },
         },
       },
       MeasurementDelete: {
@@ -108,10 +140,23 @@ const components = {
         type: "object",
         properties: {
           id: { type: "string", format: "uuid", description: "Session UUID" },
-          idSensor: { type: "string", format: "uuid", description: "Sensor UUID" },
+          idSensor: {
+            type: "string",
+            format: "uuid",
+            description: "Sensor UUID",
+          },
           idFog: { type: "string", description: "Fog service identifier" },
-          createdAt: { type: "string", format: "date-time", description: "Session start time" },
-          endedAt: { type: "string", format: "date-time", nullable: true, description: "Session end time (null if still active)" },
+          createdAt: {
+            type: "string",
+            format: "date-time",
+            description: "Session start time",
+          },
+          endedAt: {
+            type: "string",
+            format: "date-time",
+            nullable: true,
+            description: "Session end time (null if still active)",
+          },
         },
       },
       User: {
@@ -137,15 +182,24 @@ const components = {
           sex: { type: "string", enum: ["male", "female"] },
           role: { type: "string", enum: ["admin", "privileged", "regular"] },
           token: { type: "string", description: "JWT token" },
-          expiresAt: { type: "integer", description: "Token expiry timestamp (ms since epoch)" },
+          expiresAt: {
+            type: "integer",
+            description: "Token expiry timestamp (ms since epoch)",
+          },
         },
       },
       Error: {
         type: "object",
         properties: {
-          message: { type: "string", description: "Human-readable error message" },
+          message: {
+            type: "string",
+            description: "Human-readable error message",
+          },
           status: { type: "integer", description: "HTTP status code" },
-          codeError: { type: "string", description: "Machine-readable error code" },
+          codeError: {
+            type: "string",
+            description: "Machine-readable error code",
+          },
         },
       },
     },

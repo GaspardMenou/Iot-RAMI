@@ -5,13 +5,12 @@
 			class="card"
 			:class="{ 'card--expanded': expandCard }"
 			@click="expandCard = !expandCard">
-
 			<!-- En-tête -->
 			<div class="card-header">
 				<span class="type-name">{{ measurementType }}</span>
 				<div class="header-right">
 					<span class="last-value">{{ lastMeasurement() }}</span>
-					<span class="expand-icon">{{ expandCard ? '▲' : '▼' }}</span>
+					<span class="expand-icon">{{ expandCard ? "▲" : "▼" }}</span>
 				</div>
 			</div>
 

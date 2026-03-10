@@ -24,18 +24,9 @@ const useMeasurement = () => {
 	}
 
 	const feedMeasurementsComposable = async (measurements: MeasurementGroupBySensor[], sensors: SensorWithProperty[]) => {
-		const token = localStorage.getItem("token")
-		if (!token) {
-			console.log("No token")
-			return measurements
-		}
 		for (const sensor of sensors) {
 			if (sensor.propertyVerified) {
-				const { data } = (await axios.get<MeasurementGet[]>(`/measurements?sensor=${sensor.name}&number=10`, {
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				})) as { data: MeasurementGet[] }
+				const { data } = (await axios.get<MeasurementGet[]>(`/measurements?sensor=${sensor.name}&number=10`)) as { data: MeasurementGet[] }
 				const measurementsCast = castIntoMeasurement(data)
 				measurements.forEach(item => {
 					if (item.sensor === sensor.name) {
@@ -51,18 +42,6 @@ const useMeasurement = () => {
 
 	const feedMeasurementsSampleNumberComposable = async (measurements: MeasurementGroupBySensor[], measurementType: string, sensor: string, sample: string, number: number) => {
 		const { data } = (await axios.get<MeasurementGet[]>(`/measurements?sensor=${sensor}&type=${measurementType}&sample=${sample}&number=100000`)) as {
-			/*const feedMeasurementsSampleComposable = async (measurements: MeasurementGroupBySensor[], measurementType: string, sensor: string, sample: string) => {
-		const token = localStorage.getItem("token")
-		if (!token) {
-			console.log("No token")
-			return measurements
-		}
-		const { data } = (await axios.get<MeasurementGet[]>(`/measurements?sensor=${sensor}&type=${measurementType}&sample=${sample}`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		})) as {
-		 => from freature 8*/
 			data: MeasurementGet[]
 		}
 		const measurementsCast = castIntoMeasurement(data)
@@ -108,16 +87,7 @@ const useMeasurement = () => {
 	}
 
 	const getAllSensorsNames = async () => {
-		const token = localStorage.getItem("token")
-		if (!token) {
-			console.log("No token")
-			return [""]
-		}
-		const { data } = (await axios.get<SensorGet[]>(`/sensors`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		})) as { data: SensorGet[] }
+		const { data } = (await axios.get<SensorGet[]>(`/sensors`)) as { data: SensorGet[] }
 		return data ? data.map(item => item.name) : [""]
 	}
 

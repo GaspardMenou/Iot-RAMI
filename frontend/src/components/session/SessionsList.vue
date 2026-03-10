@@ -8,7 +8,6 @@
 		<div
 			v-if="sessions.length > 0"
 			class="panel-body">
-
 			<!-- Liste des sessions -->
 			<div class="sessions-list">
 				<div
@@ -183,8 +182,13 @@
 	}
 
 	@keyframes nudge {
-		0%, 100% { transform: translateX(0); }
-		50% { transform: translateX(-6px); }
+		0%,
+		100% {
+			transform: translateX(0);
+		}
+		50% {
+			transform: translateX(-6px);
+		}
 	}
 
 	@media (max-width: 600px) {

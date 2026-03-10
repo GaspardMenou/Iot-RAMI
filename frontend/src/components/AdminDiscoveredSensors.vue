@@ -2,7 +2,7 @@
 	import { defineComponent, ref, onMounted } from "vue"
 	import { useAxios } from "@/composables/useAxios.composable"
 
-	interface DiscoveredSensor {
+	interface LocalDiscoveredSensor {
 		baseTopic: string
 		firstSeenAt: string
 		lastSeenAt: string
@@ -10,10 +10,10 @@
 	}
 
 	export default defineComponent({
-		name: "AdminDiscoveredSensors",
+		name: "AdminLocalDiscoveredSensors",
 		setup() {
 			const { axios } = useAxios()
-			const discovered = ref<DiscoveredSensor[]>([])
+			const discovered = ref<LocalDiscoveredSensor[]>([])
 			const names = ref<Record<string, string>>({})
 			const registering = ref<Record<string, boolean>>({})
 			const registerError = ref("")
@@ -27,7 +27,7 @@
 				}
 			}
 
-			const register = async (sensor: DiscoveredSensor) => {
+			const register = async (sensor: LocalDiscoveredSensor) => {
 				const name = names.value[sensor.baseTopic]?.trim()
 				if (!name) return
 				registering.value[sensor.baseTopic] = true

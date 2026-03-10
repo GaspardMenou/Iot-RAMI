@@ -15,7 +15,7 @@
 				sortColumn: "User.email",
 				statusDisplay: "all",
 				status: ["all", Status.ACCEPTED, Status.PENDING, Status.REJECTED],
-			errorMsg: "",
+				errorMsg: "",
 			}
 		},
 		computed: {
@@ -109,7 +109,13 @@
 						<td>{{ user.status }}</td>
 						<td>{{ beautifulDate(user.createdAt) }}</td>
 						<td><button @click="submitUpdateUserRequest(user, 'false')">ACCEPTER</button></td>
-						<td><button class="btn-danger" @click="submitUpdateUserRequest(user, 'true')">REFUSER</button></td>
+						<td>
+							<button
+								class="btn-danger"
+								@click="submitUpdateUserRequest(user, 'true')">
+								REFUSER
+							</button>
+						</td>
 					</tr>
 				</tbody>
 			</table>

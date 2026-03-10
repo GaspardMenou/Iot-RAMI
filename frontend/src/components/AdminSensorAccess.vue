@@ -15,7 +15,7 @@
 				sortColumn: "User.email",
 				statusDisplay: "all",
 				status: ["all", Status.ACCEPTED, Status.PENDING, Status.REJECTED],
-			errorMsg: "",
+				errorMsg: "",
 			}
 		},
 		computed: {
@@ -54,7 +54,7 @@
 			},
 			async submitUpdateUserAccess(userSensor: UserSensorAccess, accessApi: string) {
 				this.errorMsg = ""
-			const result = await useUserSensorOrMeasurementType().updateUserSensorAccess(userSensor.User.email, userSensor.Sensor.name, accessApi)
+				const result = await useUserSensorOrMeasurementType().updateUserSensorAccess(userSensor.User.email, userSensor.Sensor.name, accessApi)
 				if (result.httpStatus && [401, 403].includes(result.httpStatus) && result.error) this.errorMsg = result.error
 				else if (result.error) console.error(result.error)
 				this.usersSensor = useUserSensorOrMeasurementTypeStore().getUserSensorAccess()
@@ -110,7 +110,13 @@
 						<td>{{ user.status }}</td>
 						<td>{{ beautifulDate(user.createdAt) }}</td>
 						<td><button @click="submitUpdateUserAccess(user, 'false')">ACCEPTER</button></td>
-						<td><button class="btn-danger" @click="submitUpdateUserAccess(user, 'true')">REFUSER</button></td>
+						<td>
+							<button
+								class="btn-danger"
+								@click="submitUpdateUserAccess(user, 'true')">
+								REFUSER
+							</button>
+						</td>
 					</tr>
 				</tbody>
 			</table>

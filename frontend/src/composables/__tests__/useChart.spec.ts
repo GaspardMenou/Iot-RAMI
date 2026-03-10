@@ -47,10 +47,7 @@ describe("useChart", () => {
 			const { updateChart } = useChart()
 			updateChart(["2024-01-01"], [42], "ECG", "My Title", "test-chart")
 
-			expect(Chart).toHaveBeenCalledWith(
-				expect.anything(),
-				expect.objectContaining({ type: "line" })
-			)
+			expect(Chart).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ type: "line" }))
 
 			document.body.removeChild(canvas)
 		})

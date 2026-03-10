@@ -13,7 +13,6 @@ import { Role } from "#/user";
 import { decodeToken, getSensorsAvailable } from "@controllers/measurement";
 import { discoveredTopics } from "@service/discorverdSensorSevice";
 
-
 const checkName = (name: string) => {
   if (!name) {
     throw new BadRequestException("Name is required", "sensor.name.required");
@@ -127,12 +126,16 @@ const getSensorStatus = async (req: Request, res: Response) => {
     if (!sensor) {
       return res
         .status(400)
-        .json(new BadRequestException("Invalid sensor name", "sensor.name.invalid"));
+        .json(
+          new BadRequestException("Invalid sensor name", "sensor.name.invalid")
+        );
     }
     const activeSession = await Session.findOne({
       where: { idSensor: sensor.dataValues.id, endedAt: null },
     });
-    return res.status(200).json({ message: activeSession ? "publishing" : "offline" });
+    return res
+      .status(200)
+      .json({ message: activeSession ? "publishing" : "offline" });
   } catch (error) {
     return res
       .status(500)
@@ -152,7 +155,10 @@ const getSensor = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name } = req.query;
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
-  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const limit = Math.min(
+    100,
+    Math.max(1, parseInt(req.query.limit as string) || 20)
+  );
   const offset = (page - 1) * limit;
   let nameString = "";
   if (name) {
@@ -224,18 +230,37 @@ const getSensor = async (req: Request, res: Response) => {
     // find one if there is an id or findAll if there is no id
     if (id) {
       const sensor = await Sensor.findByPk(id);
-      if (!sensor) return res.status(404).json(new NotFoundException("Sensor not found", "sensor.not.found"));
+      if (!sensor)
+        return res
+          .status(404)
+          .json(new NotFoundException("Sensor not found", "sensor.not.found"));
       return res.status(200).json(sensor);
     }
     if (nameString !== "") {
       const sensor = await Sensor.findOne({ where: { name: nameString } });
-      if (!sensor) return res.status(404).json(new NotFoundException("Sensor not found", "sensor.not.found"));
+      if (!sensor)
+        return res
+          .status(404)
+          .json(new NotFoundException("Sensor not found", "sensor.not.found"));
       return res.status(200).json(sensor);
     }
     const where = isAdmin ? {} : { id: sensorsAvailableId };
-    const { count, rows } = await Sensor.findAndCountAll({ where, limit, offset });
-    if (!rows) return res.status(404).json(new NotFoundException("Sensor not found", "sensor.not.found"));
-    return res.status(200).json({ data: rows, total: count, page, limit, totalPages: Math.ceil(count / limit) });
+    const { count, rows } = await Sensor.findAndCountAll({
+      where,
+      limit,
+      offset,
+    });
+    if (!rows)
+      return res
+        .status(404)
+        .json(new NotFoundException("Sensor not found", "sensor.not.found"));
+    return res.status(200).json({
+      data: rows,
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+    });
   } catch (error) {
     return res
       .status(500)
@@ -379,7 +404,10 @@ const deleteSensor = async (req: Request, res: Response) => {
 const getSensorSessions = async (req: Request, res: Response) => {
   const { id } = req.params;
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
-  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const limit = Math.min(
+    100,
+    Math.max(1, parseInt(req.query.limit as string) || 20)
+  );
   const offset = (page - 1) * limit;
 
   try {
@@ -397,7 +425,13 @@ const getSensorSessions = async (req: Request, res: Response) => {
       order: [["createdAt", "DESC"]],
     });
 
-    return res.status(200).json({ data: rows, total: count, page, limit, totalPages: Math.ceil(count / limit) });
+    return res.status(200).json({
+      data: rows,
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+    });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }

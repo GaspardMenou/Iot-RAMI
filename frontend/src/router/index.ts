@@ -108,7 +108,7 @@ router.beforeEach(async (to, from, next) => {
 		return next("/")
 	}
 	if (to.name === "admin") {
-		const res = await canAccessAdminPanel(token)
+		const res = await canAccessAdminPanel()
 		if (!res || !res.canAccess) {
 			return next("/")
 		}

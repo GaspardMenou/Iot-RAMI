@@ -36,17 +36,12 @@
 			const { getAllUsers } = useUser()
 
 			const fetchUsers = async () => {
-				const token = localStorage.getItem("token")
-				if (token) {
-					try {
-						const usersData = await getAllUsers(token)
-						users.value = usersData
-						totalUsers.value = usersData.length
-					} catch (error) {
-						console.error("Error fetching users:", error)
-					}
-				} else {
-					console.error("No token found in localStorage")
+				try {
+					const usersData = await getAllUsers()
+					users.value = usersData
+					totalUsers.value = usersData.length
+				} catch (error) {
+					console.error("Error fetching users:", error)
 				}
 			}
 

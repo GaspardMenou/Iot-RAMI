@@ -16,7 +16,6 @@
 						class="input-row"
 						v-for="(field, index) in formFields"
 						:key="index">
-
 						<label
 							:for="field.name"
 							class="form-label">
@@ -124,8 +123,7 @@
 					return
 				}
 
-				const token = localStorage.getItem("token")
-				await submitForm(this.formData, this.formName, token)
+				await submitForm(this.formData, this.formName)
 			},
 			isInputField(type: string): type is "text" | "password" | "date" | "email" {
 				return ["text", "password", "date", "email"].includes(type)
@@ -160,10 +158,26 @@
 		border-style: solid;
 		z-index: 1;
 	}
-	.corner-tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
-	.corner-tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
-	.corner-bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
-	.corner-br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+	.corner-tl {
+		top: -1px;
+		left: -1px;
+		border-width: 2px 0 0 2px;
+	}
+	.corner-tr {
+		top: -1px;
+		right: -1px;
+		border-width: 2px 2px 0 0;
+	}
+	.corner-bl {
+		bottom: -1px;
+		left: -1px;
+		border-width: 0 0 2px 2px;
+	}
+	.corner-br {
+		bottom: -1px;
+		right: -1px;
+		border-width: 0 2px 2px 0;
+	}
 
 	.form-inner {
 		padding: 2.5rem 2rem 2rem;

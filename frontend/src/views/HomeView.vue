@@ -42,9 +42,7 @@
 		},
 		computed: {
 			filteredSensors(): SensorWithProperty[] {
-				return this.searchedSensor === ""
-					? this.sensors
-					: this.sensors.filter(s => s.name.toLowerCase().includes(this.searchedSensor.toLowerCase()))
+				return this.searchedSensor === "" ? this.sensors : this.sensors.filter(s => s.name.toLowerCase().includes(this.searchedSensor.toLowerCase()))
 			},
 		},
 	})
@@ -72,7 +70,6 @@
 			v-if="searchedSensor !== ''"
 			:class="[displayChart ? 'layout-split-left' : '']"
 			class="sensors-grid">
-
 			<div
 				v-for="filteredSensor in filteredSensors"
 				:key="filteredSensor.name"

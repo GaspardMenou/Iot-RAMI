@@ -1,7 +1,7 @@
 import { ref, computed } from "vue"
 import type { Sensor } from "#/sensor"
 import { useAxios } from "@/composables/useAxios.composable"
-import { EventTypes, UserFields, handleEvent } from "@/composables/useUser.composable"
+import { EventTypes, handleEvent } from "@/composables/useUser.composable"
 import { io } from "socket.io-client"
 
 /******************************************* ROUTES PATHS & INTERFACE **********************************************/
@@ -73,23 +73,16 @@ export const useSensor = (sensorName: string | undefined) => {
 
 	// *************************** [METHOD]  SENSOR LIST AND SENSOR SELECTION
 
-	const getAllSensors = async (token: string) => {
-		const result = (await axios.get(SensorAPIEndpoint.GET_ALL_SENSOR, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		})) as { data: { data: Sensor[] } | Sensor[] }
+	const getAllSensors = async () => {
+		const result = (await axios.get(SensorAPIEndpoint.GET_ALL_SENSOR)) as { data: { data: Sensor[] } | Sensor[] }
 		const payload = result.data
 		return Array.isArray(payload) ? payload : payload.data
 	}
 
 	const fetchSensors = async () => {
 		try {
-			const token = localStorage.getItem("token")
-			if (token) {
-				const allSensors = await getAllSensors(token)
-				sensors.value = allSensors
-			}
+			const allSensors = await getAllSensors()
+			sensors.value = allSensors
 		} catch (error) {
 			console.error("Error fetching sensors:", error)
 		}

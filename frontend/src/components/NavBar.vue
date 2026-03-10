@@ -16,7 +16,6 @@
 	<aside
 		class="sidebar"
 		:class="{ open: isOpen }">
-
 		<!-- Header -->
 		<div class="sidebar-header">
 			<div class="sidebar-logo">
@@ -277,8 +276,15 @@
 	}
 
 	@keyframes pulse-dot {
-		0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--color-success); }
-		50% { opacity: 0.6; box-shadow: 0 0 2px var(--color-success); }
+		0%,
+		100% {
+			opacity: 1;
+			box-shadow: 0 0 6px var(--color-success);
+		}
+		50% {
+			opacity: 0.6;
+			box-shadow: 0 0 2px var(--color-success);
+		}
 	}
 
 	.status-label {

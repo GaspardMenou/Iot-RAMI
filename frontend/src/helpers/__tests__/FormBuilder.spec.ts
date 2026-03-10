@@ -33,10 +33,7 @@ describe("FormBuilder", () => {
 		})
 
 		it("should support method chaining", () => {
-			const fields = builder
-				.addTextField("first", "First")
-				.addTextField("second", "Second")
-				.build()
+			const fields = builder.addTextField("first", "First").addTextField("second", "Second").build()
 			expect(fields).toHaveLength(2)
 		})
 	})

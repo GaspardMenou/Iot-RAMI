@@ -258,7 +258,9 @@ class SocketService {
     for (const [, sessionId] of this.activeSessions) {
       await Session.update({ endedAt: now }, { where: { id: sessionId } });
     }
-    console.log(`${this.activeSessions.size} session(s) clôturée(s) au shutdown`);
+    console.log(
+      `${this.activeSessions.size} session(s) clôturée(s) au shutdown`
+    );
     this.activeSessions.clear();
     this.io.close();
     const kafkaService = await KafkaService.getInstance();

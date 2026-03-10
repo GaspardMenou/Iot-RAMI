@@ -2,7 +2,7 @@
 	<div class="sensors-list-view">
 		<div class="list-header">
 			<h2>MES CAPTEURS</h2>
-			<span class="sensor-count">{{ sensors.length }} UNIT{{ sensors.length > 1 ? 'S' : '' }}</span>
+			<span class="sensor-count">{{ sensors.length }} UNIT{{ sensors.length > 1 ? "S" : "" }}</span>
 		</div>
 		<div
 			class="sensors-list"

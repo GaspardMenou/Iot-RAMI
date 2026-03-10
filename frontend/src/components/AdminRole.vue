@@ -55,7 +55,7 @@
 	import type { User } from "#/user"
 	import { Role, useUser } from "@/composables/useUser.composable"
 
-	interface Data {
+	interface AdminRoleData {
 		users: User[]
 		userSelected: string
 		roles: Role[]
@@ -63,11 +63,9 @@
 		errorMsg: string
 	}
 
-	const token = localStorage.getItem("token")
-
 	export default defineComponent({
 		name: "AdminRoleComponent",
-		data(): Data {
+		data(): AdminRoleData {
 			return {
 				users: [],
 				userSelected: "",
@@ -82,20 +80,20 @@
 				this.errorMsg = ""
 				const email = this.userSelected
 				const role = this.roleSelected as Role
-				if (!useUser().canUpdateUserRole(token, { email: email, role: role })) {
+				if (!useUser().canUpdateUserRole({ email: email, role: role })) {
 					this.errorMsg = "ACCÈS REFUSÉ : opération non autorisée."
 					return
 				} else {
-					const result = await useUser().updateRole(token as string, { email: email, role: role })
+					const result = await useUser().updateRole({ email: email, role: role })
 					if (result.valid) {
-						await this.refreshUsers(token as string)
+						await this.refreshUsers()
 					} else {
-						this.errorMsg = result.error || "ERREUR : impossible de mettre à jour le rôle."
+						this.errorMsg = "ERREUR : impossible de mettre à jour le rôle."
 					}
 				}
 			},
-			async refreshUsers(token: string) {
-				const result = await useUser().getAllUsers(token)
+			async refreshUsers() {
+				const result = await useUser().getAllUsers()
 				if (result) {
 					this.users = result
 				} else {
@@ -104,7 +102,7 @@
 			},
 		},
 		async mounted() {
-			await this.refreshUsers(token as string)
+			await this.refreshUsers()
 		},
 	})
 </script>

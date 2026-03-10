@@ -5,7 +5,10 @@ const tags = {
     { name: "MeasurementType", description: "Measurement type endpoints" },
     { name: "Measurement", description: "Measurement data endpoints" },
     { name: "User", description: "User account and authentication endpoints" },
-    { name: "User Access Control", description: "User-sensor and user-measurementType access management" },
+    {
+      name: "User Access Control",
+      description: "User-sensor and user-measurementType access management",
+    },
   ],
 };
 

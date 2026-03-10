@@ -184,10 +184,8 @@ const useUser = () => {
 		return roles.indexOf(role1) <= roles.indexOf(role2)
 	}
 
-	const canUpdateUserRole = (token: string | null, user: UserMailRole) => {
+	const canUpdateUserRole = (user: UserMailRole) => {
 		console.log("canUpdateUserRole")
-		if (token === null) return false
-		console.log("token is not null")
 		const role = localStorage.getItem("role")
 		if (role === null) return false
 		console.log("role is not null")
@@ -200,17 +198,9 @@ const useUser = () => {
 		}
 	}
 
-	const updateUserInformation = async (token: string, userInfo: UserLoginBody) => {
+	const updateUserInformation = async (userInfo: UserLoginBody) => {
 		try {
-			const { data } = (await axios.put<UserIsConnected>(
-				UserAPIEndpoint.UPDATE,
-				{ ...userInfo },
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			)) as unknown as { data: UserIsConnected }
+			const { data } = (await axios.put<UserIsConnected>(UserAPIEndpoint.UPDATE, { ...userInfo })) as unknown as { data: UserIsConnected }
 			// Here all happened as planned. So, we can update user all information with those gotten from the form
 			cleanUserLocalStorage()
 			// Set the token, expiresAt, role, id, firstName, lastName, dateOfBirth, and sex in the localStorage
@@ -222,17 +212,9 @@ const useUser = () => {
 		}
 	}
 
-	const updateRole = async (token: string, user: UserMailRole) => {
+	const updateRole = async (user: UserMailRole) => {
 		try {
-			const { data } = (await axios.put<UserMailRole>(
-				UserAPIEndpoint.UPDATE_ROLE,
-				{ ...user },
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			)) as { data: UserMailRole }
+			const { data } = (await axios.put<UserMailRole>(UserAPIEndpoint.UPDATE_ROLE, { ...user })) as { data: UserMailRole }
 			return { valid: true, error: data }
 		} catch (e) {
 			const { response } = e as { response: { data: Error } }
@@ -334,26 +316,14 @@ const useUser = () => {
 		useMeasurementStore().reset()
 	}
 
-	const getAllUsers = async (token: string) => {
-		const result = (await axios.get(UserAPIEndpoint.GET_ALL_USER, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		})) as { data: User[] }
+	const getAllUsers = async () => {
+		const result = (await axios.get(UserAPIEndpoint.GET_ALL_USER)) as { data: User[] }
 		return result.data
 	}
 
-	const canAccessAdminPanel = async (token: string) => {
-		// Check if the token is valid and if it allows the user to access the route
-		if (token === null) {
-			return { canAccess: false, message: "You are not allowed to access this page" }
-		}
+	const canAccessAdminPanel = async () => {
 		try {
-			const result = await axios.get(UserAPIEndpoint.CHECK_ACCESS_TO_ADMIN_PANEL, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			})
+			const result = await axios.get(UserAPIEndpoint.CHECK_ACCESS_TO_ADMIN_PANEL)
 			return { canAccess: true, message: result.data.message }
 		} catch (e) {
 			const { response } = e as { response: { data: Error } }
@@ -384,12 +354,12 @@ const useUser = () => {
 		handleResponse(user, "You are signed up", "/home")
 	}
 
-	const submitFormUserUpdatedInformation = async (token: string, userInfo: UserLoginBody) => {
-		const userUpdated = (await updateUserInformation(token, userInfo)) as loginReturn
+	const submitFormUserUpdatedInformation = async (userInfo: UserLoginBody) => {
+		const userUpdated = (await updateUserInformation(userInfo)) as loginReturn
 		handleResponse(userUpdated, "Your information has been updated", "/home")
 	}
 
-	const submitForm = async (userFormBody: unknown, formName: string, token: null | string) => {
+	const submitForm = async (userFormBody: unknown, formName: string) => {
 		switch (formName) {
 			case "login":
 				await submitFormLogin(userFormBody as unknown as UserLoginBody)
@@ -398,9 +368,7 @@ const useUser = () => {
 				await submitFormSignup(userFormBody as unknown as UserSignup)
 				break
 			case "userUpdate":
-				if (token) {
-					await submitFormUserUpdatedInformation(token, userFormBody as unknown as UserLoginBody)
-				}
+				await submitFormUserUpdatedInformation(userFormBody as unknown as UserLoginBody)
 				break
 			default:
 				alert("Invalid form name")

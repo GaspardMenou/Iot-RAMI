@@ -23,10 +23,7 @@
 			onMounted(async () => {
 				try {
 					await fetchSensors()
-					const [sessionsRes, activeRes] = await Promise.all([
-						axios.get(`users/${userId}/sessions?page=1&limit=1`),
-						axios.get("sessions/active"),
-					])
+					const [sessionsRes, activeRes] = await Promise.all([axios.get(`users/${userId}/sessions?page=1&limit=1`), axios.get("sessions/active")])
 					const payload = sessionsRes.data
 					totalSessions.value = payload.total ?? (Array.isArray(payload) ? payload.length : 0)
 					activeSessions.value = Array.isArray(activeRes.data) ? activeRes.data.length : 0
@@ -51,7 +48,6 @@
 
 <template>
 	<div class="dashboard">
-
 		<!-- Greeting -->
 		<div class="greeting-block">
 			<div class="greeting-label">TERMINAL RAMI — ACCÈS AUTORISÉ</div>
@@ -67,10 +63,14 @@
 				@click="goToSensors">
 				<span
 					v-if="isLoading"
-					class="stat-num stat-skeleton">--</span>
+					class="stat-num stat-skeleton"
+					>--</span
+				>
 				<span
 					v-else
-					class="stat-num">{{ String(sensors.length).padStart(2, '0') }}</span>
+					class="stat-num"
+					>{{ String(sensors.length).padStart(2, "0") }}</span
+				>
 				<span class="stat-label">CAPTEURS</span>
 			</div>
 			<div
@@ -79,10 +79,14 @@
 				@click="goToSensors">
 				<span
 					v-if="isLoading"
-					class="stat-num stat-skeleton">--</span>
+					class="stat-num stat-skeleton"
+					>--</span
+				>
 				<span
 					v-else
-					class="stat-num">{{ String(totalSessions).padStart(2, '0') }}</span>
+					class="stat-num"
+					>{{ String(totalSessions).padStart(2, "0") }}</span
+				>
 				<span class="stat-label">SESSIONS TOTAL</span>
 			</div>
 			<div
@@ -91,10 +95,14 @@
 				@click="goToSensors">
 				<span
 					v-if="isLoading"
-					class="stat-num stat-skeleton">--</span>
+					class="stat-num stat-skeleton"
+					>--</span
+				>
 				<span
 					v-else
-					class="stat-num">{{ String(activeSessions).padStart(2, '0') }}</span>
+					class="stat-num"
+					>{{ String(activeSessions).padStart(2, "0") }}</span
+				>
 				<span class="stat-label">EN COURS</span>
 			</div>
 		</div>
@@ -214,8 +222,13 @@
 	}
 
 	@keyframes pulse {
-		0%, 100% { opacity: 0.2; }
-		50% { opacity: 0.5; }
+		0%,
+		100% {
+			opacity: 0.2;
+		}
+		50% {
+			opacity: 0.5;
+		}
 	}
 
 	.stat-card--live .stat-num {
@@ -299,12 +312,7 @@
 		background: var(--color-surface);
 		border-bottom: 1px solid var(--color-border);
 		animation: shimmer 1.5s ease-in-out infinite;
-		background-image: linear-gradient(
-			90deg,
-			var(--color-surface) 0%,
-			var(--color-surface-secondary) 50%,
-			var(--color-surface) 100%
-		);
+		background-image: linear-gradient(90deg, var(--color-surface) 0%, var(--color-surface-secondary) 50%, var(--color-surface) 100%);
 		background-size: 200% 100%;
 	}
 
@@ -313,8 +321,12 @@
 	}
 
 	@keyframes shimmer {
-		0% { background-position: 200% 0; }
-		100% { background-position: -200% 0; }
+		0% {
+			background-position: 200% 0;
+		}
+		100% {
+			background-position: -200% 0;
+		}
 	}
 
 	/* Empty state */

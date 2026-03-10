@@ -3,7 +3,6 @@
 		class="sensor-card"
 		:class="[statusClass, { 'sensor-card--selected': isSelected, 'sensor-card--clickable': !isForNavigation || true }]"
 		@click="handleCardClick">
-
 		<!-- Barre de statut gauche -->
 		<div class="sensor-status-bar">
 			<span
@@ -240,8 +239,15 @@
 
 	/* ── Statuts ── */
 	@keyframes pulse-led {
-		0%, 100% { opacity: 1; box-shadow: 0 0 6px currentColor; }
-		50% { opacity: 0.4; box-shadow: 0 0 2px currentColor; }
+		0%,
+		100% {
+			opacity: 1;
+			box-shadow: 0 0 6px currentColor;
+		}
+		50% {
+			opacity: 0.4;
+			box-shadow: 0 0 2px currentColor;
+		}
 	}
 
 	.status-online .status-led {

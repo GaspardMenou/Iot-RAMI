@@ -105,11 +105,24 @@ const createSessionOnServerSide = async (req: Request, res: Response) => {
 // Get all sessions
 const getAllSessions = async (req: Request, res: Response) => {
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
-  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const limit = Math.min(
+    100,
+    Math.max(1, parseInt(req.query.limit as string) || 20)
+  );
   const offset = (page - 1) * limit;
   try {
-    const { count, rows } = await Session.findAndCountAll({ limit, offset, order: [["createdAt", "DESC"]] });
-    return res.status(200).json({ data: rows, total: count, page, limit, totalPages: Math.ceil(count / limit) });
+    const { count, rows } = await Session.findAndCountAll({
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+    return res.status(200).json({
+      data: rows,
+      total: count,
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+    });
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
