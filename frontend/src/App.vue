@@ -23,6 +23,9 @@
 
 	.content {
 		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
 		padding: 2rem 2.5rem;
 		overflow-y: auto;
 		background: transparent;

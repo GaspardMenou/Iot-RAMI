@@ -108,6 +108,10 @@
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		width: 100%;
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.panel-header {
@@ -138,8 +142,8 @@
 		display: flex;
 		flex-direction: row;
 		gap: 0;
-		height: calc(100vh - 380px);
-		min-height: 320px;
+		flex: 1;
+		min-height: 0;
 		overflow: hidden;
 	}
 
@@ -275,7 +279,7 @@
 	@media (max-width: 600px) {
 		.panel-body {
 			flex-direction: column;
-			height: auto;
+			min-height: 500px;
 		}
 
 		.sessions-list {

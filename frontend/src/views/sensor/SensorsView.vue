@@ -35,6 +35,9 @@
 		max-width: 1200px;
 		margin: 0 auto;
 		width: 100%;
+		flex: 1;
+		min-height: 0;
+		overflow: hidden;
 	}
 
 	.view-header {
@@ -62,8 +65,15 @@
 		margin-top: 4px;
 	}
 
-	.sensors-list-container,
+	.sensors-list-container {
+		width: 100%;
+	}
+
 	.sessions-list-container {
 		width: 100%;
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
 	}
 </style>
