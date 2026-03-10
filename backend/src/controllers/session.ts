@@ -321,8 +321,8 @@ const getSessionAggregate = async (req: Request, res: Response) => {
       {
         replacements: {
           idSensor: sensor.dataValues.id,
-          start: session.dataValues.createdAt,
-          end: session.dataValues.endedAt ?? new Date(),
+          start: new Date(session.dataValues.createdAt).toISOString(),
+          end: new Date(session.dataValues.endedAt ?? new Date()).toISOString(),
         },
         type: QueryTypes.SELECT,
       }
