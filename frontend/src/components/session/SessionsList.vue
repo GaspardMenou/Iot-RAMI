@@ -29,34 +29,23 @@
 					<span class="placeholder-text">SÉLECTIONNER UNE SESSION</span>
 				</div>
 				<template v-else>
-					<Graph :chartData="chartData" />
-					<div class="aggregate-panel">
-						<div class="aggregate-header">RÉSUMÉ PAR MINUTE</div>
-						<div v-if="aggregateLoading" class="aggregate-loading">CHARGEMENT...</div>
-						<div v-else-if="aggregateRows.length === 0" class="aggregate-empty">AUCUNE DONNÉE AGRÉGÉE</div>
-						<table v-else class="aggregate-table">
-							<thead>
-								<tr>
-									<th>BUCKET</th>
-									<th>TYPE</th>
-									<th>MOY</th>
-									<th>MIN</th>
-									<th>MAX</th>
-									<th>N</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr v-for="(row, i) in aggregateRows" :key="i">
-									<td>{{ formatBucket(row.bucket) }}</td>
-									<td>{{ row.idMeasurementType }}</td>
-									<td>{{ row.avg_value?.toFixed(2) }}</td>
-									<td>{{ row.min_value?.toFixed(2) }}</td>
-									<td>{{ row.max_value?.toFixed(2) }}</td>
-									<td>{{ row.count }}</td>
-								</tr>
-							</tbody>
-						</table>
+					<!-- Stats rapides -->
+					<div
+						v-if="chartStats.length > 0"
+						class="stats-bar">
+						<div
+							v-for="stat in chartStats"
+							:key="stat.label"
+							class="stat-chip">
+							<span class="stat-label">{{ stat.label }}</span>
+							<span class="stat-item">MOY <strong>{{ stat.avg }}</strong></span>
+							<span class="stat-sep">|</span>
+							<span class="stat-item">MIN <strong>{{ stat.min }}</strong></span>
+							<span class="stat-sep">|</span>
+							<span class="stat-item">MAX <strong>{{ stat.max }}</strong></span>
+						</div>
 					</div>
+					<Graph :chartData="chartData" />
 				</template>
 			</div>
 		</div>
@@ -70,7 +59,7 @@
 </template>
 
 <script lang="ts">
-	import { defineComponent, provide, onMounted, onUnmounted, ref, watch } from "vue"
+	import { defineComponent, provide, onMounted, onUnmounted, computed } from "vue"
 	import SessionCard from "@/components/session/SessionCard.vue"
 	import Graph from "@/components/session/Graph.vue"
 	import { useSession } from "@/composables/useSession.composable"
@@ -78,20 +67,23 @@
 	export default defineComponent({
 		components: { SessionCard, Graph },
 		setup() {
-			const { chartData, sessions, selectedSession, handleSessionSelect, registerOrRemoveEventHandlers, fetchAggregateData } = useSession()
+			const { chartData, sessions, selectedSession, handleSessionSelect, registerOrRemoveEventHandlers } = useSession()
 
-			const aggregateRows = ref<any[]>([])
-			const aggregateLoading = ref(false)
-
-			const formatBucket = (bucket: string) => {
-				return new Date(bucket).toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
-			}
-
-			watch(selectedSession, async (id) => {
-				if (!id) { aggregateRows.value = []; return }
-				aggregateLoading.value = true
-				aggregateRows.value = (await fetchAggregateData(id)) ?? []
-				aggregateLoading.value = false
+			const chartStats = computed(() => {
+				if (!chartData.value?.datasets?.length) return []
+				return chartData.value.datasets.map((ds: any) => {
+					const values = ds.data.map((p: any) => p.y).filter((v: number) => !isNaN(v))
+					if (!values.length) return null
+					const avg = values.reduce((a: number, b: number) => a + b, 0) / values.length
+					const min = Math.min(...values)
+					const max = Math.max(...values)
+					return {
+						label: ds.label,
+						avg: avg.toFixed(2),
+						min: min.toFixed(2),
+						max: max.toFixed(2),
+					}
+				}).filter(Boolean)
 			})
 
 			provide("title", "HISTORIQUE SESSION")
@@ -105,9 +97,7 @@
 				chartData,
 				selectedSession,
 				handleSessionSelect,
-				aggregateRows,
-				aggregateLoading,
-				formatBucket,
+				chartStats,
 			}
 		},
 	})
@@ -204,6 +194,49 @@
 		height: calc(100% - 44px);
 	}
 
+	/* Stats rapides */
+	.stats-bar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0;
+		border-bottom: 1px solid var(--color-border);
+		background: var(--color-surface-secondary);
+		flex-shrink: 0;
+	}
+
+	.stat-chip {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.3rem 0.75rem;
+		border-right: 1px solid var(--color-border);
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		letter-spacing: 0.05em;
+	}
+
+	.stat-label {
+		color: var(--color-primary);
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		margin-right: 0.25rem;
+	}
+
+	.stat-item {
+		color: var(--color-text-muted);
+	}
+
+	.stat-item strong {
+		color: var(--color-text);
+		font-weight: 600;
+	}
+
+	.stat-sep {
+		color: var(--color-border-bright);
+		opacity: 0.5;
+	}
+
 	/* Placeholder graphique */
 	.graph-placeholder {
 		height: 100%;
@@ -260,60 +293,6 @@
 		.graph-placeholder {
 			height: 320px;
 		}
-	}
-
-	/* Agrégats */
-	.aggregate-panel {
-		border-top: 1px solid var(--color-border);
-		background: var(--color-surface);
-		overflow-y: auto;
-		max-height: 160px;
-	}
-
-	.aggregate-header {
-		font-family: var(--font-mono);
-		font-size: 0.6rem;
-		letter-spacing: 0.15em;
-		color: var(--color-text-muted);
-		padding: 0.4rem 0.75rem;
-		background: var(--color-surface-secondary);
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	.aggregate-loading,
-	.aggregate-empty {
-		font-family: var(--font-mono);
-		font-size: 0.6rem;
-		color: var(--color-text-muted);
-		padding: 0.75rem;
-		text-align: center;
-		letter-spacing: 0.1em;
-	}
-
-	.aggregate-table {
-		width: 100%;
-		border-collapse: collapse;
-		font-family: var(--font-mono);
-		font-size: 0.62rem;
-	}
-
-	.aggregate-table th {
-		background: var(--color-surface-secondary);
-		color: var(--color-text-muted);
-		padding: 0.3rem 0.5rem;
-		text-align: left;
-		letter-spacing: 0.08em;
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	.aggregate-table td {
-		padding: 0.25rem 0.5rem;
-		border-bottom: 1px solid var(--color-border);
-		color: var(--color-text);
-	}
-
-	.aggregate-table tr:hover td {
-		background: var(--color-primary-dim);
 	}
 
 	/* Empty */
