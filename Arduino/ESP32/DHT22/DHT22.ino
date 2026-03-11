@@ -64,10 +64,12 @@ const long START_INTERVAL = 30000;
 void loop() {
     if (!client.connected()) {
         reconnect(client, saved_username, saved_password, saved_topic_server);
-        sendPing(client, saved_topic_sensor);
-        sendStart(client, saved_topic_sensor);
-        previousPingMillis = millis();
-        previousStartMillis = millis();
+        if (client.connected()) {
+            sendPing(client, saved_topic_sensor);
+            sendStart(client, saved_topic_sensor);
+            previousPingMillis = millis();
+            previousStartMillis = millis();
+        }
     }
     client.loop();
     unsigned long currentMillis = millis();

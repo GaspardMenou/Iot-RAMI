@@ -5,7 +5,7 @@ Ce document decrit la procedure complete pour realiser une demonstration du syst
 ## Prerequis
 
 - Docker et Docker Compose installes sur la machine cloud
-- Node.js installe (pour le simulateur Python ou le frontend en dev)
+- Node.js LTS >= 18 (pour le frontend en dev local)
 - Python 3 + `pip` (pour le simulateur)
 - Acces aux fichiers `.env` configures (voir `.env.example`)
 
@@ -16,7 +16,7 @@ Ce document decrit la procedure complete pour realiser une demonstration du syst
 ```bash
 cd backend
 cp .env.example .env.development   # adapter les variables si necessaire
-npm run docker:start               # lance node-backend, TimescaleDB, Kafka, Zookeeper, Mosquitto
+npm run docker:start               # lance node-backend, TimescaleDB, Kafka (KRaft), Frontend, Prometheus, Grafana
 npm run docker:init-db             # migrations + seeds (premiere fois uniquement)
 ```
 

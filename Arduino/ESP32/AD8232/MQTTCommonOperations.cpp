@@ -79,7 +79,7 @@ void setup_wifi() {
     Serial.println(saved_password);
     Serial.println(saved_name);
     snprintf(saved_topic, 60, "%s-topic", saved_name);
-    snprintf(saved_topic_server, 60, "%s-topic/sensor", saved_name);
+    snprintf(saved_topic_server, 60, "%s-topic/server", saved_name);
     snprintf(saved_topic_sensor, 60, "%s-topic/sensor", saved_name);
 
     if(wm.autoConnect()){
@@ -106,23 +106,24 @@ void setCACertForTLS(WiFiClientSecure& client, const char* certificate) {
     client.setCACert(certificate);
 }
 
+static unsigned long previousReconnectMillis = 0;
+
 void reconnect(PubSubClient& client, const char* mqtt_username, const char* mqtt_password, const char* topic) {
-    // Loop until we're reconnected
-    while (!client.connected()) {
-        Serial.print("Attempting MQTT connection...");
-        // sensor id (you can change it to whatever you like, you may also add a parameter TODO)
-        String clientId = "RAM1-Sensor-";
-        clientId += WiFi.macAddress();
-        // Attempt to connect
-        if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
-            Serial.println("connected");
-            client.subscribe(topic); // subscribe the topics here
-        } else {
-            Serial.print("failed, rc=");
-            Serial.print(client.state());
-            Serial.println(" try again in 5 seconds");
-            delay(5000);
-        }
+    if (client.connected()) return;
+    unsigned long currentMillis = millis();
+    if (currentMillis - previousReconnectMillis < 5000) return;
+    previousReconnectMillis = currentMillis;
+
+    Serial.print("Attempting MQTT connection...");
+    String clientId = "RAM1-Sensor-";
+    clientId += WiFi.macAddress();
+    if (client.connect(clientId.c_str(), mqtt_username, mqtt_password)) {
+        Serial.println("connected");
+        client.subscribe(topic); // subscribe the topics here
+    } else {
+        Serial.print("failed, rc=");
+        Serial.print(client.state());
+        Serial.println(" try again in 5 seconds");
     }
 }
 

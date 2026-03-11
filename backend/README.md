@@ -67,14 +67,17 @@ KAFKA_BROKERS=kafka:9092
 
 ```bash
 npm run docker:build    # Build l'image (nécessite NODE_ENV défini)
-npm run docker:start    # Lance TimescaleDB, Kafka, Zookeeper, Mosquitto
+npm run docker:start    # Lance TimescaleDB, Kafka, Zookeeper, Mosquitto (compose de dev local)
 ```
 
-Services Docker démarrés :
+Services Docker démarrés (compose de dev local — `backend/docker-compose.yml`) :
 - `node-db` — TimescaleDB sur le port 5432
-- `kafka` — Kafka sur le port 9092
+- `kafka` — Kafka (Confluent) sur le port 9092
 - `zookeeper` — Coordination Kafka sur le port 2181
 - `mosquitto` — Broker MQTT local sur les ports 1883 / 9001
+- `prometheus` / `grafana` — Monitoring sur les ports 9090 / 3001
+
+> Le compose de production (`docker-compose.yml` racine) utilise Kafka en mode KRaft (sans Zookeeper) et inclut le service `frontend`.
 
 ### 2. Initialiser la base de données (première fois)
 

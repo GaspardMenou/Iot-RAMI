@@ -18,9 +18,13 @@ Les routes marquees **[auth]** requierent un token valide. Les routes marquees *
 
 ## Auth
 
-| Methode | Route        | Auth | Description               |
-|---------|--------------|------|---------------------------|
-| `POST`  | `/auth`      | auth | Verification du token JWT |
+| Methode | Route           | Auth | Description                                                |
+|---------|-----------------|------|------------------------------------------------------------|
+| `POST`  | `/auth`         | auth | Verification du token JWT                                  |
+| `POST`  | `/auth/refresh` | -    | Rotation du refresh token — retourne un nouvel access token (15min) via le cookie HttpOnly (7j) |
+| `POST`  | `/auth/logout`  | -    | Invalide le refresh token (efface le cookie)               |
+
+La connexion est geree via `POST /users/login` (retourne l'access token JWT + pose le cookie refresh token).
 
 ---
 

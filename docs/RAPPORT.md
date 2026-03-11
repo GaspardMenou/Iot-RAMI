@@ -65,7 +65,7 @@ Remplacement de la connexion MQTT directe navigateur → broker (qui exposait le
 
 ### Phase 4 — Deploiement
 
-- **VM cloud** : docker-compose avec backend, TimescaleDB, Kafka, Zookeeper, Mosquitto. Watchtower pour le deploiement automatique.
+- **VM cloud** : docker-compose avec backend, TimescaleDB, Kafka (KRaft, sans Zookeeper), Frontend, Prometheus, Grafana. Watchtower pour le deploiement automatique.
 - **Raspberry Pi fog** : docker-compose avec Mosquitto authentifie, fog-service, Watchtower. Script `install.sh` automatise.
 - **CI/CD GitHub Actions** : pipeline lint → test → docker build → push GHCR → Watchtower (redemarrage automatique).
 - **Multi-platform build** : images `linux/amd64` + `linux/arm64` (QEMU + buildx).
@@ -97,7 +97,7 @@ Remplacement de la connexion MQTT directe navigateur → broker (qui exposait le
 | Routes API            | ~35 endpoints REST            |
 | Topics Kafka          | 1 (`sensor-data`)             |
 | Types de mesures      | 3 (`ecg`, `temperature`, `humidity`) |
-| Services Docker       | 6 (backend, DB, Kafka, Zookeeper, Mosquitto, Watchtower) |
+| Services Docker (prod)| 7 (backend, frontend, DB, Kafka, Prometheus, Grafana, Watchtower) |
 | Platforms supportees  | `linux/amd64`, `linux/arm64`  |
 
 ---

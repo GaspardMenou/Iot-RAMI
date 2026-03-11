@@ -100,6 +100,17 @@ Backend Cloud (VM x86, port 3000)
 
 ---
 
+## Améliorations post-livraison
+
+- [x] **Monitoring** : Prometheus + Grafana — métriques HTTP (`http_requests_total`, `http_request_duration_seconds`), gauge `active_sessions_total`, métriques système Node.js via `collectDefaultMetrics`. Route `GET /metrics` sans auth. Dashboard importable `monitoring/rami-dashboard.json`. Voir [docs/MONITORING.md](./docs/MONITORING.md).
+- [x] **Rate limiting** : `globalLimiter` (100 req/15min) + `authLimiter` (20 req/15min)
+- [x] **Graceful shutdown** : SIGTERM/SIGINT — sessions clôturées, Kafka + Socket.io fermés proprement
+- [x] **Dead letter queue** : `dlq.json` — messages Kafka en échec sauvegardés, flush au redémarrage
+- [x] **Refresh tokens** : access token 15min, refresh token 7j en cookie HttpOnly, rotation automatique
+- [x] **Pagination** : `GET /sessions`, `GET /sensors` — `?page&limit`, réponse `{ data, total, page, limit, totalPages }`
+
+---
+
 ## Stack technique
 
 | Couche | Technologie |
@@ -112,5 +123,6 @@ Backend Cloud (VM x86, port 3000)
 | Base de donnees | PostgreSQL 13 / TimescaleDB |
 | Frontend | Vue 3, TypeScript, Vite, Pinia, Chart.js, Socket.io client |
 | Auth | JWT + bcrypt |
+| Monitoring | Prometheus + Grafana |
 | Deploiement | Docker, Docker Compose, Watchtower |
 | CI/CD | GitHub Actions → GHCR |

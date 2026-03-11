@@ -41,6 +41,7 @@ ESP32 / Simulateur Python
 | `python-simulator-over-mqtt-master/` | Simulateur de capteur MQTT (Python) | — |
 | `Arduino/` | Sketches ESP32 (DHT22, ECG AD8232) | — |
 | `docs/` | Documentation technique | — |
+| `monitoring/` | Configuration Prometheus + dashboard Grafana | — |
 
 ---
 
@@ -83,10 +84,12 @@ python3 ./mqttCliApp.py sensor local --topic pysimulator-esp32-ecg-topic --types
 
 - Documentation technique : [`docs/`](./docs/README.md)
 - API Swagger : http://localhost:3000/api/v1/docs
+- Monitoring (Prometheus/Grafana) : [`docs/MONITORING.md`](./docs/MONITORING.md)
 - README Backend : [`backend/README.md`](./backend/README.md)
 - README Frontend : [`frontend/README.md`](./frontend/README.md)
 - README Fog : [`fog-service/README.md`](./fog-service/README.md)
 - Simulateur Python : [`python-simulator-over-mqtt-master/README.md`](./python-simulator-over-mqtt-master/README.md)
+- Sketches Arduino : [`Arduino/ESP32/`](./Arduino/ESP32/) (DHT22, AD8232, BME280 — pas de README dédié)
 
 ---
 
