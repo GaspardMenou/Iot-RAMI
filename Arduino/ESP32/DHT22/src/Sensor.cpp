@@ -4,7 +4,7 @@
 DHT dht(DHTPIN, DHTTYPE);
 
 void setupSensor() {
-    dht.begin(); 
+    dht.begin();
 }
 void readAndPublishMeasures(PubSubClient& client, const char* topic) {
     float humidity = dht.readHumidity();

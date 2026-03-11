@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Preferences.h>
 #include "MQTTCommonOperations.hpp"
 #include <WiFiManager.h>

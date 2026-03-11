@@ -1,13 +1,17 @@
 #ifndef SENSOR
 #define SENSOR
 
+#include <Wire.h>
+
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP280.h>
 #include <PubSubClient.h>
 
-#define pin_lo_plus 13
-#define pin_lo_minus 12
-#define analog_pin 14
+
+
+#define SEALEVELPRESSURE_HPA 1013.25
 
 void readAndPublishMeasures(PubSubClient& client, const char* topic);
 void setupSensor();
 
-#endif 
+#endif

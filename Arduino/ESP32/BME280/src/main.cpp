@@ -1,12 +1,19 @@
+#include <Arduino.h>
 #include "SpecificConstants.hpp"
 #include "MQTTCommonOperations.hpp"
 #include "Sensor.hpp"
-  
+
 /**** Secure WiFi Connectivity Initialisation *****/
 WiFiClient espClient;
 
 /**** MQTT Client Initialisation Using WiFi Connection *****/
 PubSubClient client(espClient);
+
+/**** Global Variables for Timing *****/
+unsigned long previousPingMillis = 0;
+unsigned long previousStartMillis = 0;
+const long PING_INTERVAL = 20000;
+const long START_INTERVAL = 30000;
 
 /**** FUNCTIONS *****/
 /***** Callback Method, allow the sensor to react when Receiving MQTT messages ****/
@@ -45,21 +52,13 @@ void setup() {
     Serial.begin(115200);
     setup_wifi();
     //setCACertForTLS(espClient, ROOT_CA);      // enable this line and the the "certificate" code for secure connection
-    
+
     configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER); // For timestamp
     setupSensor(); // initialize the sensor
     // Connecting to mqtt broker
     client.setServer(saved_broker, MQTT_PORT);
     client.setCallback(callback); // how to answer to mqtt messages
 }
-
-
-unsigned long previousPingMillis = 0;
-unsigned long previousStartMillis = 0;
-const long PING_INTERVAL = 20000;
-const long START_INTERVAL = 30000;
-
-
 
 void loop() {
     if (!client.connected()) {

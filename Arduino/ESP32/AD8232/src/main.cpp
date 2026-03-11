@@ -1,7 +1,8 @@
+#include <Arduino.h>
 #include "SpecificConstants.hpp"
 #include "MQTTCommonOperations.hpp"
 #include "Sensor.hpp"
-  
+
 /**** Secure WiFi Connectivity Initialisation *****/
 WiFiClient espClient;
 
@@ -45,7 +46,7 @@ void setup() {
     Serial.begin(115200);
     setup_wifi();
     //setCACertForTLS(espClient, ROOT_CA);      // enable this line and the the "certificate" code for secure connection
-    
+
     configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER); // For timestamp
     setupSensor(); // initialize the sensor
     // Connecting to mqtt broker

@@ -13,7 +13,7 @@
  * -----------------
  * PROGMEM is used to store variables in flash memory (program memory) instead of SRAM. 
  * This is particularly useful on microcontrollers with limited SRAM.
- * To decide whether a string should be stored in PROGMEM, we consider its lengt h and its access frequency.
+ * To decide whether a string should be stored in PROGMEM, we consider its length and its access frequency.
  * - If the string is long and accessed rarely, it should be stored in PROGMEM.
  * - Else, it should remain in SRAM for performance reasons.
  ******/
