@@ -26,10 +26,10 @@ class BrokerInformator:
     @staticmethod
     def local():
         return {
-            "url": "localhost",
+            "url": "rami-fog.local",
             "port": 1883,
-            "username": "test",
-            "password": "test",
+            "username": "fog1",
+            "password": "fog1password",
             "tls": False,
             "ws": False
         }

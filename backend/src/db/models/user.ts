@@ -66,11 +66,6 @@ const defineUserModel = (sequelize: Sequelize, DataTypes: any): UserStatic => {
       sourceKey: "id",
     });
 
-    User.hasMany(models.UserMeasurementTypeRequest, {
-      foreignKey: "userId",
-      sourceKey: "id",
-    });
-
     User.hasMany(models.UserSensorAccess, {
       foreignKey: "userId",
       sourceKey: "id",

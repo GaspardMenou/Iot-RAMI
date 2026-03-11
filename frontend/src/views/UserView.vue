@@ -42,11 +42,10 @@
 	import { UserFields } from "@/composables/useUser.composable"
 	import UserSensorRequest from "@/components/user/UserSensorRequest.vue"
 	import UserSensorAccess from "@/components/user/UserSensorAccess.vue"
-	import UserMeasurementTypeRequest from "@/components/user/UserMeasurementTypeRequest.vue"
 
 	export default defineComponent({
 		name: "UserView",
-		components: { UserSensorRequest, UserSensorAccess, UserMeasurementTypeRequest },
+		components: { UserSensorRequest, UserSensorAccess },
 		setup() {
 			const firstName = localStorage.getItem(UserFields.FIRST_NAME) || ""
 			const lastName = localStorage.getItem(UserFields.LAST_NAME) || ""
@@ -62,7 +61,6 @@
 			const tabs = [
 				{ name: "UserSensorAccess", label: "Accès capteur" },
 				{ name: "UserSensorRequest", label: "Créer un capteur" },
-				{ name: "UserMeasurementTypeRequest", label: "Type de mesure" },
 			]
 			const selectedTab = ref("UserSensorAccess")
 

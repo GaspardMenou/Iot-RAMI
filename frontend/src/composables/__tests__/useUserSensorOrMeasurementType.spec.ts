@@ -59,16 +59,6 @@ describe("useUserSensorOrMeasurementType", () => {
 		})
 	})
 
-	describe("getAllUserMeasurementTypeRequest()", () => {
-		it("should return data on success", async () => {
-			mockGet.mockResolvedValue({ data: [{ id: "m1", type: "ecg" }] })
-			const { getAllUserMeasurementTypeRequest } = useUserSensorOrMeasurementType()
-			const result = await getAllUserMeasurementTypeRequest()
-			expect(result.httpStatus).toBe(200)
-			expect(result.data).toEqual([{ id: "m1", type: "ecg" }])
-		})
-	})
-
 	describe("updateUserSensorAccess()", () => {
 		it("should post and return message on success", async () => {
 			mockPost.mockResolvedValue({ data: { message: "Access updated" } })
@@ -89,16 +79,6 @@ describe("useUserSensorOrMeasurementType", () => {
 		})
 	})
 
-	describe("updateUserMeasurementTypeRequest()", () => {
-		it("should post and return message on success", async () => {
-			mockPost.mockResolvedValue({ data: { message: "Type updated" } })
-			const { updateUserMeasurementTypeRequest } = useUserSensorOrMeasurementType()
-			const result = await updateUserMeasurementTypeRequest("user1", "ecg", "false")
-			expect(result.httpStatus).toBe(200)
-			expect(result.data).toBe("Type updated")
-		})
-	})
-
 	describe("submitForm()", () => {
 		it("should call createUserSensorAccess for sensor.access", async () => {
 			mockPost.mockResolvedValue({ data: { message: "ok" } })
@@ -111,13 +91,6 @@ describe("useUserSensorOrMeasurementType", () => {
 			mockPost.mockResolvedValue({ data: { message: "ok" } })
 			const { submitForm } = useUserSensorOrMeasurementType()
 			const result = await submitForm("user1", "sensor1", "sensor.request")
-			expect(result.httpStatus).toBe(200)
-		})
-
-		it("should call createUserMeasurementTypeRequest for measurementType.request", async () => {
-			mockPost.mockResolvedValue({ data: { message: "ok" } })
-			const { submitForm } = useUserSensorOrMeasurementType()
-			const result = await submitForm("user1", "type1", "measurementType.request")
 			expect(result.httpStatus).toBe(200)
 		})
 

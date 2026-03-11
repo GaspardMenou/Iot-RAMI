@@ -5,7 +5,6 @@ vi.mock("@/composables/useUserSensorOrMeasurementType.composable", () => ({
 	default: () => ({
 		getAllUserSensorAccess: vi.fn().mockResolvedValue({ data: [] }),
 		getAllUserSensorRequest: vi.fn().mockResolvedValue({ data: [] }),
-		getAllUserMeasurementTypeRequest: vi.fn().mockResolvedValue({ data: [] }),
 	}),
 }))
 
@@ -30,11 +29,6 @@ describe("useUserSensorOrMeasurementTypeStore", () => {
 			const store = useUserSensorOrMeasurementTypeStore()
 			expect(store.getUserSensorRequest()).toEqual([])
 		})
-
-		it("should return empty userMeasurementTypeRequest initially", () => {
-			const store = useUserSensorOrMeasurementTypeStore()
-			expect(store.getUserMeasurementTypeRequest()).toEqual([])
-		})
 	})
 
 	describe("refresh()", () => {
@@ -43,7 +37,6 @@ describe("useUserSensorOrMeasurementTypeStore", () => {
 			await store.refresh()
 			expect(store.getUserSensorAccess()).toEqual([])
 			expect(store.getUserSensorRequest()).toEqual([])
-			expect(store.getUserMeasurementTypeRequest()).toEqual([])
 		})
 	})
 })

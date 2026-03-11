@@ -3,7 +3,6 @@
 	import AdminRoleComponent from "@/components/AdminRole.vue"
 	import AdminSensorAccess from "@/components/AdminSensorAccess.vue"
 	import AdminSensorRequest from "@/components/AdminSensorRequest.vue"
-	import AdminMeasurementTypeRequest from "@/components/AdminMeasurementTypeRequest.vue"
 	import AdminActiveSessions from "@/components/AdminActiveSessions.vue"
 	import AdminDiscoveredSensors from "@/components/AdminDiscoveredSensors.vue"
 	import AdminDiscoveredMeasurementTypes from "@/components/AdminDiscoveredMeasurementTypes.vue"
@@ -12,7 +11,6 @@
 		{ key: "roles", label: "Rôles" },
 		{ key: "access", label: "Accès" },
 		{ key: "sensor-requests", label: "Capteurs" },
-		{ key: "measure-requests", label: "Mesures" },
 		{ key: "sessions", label: "Sessions" },
 		{ key: "discover", label: "Découverte" },
 		{ key: "discover-types", label: "Types mesures" },
@@ -26,7 +24,6 @@
 			AdminRoleComponent,
 			AdminSensorAccess,
 			AdminSensorRequest,
-			AdminMeasurementTypeRequest,
 			AdminActiveSessions,
 			AdminDiscoveredSensors,
 			AdminDiscoveredMeasurementTypes,
@@ -63,10 +60,9 @@
 			<AdminRoleComponent v-if="activeTab === 'roles'" />
 			<AdminSensorAccess v-else-if="activeTab === 'access'" />
 			<AdminSensorRequest v-else-if="activeTab === 'sensor-requests'" />
-			<AdminMeasurementTypeRequest v-else-if="activeTab === 'measure-requests'" />
+			<AdminDiscoveredMeasurementTypes v-else-if="activeTab === 'discover-types'" />
 			<AdminActiveSessions v-else-if="activeTab === 'sessions'" />
 			<AdminDiscoveredSensors v-else-if="activeTab === 'discover'" />
-			<AdminDiscoveredMeasurementTypes v-else-if="activeTab === 'discover-types'" />
 		</div>
 	</div>
 </template>

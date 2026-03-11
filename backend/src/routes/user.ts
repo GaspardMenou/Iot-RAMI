@@ -19,11 +19,6 @@ import {
   getUserSensorsAccess,
   removeUserFromSensor,
 } from "@controllers/userSensor";
-import {
-  askForMeasurementTypeCreation,
-  createMeasurementTypeForUser,
-  getUserMeasurementTypeRequests,
-} from "@controllers/userMeasurementType";
 
 const router = express.Router();
 
@@ -43,8 +38,5 @@ router
   .post("/sensors/creation/ask", auth, askForSensorCreation)
   .get("/sensors/creation", authAdmin, getUserSensorRequests)
   .post("/sensors/creation", authAdmin, createSensorForUser)
-  .post("/measurementTypes/creation/ask", auth, askForMeasurementTypeCreation)
-  .get("/measurementTypes/creation", authAdmin, getUserMeasurementTypeRequests)
-  .post("/measurementTypes/creation", authAdmin, createMeasurementTypeForUser);
 
 export { router as userRoutes };

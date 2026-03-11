@@ -32,7 +32,6 @@
 	const LABELS: Record<string, { label: string; placeholder: string }> = {
 		"sensor.access": { label: "Nom du capteur", placeholder: "ex: ECG chambre 1" },
 		"sensor.request": { label: "Nom du capteur souhaité", placeholder: "ex: Température couloir" },
-		"measurementType.request": { label: "Nom du type de mesure", placeholder: "ex: température" },
 	}
 
 	export default defineComponent({

@@ -8,15 +8,11 @@ import defineSensorModel from "@models/sensor";
 import defineSensorDataModel from "@models/sensorData";
 import defineSessionDataModel from "@models/session";
 import defineUserModel from "@models/user";
-import defineUserMeasurementTypeRequestModel from "@models/userMeasurementTypeRequest";
 import defineUserSensorAccessModel from "@models/userSensorAccess";
 import defineUserSensorRequestModel from "@models/userSensorRequest";
 
 import type { MeasurementStatic } from "#/measurement";
-import type {
-  MeasurementTypeStatic,
-  UserMeasurementTypeRequestStatic,
-} from "#/measurementType";
+import type { MeasurementTypeStatic } from "#/measurementType";
 import type { SensorDataStatic } from "#/sensorData";
 import type {
   SensorStatic,
@@ -33,7 +29,6 @@ export interface Database {
   sensordata: SensorDataStatic;
   Session: SessionStatic;
   User: UserStatic;
-  UserMeasurementTypeRequest: UserMeasurementTypeRequestStatic;
   UserSensorAccess: UserSensorAccessStatic;
   UserSensorRequest: UserSensorRequestStatic;
   sequelize: Sequelize;
@@ -89,7 +84,6 @@ addModelToDb(sequelize, DataTypes, defineSensorModel, db);
 addModelToDb(sequelize, DataTypes, defineSensorDataModel, db);
 addModelToDb(sequelize, DataTypes, defineSessionDataModel, db);
 addModelToDb(sequelize, DataTypes, defineUserModel, db);
-addModelToDb(sequelize, DataTypes, defineUserMeasurementTypeRequestModel, db);
 addModelToDb(sequelize, DataTypes, defineUserSensorAccessModel, db);
 addModelToDb(sequelize, DataTypes, defineUserSensorRequestModel, db);
 

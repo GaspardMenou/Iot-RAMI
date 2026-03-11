@@ -203,69 +203,6 @@ const paths = {
       },
     },
   },
-  "/users/measurementTypes/creation/ask": {
-    post: {
-      tags: ["User Access Control"],
-      summary: "Request creation of a new measurement type",
-      operationId: "askForMeasurementTypeCreation",
-      security: [{ bearerAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          "application/json": {
-            schema: {
-              type: "object",
-              required: ["measurementTypeName"],
-              properties: {
-                measurementTypeName: { type: "string" },
-              },
-            },
-          },
-        },
-      },
-      responses: {
-        "201": { description: "Creation request submitted" },
-        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-      },
-    },
-  },
-  "/users/measurementTypes/creation": {
-    get: {
-      tags: ["User Access Control"],
-      summary: "Get measurement type creation requests (admin only)",
-      operationId: "getUserMeasurementTypeRequests",
-      security: [{ bearerAuth: [] }],
-      responses: {
-        "200": { description: "List of pending measurement type creation requests" },
-        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-      },
-    },
-    post: {
-      tags: ["User Access Control"],
-      summary: "Approve a measurement type creation request (admin only)",
-      operationId: "createMeasurementTypeForUser",
-      security: [{ bearerAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          "application/json": {
-            schema: {
-              type: "object",
-              required: ["userName", "measurementTypeName"],
-              properties: {
-                userName: { type: "string" },
-                measurementTypeName: { type: "string" },
-              },
-            },
-          },
-        },
-      },
-      responses: {
-        "200": { description: "Request processed" },
-        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-      },
-    },
-  },
 };
 
 export { paths as userPaths };

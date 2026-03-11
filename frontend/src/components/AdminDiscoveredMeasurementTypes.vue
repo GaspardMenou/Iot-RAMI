@@ -19,7 +19,7 @@
 
 			const fetch = async () => {
 				try {
-					const { data } = await axios.get("measurement-types/discovered")
+					const { data } = await axios.get("measurementTypes/discovered")
 					discovered.value = data
 				} catch (e) {
 					console.error("Erreur fetch discovered measurement types:", e)
@@ -29,7 +29,7 @@
 			const register = async (item: DiscoveredMeasurementType) => {
 				registering.value[item.measurementType] = true
 				try {
-					await axios.post("measurement-types", { name: item.measurementType })
+					await axios.post("measurementTypes", { name: item.measurementType })
 					await fetch()
 				} catch (e: any) {
 					if (e.response?.status === 401 || e.response?.status === 403) {

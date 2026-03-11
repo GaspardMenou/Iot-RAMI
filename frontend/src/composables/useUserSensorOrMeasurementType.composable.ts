@@ -1,7 +1,6 @@
 import type { UserSensorAccess, UserSensorAccessUpdateResponse, UserSensorRequest, UserSensorRequestUpdateResponse } from "#/userSensor"
 import { useAxios } from "@/composables/useAxios.composable"
 import { useUserSensorOrMeasurementTypeStore } from "@/stores/userSensorOrMeasurementType"
-import type { UserMeasurementTypeRequest, UserMeasurementTypeUpdateResponse } from "#/userMeasurementType"
 
 export interface ComposableResponse<T> {
 	data: T | null
@@ -75,42 +74,12 @@ const useUserSensorOrMeasurementType = () => {
 		}
 	}
 
-	const getAllUserMeasurementTypeRequest = async (): Promise<ComposableResponse<UserMeasurementTypeRequest[]>> => {
-		try {
-			const { data } = await axios.get<UserMeasurementTypeRequest[]>("/users/measurementTypes/creation?number=1000")
-			return { data, error: null, httpStatus: 200 }
-		} catch (e) {
-			return handleErrors(e)
-		}
-	}
-
-	const updateUserMeasurementTypeRequest = async (user: string, type: string, banned: string): Promise<ComposableResponse<string>> => {
-		try {
-			const { data } = await axios.post<UserMeasurementTypeUpdateResponse>("/users/measurementTypes/creation", { userName: user, type: type, banned: banned })
-			await useUserSensorOrMeasurementTypeStore().refresh()
-			return { data: data.message, error: null, httpStatus: 200 }
-		} catch (e) {
-			return handleErrors(e)
-		}
-	}
-
-	const createUserMeasurementTypeRequest = async (user: string, type: string): Promise<ComposableResponse<string>> => {
-		try {
-			const { data } = await axios.post<UserMeasurementTypeUpdateResponse>("/users/measurementTypes/creation/ask", { user: user, type: type })
-			return { data: data.message, error: null, httpStatus: 200 }
-		} catch (e) {
-			return handleErrors(e)
-		}
-	}
-
 	const submitForm = async (user: string, sensor: string, submitFunction: string): Promise<ComposableResponse<string>> => {
 		switch (submitFunction) {
 			case "sensor.access":
 				return await createUserSensorAccess(user, sensor)
 			case "sensor.request":
 				return await createUserSensorRequest(user, sensor)
-			case "measurementType.request":
-				return await createUserMeasurementTypeRequest(user, sensor)
 			default:
 				return { data: null, error: "No function", httpStatus: 400 }
 		}
@@ -124,9 +93,6 @@ const useUserSensorOrMeasurementType = () => {
 		updateUserSensorRequest,
 		createUserSensorRequest,
 		submitForm,
-		getAllUserMeasurementTypeRequest,
-		updateUserMeasurementTypeRequest,
-		createUserMeasurementTypeRequest,
 	}
 }
 
