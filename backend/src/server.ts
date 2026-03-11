@@ -1,3 +1,9 @@
+// Polyfill for Node.js >= 22 (SlowBuffer removed)
+const buffer = require("buffer");
+if (!buffer.SlowBuffer) {
+  buffer.SlowBuffer = buffer.Buffer;
+}
+
 import app from "@/app";
 import http from "http";
 import SocketService from "@/service/socketService";

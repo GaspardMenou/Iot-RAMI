@@ -13,7 +13,7 @@ import {
 import { QueryTypes } from "sequelize";
 import db from "@db/index";
 const DB: any = db;
-const { User, Sensor, Session, sequelize } = DB;
+const { Sensor, Session, sequelize } = DB;
 // --- end of model import
 
 /** ============================ PLEASE READ THIS PART IN ORDER TO UNDERSTAND THE SESSION MODEL MANAGEMENT ============================

@@ -7,11 +7,14 @@ import { openApiDocumentation } from "@docs/index";
 import { routes } from "@routes/routes";
 import { NotFoundException } from "@utils/exceptions";
 import { globalLimiter, authLimiter } from "@middlewares/rateLimiter";
+import { metricsMiddleware } from "@middlewares/metrics";
+import { metricsRoutes } from "@routes/metrics";
 
 const app: Express = express();
 
 app.use(globalLimiter);
 app.use("/api/v1/auth", authLimiter);
+app.use(metricsMiddleware);
 app.use(express.json({ limit: "10mb" }));
 app.use(
   express.urlencoded({ limit: "10mb", extended: true, parameterLimit: 50000 })
@@ -42,6 +45,8 @@ app.use(
 );
 
 const baseUri = "/api/v1";
+
+app.use("/metrics", metricsRoutes);
 
 for (const route of routes) {
   app.use(baseUri + route.path, route.handler);
