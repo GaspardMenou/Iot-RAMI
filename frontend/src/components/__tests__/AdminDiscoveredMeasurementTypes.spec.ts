@@ -124,14 +124,14 @@ describe("AdminDiscoveredMeasurementTypes", () => {
 	// Appel fetch au montage
 	// ------------------------------------------------------------------
 	describe("fetch au montage", () => {
-		it("appelle GET measurement-types/discovered au montage", async () => {
+		it("appelle GET measurementTypes/discovered au montage", async () => {
 			mockGet.mockResolvedValue({ data: [] })
 
 			mount(AdminDiscoveredMeasurementTypes)
 			await flushPromises()
 
 			expect(mockGet).toHaveBeenCalledTimes(1)
-			expect(mockGet).toHaveBeenCalledWith("measurement-types/discovered")
+			expect(mockGet).toHaveBeenCalledWith("measurementTypes/discovered")
 		})
 	})
 
@@ -139,7 +139,7 @@ describe("AdminDiscoveredMeasurementTypes", () => {
 	// Bouton RAFRAÎCHIR
 	// ------------------------------------------------------------------
 	describe("bouton RAFRAÎCHIR", () => {
-		it("rappelle GET measurement-types/discovered au clic", async () => {
+		it("rappelle GET measurementTypes/discovered au clic", async () => {
 			mockGet.mockResolvedValue({ data: [] })
 
 			const wrapper = mount(AdminDiscoveredMeasurementTypes)
@@ -149,7 +149,7 @@ describe("AdminDiscoveredMeasurementTypes", () => {
 			await flushPromises()
 
 			expect(mockGet).toHaveBeenCalledTimes(2)
-			expect(mockGet).toHaveBeenNthCalledWith(2, "measurement-types/discovered")
+			expect(mockGet).toHaveBeenNthCalledWith(2, "measurementTypes/discovered")
 		})
 
 		it("met à jour la liste après le rafraîchissement", async () => {
@@ -175,7 +175,7 @@ describe("AdminDiscoveredMeasurementTypes", () => {
 	// Bouton AJOUTER — cas nominal
 	// ------------------------------------------------------------------
 	describe("bouton AJOUTER — cas nominal", () => {
-		it("appelle POST measurement-types avec le bon name", async () => {
+		it("appelle POST measurementTypes avec le bon name", async () => {
 			mockGet.mockResolvedValue({ data: FIXTURE_ITEMS })
 			mockPost.mockResolvedValue({})
 
@@ -185,7 +185,7 @@ describe("AdminDiscoveredMeasurementTypes", () => {
 			await wrapper.findAll(".btn-register")[0].trigger("click")
 			await flushPromises()
 
-			expect(mockPost).toHaveBeenCalledWith("measurement-types", { name: "temperature" })
+			expect(mockPost).toHaveBeenCalledWith("measurementTypes", { name: "temperature" })
 		})
 
 		it("rafraîchit la liste après un POST réussi", async () => {
