@@ -8,6 +8,7 @@ import type { Sensor } from "#/sensor";
 import type { MeasurementTypeModel } from "#/measurementType";
 import { addDiscoveredTopic } from "@service/discorverdSensorSevice";
 import * as dlq from "@service/dlqService";
+import { activeSessionsTotal } from "@middlewares/metrics";
 
 const { Sensor: SensorModel, Session, MeasurementType } = db;
 
@@ -192,6 +193,7 @@ class SocketService {
         data.sensorTopic,
         (session.dataValues as { id: string }).id
       );
+      activeSessionsTotal.inc();
       console.log(
         `▶️ [Session] Créée pour ${baseTopic} — id: ${session.dataValues.id}`
       );
@@ -245,6 +247,7 @@ class SocketService {
       { where: { id: sessionId } }
     );
     this.activeSessions.delete(data.sensorTopic);
+    activeSessionsTotal.dec();
     console.log(`⏹️ [Session] Clôturée pour ${data.sensorTopic}`);
   }
 
@@ -261,6 +264,7 @@ class SocketService {
     console.log(
       `${this.activeSessions.size} session(s) clôturée(s) au shutdown`
     );
+    activeSessionsTotal.set(0);
     this.activeSessions.clear();
     this.io.close();
     const kafkaService = await KafkaService.getInstance();
