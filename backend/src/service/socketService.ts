@@ -7,6 +7,7 @@ import db from "@db/index";
 import type { Sensor } from "#/sensor";
 import type { MeasurementTypeModel } from "#/measurementType";
 import { addDiscoveredTopic } from "@service/discorverdSensorSevice";
+import { addDiscoveredMeasurement } from "@service/discoverdMeasurementService";
 import * as dlq from "@service/dlqService";
 import { activeSessionsTotal } from "@middlewares/metrics";
 
@@ -226,7 +227,14 @@ class SocketService {
         const idMeasurementType = this.measurementTypesMap.get(
           measure.measureType
         );
-        if (!idMeasurementType) continue;
+        if (!idMeasurementType) {
+          addDiscoveredMeasurement(measure.measureType);
+          console.warn(
+            `⚠️ [SensorData] Type de mesure inconnu: ${measure.measureType}`
+          );
+          continue;
+          // eslint-disable-next-line prettier/prettier
+        };
         await db.sensordata.create({
           time: new Date(Math.floor(entry.timestamp / 1000)),
           idSensor: sensor.id,

@@ -14,7 +14,7 @@ enum SessionControllerPaths {
 	GET_USER_SESSIONS_ON_A_SENSOR = "users/:userId/sessions/on/sensor/:sensorId",
 	GET_SENSOR_SESSIONS = "sensors/:sensorId/sessions",
 	EXPORT_SESSION_CSV = "sessions/:id/export/csv",
-	GET_SESSION_AGGREGATE = "sessions/:id/aggregate"
+	GET_SESSION_AGGREGATE = "sessions/:id/aggregate",
 }
 
 const isValidDate = (date: any): date is Date => {

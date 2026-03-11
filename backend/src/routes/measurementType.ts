@@ -4,9 +4,12 @@ import {
   deleteMeasurementType,
   getMeasurementType,
   updateMeasurementType,
+  getDiscoveredMeasurementTypes,
 } from "@controllers/measurementType";
 
 const router = express.Router();
+
+router.get("/discovered", getDiscoveredMeasurementTypes);
 
 router
   .route("/:id?")

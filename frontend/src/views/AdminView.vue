@@ -6,6 +6,7 @@
 	import AdminMeasurementTypeRequest from "@/components/AdminMeasurementTypeRequest.vue"
 	import AdminActiveSessions from "@/components/AdminActiveSessions.vue"
 	import AdminDiscoveredSensors from "@/components/AdminDiscoveredSensors.vue"
+	import AdminDiscoveredMeasurementTypes from "@/components/AdminDiscoveredMeasurementTypes.vue"
 
 	const tabs = [
 		{ key: "roles", label: "Rôles" },
@@ -14,6 +15,7 @@
 		{ key: "measure-requests", label: "Mesures" },
 		{ key: "sessions", label: "Sessions" },
 		{ key: "discover", label: "Découverte" },
+		{ key: "discover-types", label: "Types mesures" },
 	] as const
 
 	type TabKey = (typeof tabs)[number]["key"]
@@ -27,6 +29,7 @@
 			AdminMeasurementTypeRequest,
 			AdminActiveSessions,
 			AdminDiscoveredSensors,
+			AdminDiscoveredMeasurementTypes,
 		},
 		setup() {
 			const activeTab = ref<TabKey>("roles")
@@ -63,6 +66,7 @@
 			<AdminMeasurementTypeRequest v-else-if="activeTab === 'measure-requests'" />
 			<AdminActiveSessions v-else-if="activeTab === 'sessions'" />
 			<AdminDiscoveredSensors v-else-if="activeTab === 'discover'" />
+			<AdminDiscoveredMeasurementTypes v-else-if="activeTab === 'discover-types'" />
 		</div>
 	</div>
 </template>

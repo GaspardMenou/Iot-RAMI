@@ -11,6 +11,7 @@ import {
   NotFoundException,
   ServerErrorException,
 } from "@utils/exceptions";
+import { discoveredMeasurements } from "@/service/discoverdMeasurementService";
 
 const checkName = (name: string) => {
   if (!name) {
@@ -91,6 +92,7 @@ const createMeasurementType = async (req: Request, res: Response) => {
         .status(500)
         .json(new ServerErrorException("Server error", "server.error"));
     }
+    discoveredMeasurements.delete(name);
     return res.status(201).json(measurementType);
   } catch (error) {
     return res
@@ -186,11 +188,19 @@ const deleteMeasurementType = async (req: Request, res: Response) => {
   }
 };
 
+const getDiscoveredMeasurementTypes = (req: Request, res: Response) => {
+  try {
+    return res.status(200).json(Array.from(discoveredMeasurements.values()));
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 export {
   createMeasurementType,
   getMeasurementType,
   updateMeasurementType,
   deleteMeasurementType,
+  getDiscoveredMeasurementTypes,
   checkId,
   checkName,
   checkIfNameExists,

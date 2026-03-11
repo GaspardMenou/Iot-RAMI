@@ -2,46 +2,43 @@
 	import { defineComponent, ref, onMounted } from "vue"
 	import { useAxios } from "@/composables/useAxios.composable"
 
-	export interface LocalDiscoveredSensor {
-		baseTopic: string
+	export interface DiscoveredMeasurementType {
+		measurementType: string
 		firstSeenAt: string
 		lastSeenAt: string
 		count: number
 	}
 
 	export default defineComponent({
-		name: "AdminLocalDiscoveredSensors",
+		name: "AdminDiscoveredMeasurementTypes",
 		setup() {
 			const { axios } = useAxios()
-			const discovered = ref<LocalDiscoveredSensor[]>([])
-			const names = ref<Record<string, string>>({})
+			const discovered = ref<DiscoveredMeasurementType[]>([])
 			const registering = ref<Record<string, boolean>>({})
 			const registerError = ref("")
 
 			const fetch = async () => {
 				try {
-					const { data } = await axios.get("sensors/discovered")
+					const { data } = await axios.get("measurement-types/discovered")
 					discovered.value = data
 				} catch (e) {
-					console.error("Erreur fetch discovered:", e)
+					console.error("Erreur fetch discovered measurement types:", e)
 				}
 			}
 
-			const register = async (sensor: LocalDiscoveredSensor) => {
-				const name = names.value[sensor.baseTopic]?.trim()
-				if (!name) return
-				registering.value[sensor.baseTopic] = true
+			const register = async (item: DiscoveredMeasurementType) => {
+				registering.value[item.measurementType] = true
 				try {
-					await axios.post("sensors", { name, topic: sensor.baseTopic })
+					await axios.post("measurement-types", { name: item.measurementType })
 					await fetch()
 				} catch (e: any) {
 					if (e.response?.status === 401 || e.response?.status === 403) {
-						registerError.value = "ACCÈS REFUSÉ : droits insuffisants pour enregistrer un capteur."
+						registerError.value = "ACCÈS REFUSÉ : droits insuffisants pour enregistrer un type de mesure."
 					} else {
-						console.error("Erreur register:", e)
+						console.error("Erreur register measurement type:", e)
 					}
 				} finally {
-					registering.value[sensor.baseTopic] = false
+					registering.value[item.measurementType] = false
 				}
 			}
 
@@ -56,7 +53,7 @@
 
 			onMounted(fetch)
 
-			return { discovered, names, registering, registerError, register, formatDate, fetch }
+			return { discovered, registering, registerError, register, formatDate, fetch }
 		},
 	})
 </script>
@@ -64,7 +61,7 @@
 <template>
 	<div class="discovered">
 		<div class="header-row">
-			<p class="description">CAPTEURS DÉTECTÉS VIA MQTT — NON ENREGISTRÉS EN BASE</p>
+			<p class="description">TYPES DE MESURES DÉTECTÉS — NON ENREGISTRÉS EN BASE</p>
 			<button
 				class="btn-refresh"
 				@click="fetch">
@@ -81,7 +78,7 @@
 		<div
 			v-if="discovered.length === 0"
 			class="empty-state">
-			AUCUN NOUVEAU CAPTEUR DÉTECTÉ POUR LE MOMENT
+			AUCUN NOUVEAU TYPE DE MESURE DÉTECTÉ
 		</div>
 
 		<div class="table-wrapper">
@@ -90,35 +87,27 @@
 				class="discovered-table">
 				<thead>
 					<tr>
-						<th>Topic MQTT</th>
+						<th>Type de mesure</th>
 						<th>Première détection</th>
 						<th>Dernière activité</th>
 						<th>Messages</th>
-						<th>Nom à donner</th>
 						<th>Action</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr
-						v-for="sensor in discovered"
-						:key="sensor.baseTopic">
-						<td class="topic-cell">{{ sensor.baseTopic }}</td>
-						<td>{{ formatDate(sensor.firstSeenAt) }}</td>
-						<td>{{ formatDate(sensor.lastSeenAt) }}</td>
-						<td class="count-cell">{{ sensor.count }}</td>
-						<td>
-							<input
-								v-model="names[sensor.baseTopic]"
-								class="name-input"
-								type="text"
-								placeholder="ex: ECG chambre 1" />
-						</td>
+						v-for="item in discovered"
+						:key="item.measurementType">
+						<td class="type-cell">{{ item.measurementType }}</td>
+						<td>{{ formatDate(item.firstSeenAt) }}</td>
+						<td>{{ formatDate(item.lastSeenAt) }}</td>
+						<td class="count-cell">{{ item.count }}</td>
 						<td>
 							<button
 								class="btn-register"
-								:disabled="!names[sensor.baseTopic]?.trim() || registering[sensor.baseTopic]"
-								@click="register(sensor)">
-								{{ registering[sensor.baseTopic] ? "…" : "ENREGISTRER" }}
+								:disabled="registering[item.measurementType]"
+								@click="register(item)">
+								{{ registering[item.measurementType] ? "…" : "AJOUTER" }}
 							</button>
 						</td>
 					</tr>
@@ -191,10 +180,10 @@
 
 	.discovered-table {
 		width: 100%;
-		min-width: 650px;
+		min-width: 520px;
 	}
 
-	.topic-cell {
+	.type-cell {
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
 		color: var(--color-primary);
@@ -202,25 +191,6 @@
 
 	.count-cell {
 		text-align: center;
-	}
-
-	.name-input {
-		background: var(--color-surface-secondary);
-		color: var(--color-text);
-		border: 1px solid var(--color-border-bright);
-		border-radius: 0;
-		padding: 3px 8px;
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
-		width: 100%;
-		min-width: 120px;
-		outline: none;
-		transition: border-color 0.15s;
-	}
-
-	.name-input:focus {
-		border-color: var(--color-primary);
-		box-shadow: 0 0 0 1px var(--color-primary-glow);
 	}
 
 	.inline-error {

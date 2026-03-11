@@ -55,7 +55,7 @@
 	import type { User } from "#/user"
 	import { Role, useUser } from "@/composables/useUser.composable"
 
-	interface AdminRoleData {
+	export interface AdminRoleData {
 		users: User[]
 		userSelected: string
 		roles: Role[]

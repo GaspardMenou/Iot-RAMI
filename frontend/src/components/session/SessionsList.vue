@@ -38,11 +38,17 @@
 							:key="stat.label"
 							class="stat-chip">
 							<span class="stat-label">{{ stat.label }}</span>
-							<span class="stat-item">MOY <strong>{{ stat.avg }}</strong></span>
+							<span class="stat-item"
+								>MOY <strong>{{ stat.avg }}</strong></span
+							>
 							<span class="stat-sep">|</span>
-							<span class="stat-item">MIN <strong>{{ stat.min }}</strong></span>
+							<span class="stat-item"
+								>MIN <strong>{{ stat.min }}</strong></span
+							>
 							<span class="stat-sep">|</span>
-							<span class="stat-item">MAX <strong>{{ stat.max }}</strong></span>
+							<span class="stat-item"
+								>MAX <strong>{{ stat.max }}</strong></span
+							>
 						</div>
 					</div>
 					<Graph :chartData="chartData" />
@@ -71,19 +77,21 @@
 
 			const chartStats = computed(() => {
 				if (!chartData.value?.datasets?.length) return []
-				return chartData.value.datasets.map((ds: any) => {
-					const values = ds.data.map((p: any) => p.y).filter((v: number) => !isNaN(v))
-					if (!values.length) return null
-					const avg = values.reduce((a: number, b: number) => a + b, 0) / values.length
-					const min = Math.min(...values)
-					const max = Math.max(...values)
-					return {
-						label: ds.label,
-						avg: avg.toFixed(2),
-						min: min.toFixed(2),
-						max: max.toFixed(2),
-					}
-				}).filter(Boolean)
+				return chartData.value.datasets
+					.map((ds: any) => {
+						const values = ds.data.map((p: any) => p.y).filter((v: number) => !isNaN(v))
+						if (!values.length) return null
+						const avg = values.reduce((a: number, b: number) => a + b, 0) / values.length
+						const min = Math.min(...values)
+						const max = Math.max(...values)
+						return {
+							label: ds.label,
+							avg: avg.toFixed(2),
+							min: min.toFixed(2),
+							max: max.toFixed(2),
+						}
+					})
+					.filter(Boolean)
 			})
 
 			provide("title", "HISTORIQUE SESSION")
