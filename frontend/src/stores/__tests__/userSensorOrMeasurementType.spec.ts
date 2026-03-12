@@ -23,7 +23,6 @@ describe("useUserSensorOrMeasurementTypeStore", () => {
 			const store = useUserSensorOrMeasurementTypeStore()
 			expect(store.getUserSensorAccess()).toEqual([])
 		})
-
 	})
 
 	describe("refresh()", () => {

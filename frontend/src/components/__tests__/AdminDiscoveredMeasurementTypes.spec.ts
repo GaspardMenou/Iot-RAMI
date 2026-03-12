@@ -116,7 +116,7 @@ describe("AdminDiscoveredMeasurementTypes", () => {
 
 			const buttons = wrapper.findAll(".btn-register")
 			expect(buttons).toHaveLength(FIXTURE_ITEMS.length)
-			buttons.forEach((btn) => expect(btn.text()).toBe("AJOUTER"))
+			buttons.forEach(btn => expect(btn.text()).toBe("AJOUTER"))
 		})
 	})
 
@@ -223,7 +223,11 @@ describe("AdminDiscoveredMeasurementTypes", () => {
 
 			// POST qui se résout après que l'on ait vérifié l'état intermédiaire
 			let resolvePost!: () => void
-			mockPost.mockReturnValue(new Promise<void>((res) => { resolvePost = res }))
+			mockPost.mockReturnValue(
+				new Promise<void>(res => {
+					resolvePost = res
+				})
+			)
 
 			const wrapper = mount(AdminDiscoveredMeasurementTypes)
 			await flushPromises()
