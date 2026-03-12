@@ -13,9 +13,6 @@ import { auth, authAdmin } from "@middlewares/auth";
 import {
   addUsersToSensor,
   askForSensorAccess,
-  askForSensorCreation,
-  createSensorForUser,
-  getUserSensorRequests,
   getUserSensorsAccess,
   removeUserFromSensor,
 } from "@controllers/userSensor";
@@ -34,9 +31,6 @@ router
   .post("/sensors/access", auth, addUsersToSensor)
   .delete("/sensors/access", auth, removeUserFromSensor)
   .get("/sensors/access", authAdmin, getUserSensorsAccess)
-  .post("/sensors/access/ask", auth, askForSensorAccess)
-  .post("/sensors/creation/ask", auth, askForSensorCreation)
-  .get("/sensors/creation", authAdmin, getUserSensorRequests)
-  .post("/sensors/creation", authAdmin, createSensorForUser)
+  .post("/sensors/access/ask", auth, askForSensorAccess);
 
 export { router as userRoutes };

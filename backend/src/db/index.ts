@@ -9,16 +9,11 @@ import defineSensorDataModel from "@models/sensorData";
 import defineSessionDataModel from "@models/session";
 import defineUserModel from "@models/user";
 import defineUserSensorAccessModel from "@models/userSensorAccess";
-import defineUserSensorRequestModel from "@models/userSensorRequest";
 
 import type { MeasurementStatic } from "#/measurement";
 import type { MeasurementTypeStatic } from "#/measurementType";
 import type { SensorDataStatic } from "#/sensorData";
-import type {
-  SensorStatic,
-  UserSensorAccessStatic,
-  UserSensorRequestStatic,
-} from "#/sensor";
+import type { SensorStatic, UserSensorAccessStatic } from "#/sensor";
 import type { SessionStatic } from "#/session";
 import type { UserStatic } from "#/user";
 
@@ -30,7 +25,6 @@ export interface Database {
   Session: SessionStatic;
   User: UserStatic;
   UserSensorAccess: UserSensorAccessStatic;
-  UserSensorRequest: UserSensorRequestStatic;
   sequelize: Sequelize;
   Sequelize: typeof Sequelize;
 }
@@ -85,7 +79,6 @@ addModelToDb(sequelize, DataTypes, defineSensorDataModel, db);
 addModelToDb(sequelize, DataTypes, defineSessionDataModel, db);
 addModelToDb(sequelize, DataTypes, defineUserModel, db);
 addModelToDb(sequelize, DataTypes, defineUserSensorAccessModel, db);
-addModelToDb(sequelize, DataTypes, defineUserSensorRequestModel, db);
 
 // run `.associate` if applicable
 Object.keys(db).map((modelName) => {

@@ -40,12 +40,11 @@
 <script lang="ts">
 	import { defineComponent, ref, computed } from "vue"
 	import { UserFields } from "@/composables/useUser.composable"
-	import UserSensorRequest from "@/components/user/UserSensorRequest.vue"
 	import UserSensorAccess from "@/components/user/UserSensorAccess.vue"
 
 	export default defineComponent({
 		name: "UserView",
-		components: { UserSensorRequest, UserSensorAccess },
+		components: { UserSensorAccess },
 		setup() {
 			const firstName = localStorage.getItem(UserFields.FIRST_NAME) || ""
 			const lastName = localStorage.getItem(UserFields.LAST_NAME) || ""
@@ -58,10 +57,7 @@
 				return f + l || "?"
 			})
 
-			const tabs = [
-				{ name: "UserSensorAccess", label: "Accès capteur" },
-				{ name: "UserSensorRequest", label: "Créer un capteur" },
-			]
+			const tabs = [{ name: "UserSensorAccess", label: "Accès capteur" }]
 			const selectedTab = ref("UserSensorAccess")
 
 			return { firstName, lastName, email, role, initials, tabs, selectedTab }

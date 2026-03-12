@@ -49,16 +49,6 @@ describe("useUserSensorOrMeasurementType", () => {
 		})
 	})
 
-	describe("getAllUserSensorRequest()", () => {
-		it("should return data on success", async () => {
-			mockGet.mockResolvedValue({ data: [{ id: "r1" }] })
-			const { getAllUserSensorRequest } = useUserSensorOrMeasurementType()
-			const result = await getAllUserSensorRequest()
-			expect(result.httpStatus).toBe(200)
-			expect(result.data).toEqual([{ id: "r1" }])
-		})
-	})
-
 	describe("updateUserSensorAccess()", () => {
 		it("should post and return message on success", async () => {
 			mockPost.mockResolvedValue({ data: { message: "Access updated" } })
@@ -69,28 +59,11 @@ describe("useUserSensorOrMeasurementType", () => {
 		})
 	})
 
-	describe("updateUserSensorRequest()", () => {
-		it("should post and return message on success", async () => {
-			mockPost.mockResolvedValue({ data: { message: "Request updated" } })
-			const { updateUserSensorRequest } = useUserSensorOrMeasurementType()
-			const result = await updateUserSensorRequest("user1", "sensor1", "true")
-			expect(result.httpStatus).toBe(200)
-			expect(result.data).toBe("Request updated")
-		})
-	})
-
 	describe("submitForm()", () => {
 		it("should call createUserSensorAccess for sensor.access", async () => {
 			mockPost.mockResolvedValue({ data: { message: "ok" } })
 			const { submitForm } = useUserSensorOrMeasurementType()
 			const result = await submitForm("user1", "sensor1", "sensor.access")
-			expect(result.httpStatus).toBe(200)
-		})
-
-		it("should call createUserSensorRequest for sensor.request", async () => {
-			mockPost.mockResolvedValue({ data: { message: "ok" } })
-			const { submitForm } = useUserSensorOrMeasurementType()
-			const result = await submitForm("user1", "sensor1", "sensor.request")
 			expect(result.httpStatus).toBe(200)
 		})
 

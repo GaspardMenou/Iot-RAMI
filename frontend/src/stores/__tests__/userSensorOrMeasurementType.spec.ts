@@ -4,7 +4,6 @@ import { setActivePinia, createPinia } from "pinia"
 vi.mock("@/composables/useUserSensorOrMeasurementType.composable", () => ({
 	default: () => ({
 		getAllUserSensorAccess: vi.fn().mockResolvedValue({ data: [] }),
-		getAllUserSensorRequest: vi.fn().mockResolvedValue({ data: [] }),
 	}),
 }))
 
@@ -25,10 +24,6 @@ describe("useUserSensorOrMeasurementTypeStore", () => {
 			expect(store.getUserSensorAccess()).toEqual([])
 		})
 
-		it("should return empty userSensorRequest initially", () => {
-			const store = useUserSensorOrMeasurementTypeStore()
-			expect(store.getUserSensorRequest()).toEqual([])
-		})
 	})
 
 	describe("refresh()", () => {
@@ -36,7 +31,6 @@ describe("useUserSensorOrMeasurementTypeStore", () => {
 			const store = useUserSensorOrMeasurementTypeStore()
 			await store.refresh()
 			expect(store.getUserSensorAccess()).toEqual([])
-			expect(store.getUserSensorRequest()).toEqual([])
 		})
 	})
 })

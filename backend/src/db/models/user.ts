@@ -61,16 +61,10 @@ const defineUserModel = (sequelize: Sequelize, DataTypes: any): UserStatic => {
   );
 
   User.associate = (models: any) => {
-    User.hasMany(models.UserSensorRequest, {
-      foreignKey: "userId",
-      sourceKey: "id",
-    });
-
     User.hasMany(models.UserSensorAccess, {
       foreignKey: "userId",
       sourceKey: "id",
     });
-
   };
 
   return User;

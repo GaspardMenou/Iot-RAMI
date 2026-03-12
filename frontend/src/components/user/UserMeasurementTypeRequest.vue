@@ -1,8 +1,8 @@
 <template>
-	<div class="user-sensor-request">
+	<div class="user-measurement-type-request">
 		<UserForm
-			submitFunction="sensor.request"
-			title="Demander la création d'un capteur" />
+			submitFunction="measurementType.request"
+			title="Demander un type de mesure" />
 	</div>
 </template>
 
@@ -11,7 +11,7 @@
 	import UserForm from "@/components/user/UserForm.vue"
 
 	export default defineComponent({
-		name: "UserSensorRequest",
+		name: "UserMeasurementTypeRequest",
 		components: {
 			UserForm,
 		},

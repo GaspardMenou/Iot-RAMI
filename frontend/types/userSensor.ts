@@ -16,23 +16,9 @@ interface UserSensorAccess {
 	createdAt: string
 }
 
-interface UserSensorRequest {
-	id: string
-	status: Status
-	sensorName: string
-	User: {
-		email: string
-	}
-	createdAt: string
-}
-
 interface UserSensorAccessUpdateResponse {
 	message: string
 }
 
-interface UserSensorRequestUpdateResponse {
-	message: string
-}
-
-export type { UserSensorAccess, UserSensorAccessUpdateResponse, UserSensorRequest, UserSensorRequestUpdateResponse }
+export type { UserSensorAccess, UserSensorAccessUpdateResponse }
 export { Status }

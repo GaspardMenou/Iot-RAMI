@@ -1,4 +1,4 @@
-import type { UserSensorAccess, UserSensorAccessUpdateResponse, UserSensorRequest, UserSensorRequestUpdateResponse } from "#/userSensor"
+import type { UserSensorAccess, UserSensorAccessUpdateResponse } from "#/userSensor"
 import { useAxios } from "@/composables/useAxios.composable"
 import { useUserSensorOrMeasurementTypeStore } from "@/stores/userSensorOrMeasurementType"
 
@@ -27,28 +27,9 @@ const useUserSensorOrMeasurementType = () => {
 		}
 	}
 
-	const getAllUserSensorRequest = async (): Promise<ComposableResponse<UserSensorRequest[]>> => {
-		try {
-			const { data } = await axios.get<UserSensorRequest[]>("/users/sensors/creation?number=1000")
-			return { data, error: null, httpStatus: 200 }
-		} catch (e) {
-			return handleErrors(e)
-		}
-	}
-
 	const updateUserSensorAccess = async (user: string, sensor: string, banned: string): Promise<ComposableResponse<string>> => {
 		try {
 			const { data } = await axios.post<UserSensorAccessUpdateResponse>("/users/sensors/access", { userName: user, sensorName: sensor, banned: banned })
-			await useUserSensorOrMeasurementTypeStore().refresh()
-			return { data: data.message, error: null, httpStatus: 200 }
-		} catch (e) {
-			return handleErrors(e)
-		}
-	}
-
-	const updateUserSensorRequest = async (user: string, sensor: string, banned: string): Promise<ComposableResponse<string>> => {
-		try {
-			const { data } = await axios.post<UserSensorRequestUpdateResponse>("/users/sensors/creation", { userName: user, sensorName: sensor, banned: banned })
 			await useUserSensorOrMeasurementTypeStore().refresh()
 			return { data: data.message, error: null, httpStatus: 200 }
 		} catch (e) {
@@ -65,21 +46,10 @@ const useUserSensorOrMeasurementType = () => {
 		}
 	}
 
-	const createUserSensorRequest = async (user: string, sensor: string): Promise<ComposableResponse<string>> => {
-		try {
-			const { data } = await axios.post<UserSensorRequestUpdateResponse>("/users/sensors/creation/ask", { user: user, sensor: sensor })
-			return { data: data.message, error: null, httpStatus: 200 }
-		} catch (e) {
-			return handleErrors(e)
-		}
-	}
-
 	const submitForm = async (user: string, sensor: string, submitFunction: string): Promise<ComposableResponse<string>> => {
 		switch (submitFunction) {
 			case "sensor.access":
 				return await createUserSensorAccess(user, sensor)
-			case "sensor.request":
-				return await createUserSensorRequest(user, sensor)
 			default:
 				return { data: null, error: "No function", httpStatus: 400 }
 		}
@@ -89,9 +59,6 @@ const useUserSensorOrMeasurementType = () => {
 		getAllUserSensorAccess,
 		updateUserSensorAccess,
 		createUserSensorAccess,
-		getAllUserSensorRequest,
-		updateUserSensorRequest,
-		createUserSensorRequest,
 		submitForm,
 	}
 }

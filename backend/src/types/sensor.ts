@@ -64,40 +64,6 @@ type UserSensorAccessStatic = typeof Model & {
   ): UserSensorAccessModel;
 };
 
-/****************************/
-// UserSensorRequest
-
-interface UserSensorRequestCreation {
-  id?: string;
-  userId: string;
-  sensorName: string;
-  status?: Status;
-  createdAt?: Date;
-}
-
-interface UserSensorRequest {
-  id: string;
-  userId: string;
-  sensorName: string;
-  status: Status;
-  createdAt: Date;
-}
-
-type UserSensorRequestModel = Model<
-  UserSensorRequest,
-  UserSensorRequestCreation
->;
-
-// Allow you to define a static method to define associations at the model class level
-type UserSensorRequestStatic = typeof Model & {
-  associate?: (models: any) => void;
-} & {
-  new (
-    values?: Record<string, unknown>,
-    options?: BuildOptions
-  ): UserSensorRequestModel;
-};
-
 export type {
   Sensor,
   SensorCreation,
@@ -107,10 +73,6 @@ export type {
   UserSensorAccess,
   UserSensorAccessCreation,
   UserSensorAccessStatic,
-  UserSensorRequestModel,
-  UserSensorRequest,
-  UserSensorRequestCreation,
-  UserSensorRequestStatic,
 };
 
 export { Status };
