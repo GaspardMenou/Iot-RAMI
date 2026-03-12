@@ -208,12 +208,7 @@
 
 	.stat-card--link:hover {
 		background: var(--color-surface-secondary);
-		outline: 1px solid var(--color-border-bright);
-	}
-
-	.stat-card--link:hover .stat-label::after {
-		content: " →";
-		opacity: 0.5;
+		box-shadow: inset 0 0 0 1px var(--color-border-bright);
 	}
 
 	.stat-skeleton {
