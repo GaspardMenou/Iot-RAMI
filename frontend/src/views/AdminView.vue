@@ -58,23 +58,23 @@
 
 		<!-- Contenu -->
 		<div class="tab-content">
-			<AdminRoleComponent v-if="activeTab === 'roles'" />
-			<AdminSensorAccess v-else-if="activeTab === 'access'" />
-			<AdminActiveSessions v-else-if="activeTab === 'sessions'" />
-			<template v-else-if="activeTab === 'sensors'">
+			<AdminRoleComponent v-show="activeTab === 'roles'" />
+			<AdminSensorAccess v-show="activeTab === 'access'" />
+			<AdminActiveSessions v-show="activeTab === 'sessions'" />
+			<div v-show="activeTab === 'sensors'">
 				<AdminSensorsList />
 				<div class="section-divider">
 					<span>DÉCOUVERTE AUTOMATIQUE</span>
 				</div>
 				<AdminDiscoveredSensors />
-			</template>
-			<template v-else-if="activeTab === 'measure-types'">
+			</div>
+			<div v-show="activeTab === 'measure-types'">
 				<AdminMeasurementTypesList />
 				<div class="section-divider">
 					<span>TYPES DÉCOUVERTS</span>
 				</div>
 				<AdminDiscoveredMeasurementTypes />
-			</template>
+			</div>
 		</div>
 	</div>
 </template>
@@ -157,6 +157,7 @@
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		padding: 1.5rem 1.75rem;
+		min-height: 400px;
 	}
 
 	/* Séparateur de sections dans un même tab */
