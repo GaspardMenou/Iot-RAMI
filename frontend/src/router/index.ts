@@ -83,6 +83,14 @@ const router = createRouter({
 			},
 			props: true,
 		},
+		{
+			path: "/history",
+			name: "history",
+			component: () => import("@/views/history/HistoryView.vue"),
+			meta: {
+				requiresAuth: true,
+			},
+		},
 	],
 })
 
