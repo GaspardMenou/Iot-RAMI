@@ -157,7 +157,7 @@
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		padding: 1.5rem 1.75rem;
-		min-height: 400px;
+		min-height: calc(100vh - 280px);
 	}
 
 	/* Séparateur de sections dans un même tab */
