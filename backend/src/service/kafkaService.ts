@@ -13,7 +13,6 @@ class KafkaService {
   public static async getInstance(): Promise<KafkaService> {
     if (!KafkaService.instance) {
       try {
-        console.log("📦 Creating new Kafka Service instance");
         KafkaService.instance = new KafkaService();
         await KafkaService.instance.connectToKafka();
         await KafkaService.instance.connect();
@@ -61,7 +60,6 @@ class KafkaService {
 
   public registerTopic(topic: string, callback: (data: any) => void): void {
     this.mapTopicCallbacks.set(topic, callback);
-    console.log("🔖 Registered Kafka topic callback:", topic);
   }
 
   public async startConsuming(): Promise<void> {
@@ -70,15 +68,10 @@ class KafkaService {
         await this.consumer.subscribe({ topic });
       }
       await this.consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
+        eachMessage: async ({ topic, message }) => {
           const callback = this.mapTopicCallbacks.get(topic);
           if (callback) {
             const data = JSON.parse(message.value?.toString() || "");
-            console.log("📨 Received Kafka message:", {
-              topic,
-              partition,
-              data,
-            });
             callback(data);
           } else {
             console.warn("⚠️ No callback registered for topic:", topic);

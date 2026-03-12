@@ -29,10 +29,6 @@ const envs = {
   MAIL_USER: env("MAIL_USER", "user") as string,
   MAIL_PASSWORD: env("MAIL_PASSWORD", "password") as string,
   KAFKA_BROKERS: env("KAFKA_BROKERS", "kafka:9092") as string,
-  MQTT_URL: env("MQTT_URL", "mosquitto") as string,
-  MQTT_PORT: env("MQTT_PORT", 1883, true) as number,
-  MQTT_USERNAME: env("MQTT_USERNAME", "test") as string,
-  MQTT_PASSWORD: env("MQTT_PASSWORD", "test") as string,
   REFRESH_TOKEN_SECRET: env("REFRESH_TOKEN_SECRET", "refresh_secret") as string,
   REFRESH_TOKEN_EXPIRATION: env("REFRESH_TOKEN_EXPIRATION", "7d") as string,
 };

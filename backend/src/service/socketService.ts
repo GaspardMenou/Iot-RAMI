@@ -63,21 +63,16 @@ class SocketService {
         try {
           jwt.verify(data.token, envs.JWT_SECRET);
           socket.join(data.topic);
-          console.log(`Client joined topic: ${data.topic}`);
           socket.emit("joined", { topic: data.topic });
         } catch (error) {
           console.error("Invalid JWT token for socket connection:", error);
           socket.disconnect();
         }
       });
-      socket.on("disconnect", () => {
-        console.log("Client disconnected");
-      });
     });
   }
   public sendDataToRoom(topic: string, data: KafkaPayload) {
     this.io.to(topic).emit("new-data", data);
-    console.log(`Sent data to topic ${topic}:`, data);
   }
   private kafkaRetryCount = 0;
   private static readonly KAFKA_MAX_RETRIES = 10;
@@ -244,7 +239,6 @@ class SocketService {
       }
     }
     this.sendDataToRoom(data.sensorTopic, data);
-    console.log(`💾 [SensorData] Données stockées pour ${baseTopic}`);
   }
 
   private async handleSessionStop(data: KafkaStopPayload): Promise<void> {
@@ -261,7 +255,6 @@ class SocketService {
 
   public emitSensorStatus(sensorName: string, status: string) {
     this.io.emit("sensor-status", { sensorName, status });
-    console.log(`Emitted sensor status for sensor ${sensorName}:`, status);
   }
 
   public async close(): Promise<void> {

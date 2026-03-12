@@ -69,7 +69,6 @@ const addModelToDb = (
 ): void => {
   const model = defineModel(sequelize, DataTypes);
   target[model.name] = model;
-  console.log(`New model added: ${model.name}`);
 };
 
 addModelToDb(sequelize, DataTypes, defineMeasurement, db);

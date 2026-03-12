@@ -711,7 +711,7 @@ const createMeasurements = async (req: Request, res: Response) => {
         .json(new MultiStatusException(errors, "server.error"));
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res
       .status(500)
       .json(new ServerErrorException("Server error", "server.error"));

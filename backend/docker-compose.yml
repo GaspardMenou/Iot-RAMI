@@ -33,10 +33,6 @@ services:
       - PM2_SECRET_KEY=${PM2_SECRET_KEY}
       - PM2_INSTANCES=${PM2_INSTANCES}
       - KAFKA_BROKERS=${KAFKA_BROKERS}
-      - MQTT_URL=${MQTT_URL}
-      - MQTT_PORT=${MQTT_PORT}
-      - MQTT_USERNAME=${MQTT_USERNAME}
-      - MQTT_PASSWORD=${MQTT_PASSWORD}
     networks:
       - default
     depends_on:
