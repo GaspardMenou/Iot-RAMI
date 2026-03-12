@@ -12,10 +12,8 @@
 		{ key: "roles", label: "Rôles" },
 		{ key: "access", label: "Accès" },
 		{ key: "sessions", label: "Sessions" },
-		{ key: "discover", label: "Découverte" },
-		{ key: "discover-types", label: "Types mesures" },
-		{ key: "sensors-list", label: "Capteurs" },
-		{ key: "types-list", label: "Types enregistrés" },
+		{ key: "sensors", label: "Capteurs" },
+		{ key: "measure-types", label: "Types de mesures" },
 	] as const
 
 	type TabKey = (typeof tabs)[number]["key"]
@@ -62,11 +60,21 @@
 		<div class="tab-content">
 			<AdminRoleComponent v-if="activeTab === 'roles'" />
 			<AdminSensorAccess v-else-if="activeTab === 'access'" />
-			<AdminDiscoveredMeasurementTypes v-else-if="activeTab === 'discover-types'" />
 			<AdminActiveSessions v-else-if="activeTab === 'sessions'" />
-			<AdminDiscoveredSensors v-else-if="activeTab === 'discover'" />
-			<AdminSensorsList v-else-if="activeTab === 'sensors-list'" />
-			<AdminMeasurementTypesList v-else-if="activeTab === 'types-list'" />
+			<template v-else-if="activeTab === 'sensors'">
+				<AdminSensorsList />
+				<div class="section-divider">
+					<span>DÉCOUVERTE AUTOMATIQUE</span>
+				</div>
+				<AdminDiscoveredSensors />
+			</template>
+			<template v-else-if="activeTab === 'measure-types'">
+				<AdminMeasurementTypesList />
+				<div class="section-divider">
+					<span>TYPES DÉCOUVERTS</span>
+				</div>
+				<AdminDiscoveredMeasurementTypes />
+			</template>
 		</div>
 	</div>
 </template>
@@ -149,6 +157,30 @@
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		padding: 1.5rem 1.75rem;
+	}
+
+	/* Séparateur de sections dans un même tab */
+	.section-divider {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin: 2rem 0 1.5rem;
+	}
+
+	.section-divider::before,
+	.section-divider::after {
+		content: "";
+		flex: 1;
+		height: 1px;
+		background: var(--color-border);
+	}
+
+	.section-divider span {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		letter-spacing: 0.14em;
+		color: var(--color-text-muted);
+		white-space: nowrap;
 	}
 
 	/* Styles globaux pour les sous-composants admin */
