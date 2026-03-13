@@ -2,6 +2,7 @@
 	import { defineComponent, onMounted, onUnmounted, provide, ref } from "vue"
 	import { useSession } from "@/composables/useSession.composable"
 	import { useSensor } from "@/composables/useSensor.composable"
+	import { useThreshold } from "@/composables/useThreshold.composable"
 	import SensorCard from "@/components/sensor/SensorCard.vue"
 	import Graph from "@/components/session/Graph.vue"
 
@@ -14,6 +15,7 @@
 		setup(props) {
 			const { idSensor, chartData, timeSinceLastValue, transmissionSpeed, checkAndJoinActiveSession, endSession } = useSession()
 			const { fetchSensors, sensors } = useSensor(undefined)
+			const { thresholds, fetchThresholdsBySensor } = useThreshold()
 
 			const isSessionActive = ref(false)
 			const sensor = ref<any>(null)
@@ -25,6 +27,7 @@
 				await fetchSensors()
 				sensor.value = sensors.value.find(s => s.id === props.id)
 				idSensor.value = props.id
+				await fetchThresholdsBySensor(props.id)
 
 				const sensorTopic = (sensor.value?.topic ?? "") + "/sensor"
 				const alreadyActive = await checkAndJoinActiveSession(props.id, sensorTopic)
@@ -40,6 +43,7 @@
 				isSessionActive,
 				timeSinceLastValue,
 				transmissionSpeed,
+				thresholds,
 			}
 		},
 	})
@@ -85,7 +89,9 @@
 		<div
 			v-if="isSessionActive"
 			class="graph-section">
-			<Graph :is-real-time="true" />
+			<Graph
+				:is-real-time="true"
+				:thresholds="thresholds" />
 		</div>
 
 		<div

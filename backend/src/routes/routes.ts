@@ -6,6 +6,7 @@ import { homeRoutes } from "@routes/home";
 import { userRoutes } from "@routes/user";
 import { authRoutes } from "@routes/auth";
 import { testRoutes } from "@routes/testRoutes";
+import { thresholdRoutes } from "@routes/threshold";
 
 const routes = [
   { path: "/sensors", handler: sensorRoutes },
@@ -27,6 +28,10 @@ const routes = [
   {
     path: "/",
     handler: homeRoutes,
+  },
+  {
+    path: "/thresholds",
+    handler: thresholdRoutes,
   },
 ];
 

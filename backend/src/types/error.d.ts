@@ -162,6 +162,11 @@ type AuthErrors =
   | "auth.token.not.present"
   | "auth.token.unauthorized";
 
+type APIThresholdErrors =
+  | "threshold.not.found"
+  | "threshold.missing.fields"
+  | "threshold.already.exists";
+
 type APIServerErrors = "server.error" | "resource.not.found";
 
 type APIErrors =
@@ -173,6 +178,7 @@ type APIErrors =
   | APIMeasurementErrors
   | APIUserErrors
   | AuthErrors
-  | APIUserSensorErrors;
+  | APIUserSensorErrors
+  | APIThresholdErrors;
 
 export { APIErrors };

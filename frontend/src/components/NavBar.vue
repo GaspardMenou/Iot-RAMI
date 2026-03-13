@@ -54,10 +54,45 @@
 
 		<!-- Footer -->
 		<div class="sidebar-footer">
-			<div class="system-status">
-				<span class="status-dot" />
-				<span class="status-label">SYS ONLINE</span>
+			<div class="footer-top">
+				<div class="system-status">
+					<span class="status-dot" />
+					<span class="status-label">SYS ONLINE</span>
+				</div>
+				<button
+					v-if="alertCount > 0"
+					class="alert-badge"
+					:title="`${alertCount} alerte(s) de seuil`"
+					@click="toggleAlertPanel">
+					⚠ {{ alertCount }}
+				</button>
 			</div>
+
+			<!-- Panel alertes -->
+			<div
+				v-if="showAlertPanel && alerts.length > 0"
+				class="alert-panel">
+				<div class="alert-panel-header">
+					<span>ALERTES SEUIL</span>
+					<button
+						class="alert-clear"
+						@click="clearAlerts">
+						EFFACER
+					</button>
+				</div>
+				<div class="alert-list">
+					<div
+						v-for="(alert, i) in alerts.slice(0, 10)"
+						:key="i"
+						class="alert-item"
+						:class="alert.direction">
+						<span class="alert-dir">{{ formatAlertDirection(alert.direction) }}</span>
+						<span class="alert-type">{{ alert.measureType }}</span>
+						<span class="alert-val">{{ alert.value.toFixed(2) }}</span>
+					</div>
+				</div>
+			</div>
+
 			<button
 				class="logout-button"
 				@click="logout">
@@ -68,14 +103,17 @@
 </template>
 
 <script lang="ts">
-	import { defineComponent, reactive } from "vue"
+	import { defineComponent, reactive, ref, onMounted, onUnmounted } from "vue"
+	import { io } from "socket.io-client"
 	import { useUser } from "@/composables/useUser.composable"
+	import { useAlert } from "@/composables/useAlert.composable"
 
 	const { cleanUserLocalStorage } = useUser()
 
 	interface DataComponent {
 		items: MenuItem[]
 		isOpen: boolean
+		showAlertPanel: boolean
 	}
 
 	interface MenuItem {
@@ -86,6 +124,27 @@
 
 	export default defineComponent({
 		name: "NavBar",
+		setup() {
+			const { alerts, alertCount, listenToAlerts, clearAlerts } = useAlert()
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const socket = ref<any | null>(null)
+
+			onMounted(() => {
+				const token = localStorage.getItem("token")
+				if (!token) return
+				const backUrl = import.meta.env.VITE_APP_BACK_URL as string
+				const socketUrl = backUrl.replace("/api/v1", "")
+				socket.value = io(socketUrl, { transports: ["websocket"] })
+				socket.value.emit("join-user-room", { token })
+				listenToAlerts(socket.value)
+			})
+
+			onUnmounted(() => {
+				socket.value?.disconnect()
+			})
+
+			return { alerts, alertCount, clearAlerts }
+		},
 		data(): DataComponent {
 			const role = localStorage.getItem("role")
 			const isAdmin = role === "admin"
@@ -103,7 +162,7 @@
 				items.push({ path: "/admin", name: "Administration", icon: "⬠" })
 			}
 
-			return { items: reactive(items), isOpen }
+			return { items: reactive(items), isOpen, showAlertPanel: false }
 		},
 		methods: {
 			isActive(path: string): boolean {
@@ -117,6 +176,12 @@
 				if (window.innerWidth <= 768) {
 					this.isOpen = false
 				}
+			},
+			toggleAlertPanel() {
+				this.showAlertPanel = !this.showAlertPanel
+			},
+			formatAlertDirection(direction: "min" | "max"): string {
+				return direction === "min" ? "↓ MIN" : "↑ MAX"
 			},
 		},
 	})
@@ -260,10 +325,114 @@
 		gap: 0.75rem;
 	}
 
+	.footer-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
 	.system-status {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+	}
+
+	.alert-badge {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 8px;
+		background: var(--color-danger-dim);
+		border: 1px solid var(--color-danger);
+		color: var(--color-danger);
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		cursor: pointer;
+		border-radius: 0;
+		animation: alert-pulse 1.5s ease-in-out infinite;
+	}
+
+	@keyframes alert-pulse {
+		0%, 100% { box-shadow: 0 0 4px rgba(255, 64, 64, 0.3); }
+		50% { box-shadow: 0 0 10px rgba(255, 64, 64, 0.6); }
+	}
+
+	.alert-panel {
+		background: var(--color-surface);
+		border: 1px solid var(--color-danger);
+		border-radius: 0;
+		overflow: hidden;
+	}
+
+	.alert-panel-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 4px 8px;
+		background: var(--color-danger-dim);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		color: var(--color-danger);
+	}
+
+	.alert-clear {
+		background: none;
+		border: none;
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.55rem;
+		cursor: pointer;
+		letter-spacing: 0.08em;
+		padding: 0;
+	}
+
+	.alert-clear:hover {
+		color: var(--color-danger);
+	}
+
+	.alert-list {
+		max-height: 180px;
+		overflow-y: auto;
+	}
+
+	.alert-item {
+		display: grid;
+		grid-template-columns: 44px 1fr auto;
+		gap: 4px;
+		align-items: center;
+		padding: 4px 8px;
+		border-bottom: 1px solid var(--color-border);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+	}
+
+	.alert-item:last-child {
+		border-bottom: none;
+	}
+
+	.alert-dir {
+		font-weight: 700;
+	}
+
+	.alert-item.min .alert-dir { color: #00cfff; }
+	.alert-item.max .alert-dir { color: var(--color-danger); }
+
+	.alert-type {
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.alert-val {
+		color: var(--color-text);
+		font-weight: 700;
 	}
 
 	.status-dot {

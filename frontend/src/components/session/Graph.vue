@@ -51,12 +51,13 @@
 </template>
 
 <script lang="ts">
-	import { defineComponent, inject, onMounted, onUnmounted, ref } from "vue"
+	import { defineComponent, inject, onMounted, onUnmounted, ref, watch } from "vue"
 	import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale, type ChartOptions, type ChartData } from "chart.js"
 	import { Line as LineChart } from "vue-chartjs"
 	import zoomPlugin from "chartjs-plugin-zoom"
 	import "chartjs-adapter-date-fns"
 	import { EventTypes, handleEvent } from "@/composables/useUser.composable"
+	import type { Threshold } from "@/composables/useThreshold.composable"
 
 	ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale, zoomPlugin)
 
@@ -76,6 +77,10 @@
 			isRealTime: {
 				type: Boolean,
 				default: false,
+			},
+			thresholds: {
+				type: Array as () => Threshold[],
+				default: () => [],
 			},
 		},
 		setup(props) {
@@ -183,14 +188,57 @@
 				},
 			}
 
-			// Applique les couleurs phosphore aux datasets au montage
+			// Applique les couleurs phosphore aux datasets (ignore les datasets seuil)
 			const applyDatasetColors = () => {
 				if (chartData.value?.datasets) {
-					chartData.value.datasets.forEach((ds, i) => {
-						const palette = PHOSPHOR_COLORS[i % PHOSPHOR_COLORS.length]
+					let colorIdx = 0
+					chartData.value.datasets.forEach((ds: any) => {
+						if (ds._isThreshold) return
+						const palette = PHOSPHOR_COLORS[colorIdx % PHOSPHOR_COLORS.length]
 						if (!ds.borderColor) ds.borderColor = palette.line
 						if (!ds.backgroundColor) ds.backgroundColor = palette.fill
+						colorIdx++
 					})
+				}
+			}
+
+			// Reconstruit les datasets seuil depuis la prop thresholds
+			const rebuildThresholdDatasets = () => {
+				if (!chartData.value) return
+				const labels = chartData.value.labels as string[] | undefined
+				if (!labels || labels.length === 0) return
+
+				chartData.value.datasets = chartData.value.datasets.filter((ds: any) => !ds._isThreshold)
+
+				for (const t of props.thresholds) {
+					if (t.maxValue !== null && t.maxValue !== undefined) {
+						chartData.value.datasets.push({
+							label: `MAX`,
+							data: labels.map(() => t.maxValue as number),
+							borderColor: "rgba(255,64,64,0.75)",
+							backgroundColor: "transparent",
+							borderDash: [6, 3],
+							borderWidth: 1.5,
+							pointRadius: 0,
+							fill: false,
+							tension: 0,
+							_isThreshold: true,
+						} as any)
+					}
+					if (t.minValue !== null && t.minValue !== undefined) {
+						chartData.value.datasets.push({
+							label: `MIN`,
+							data: labels.map(() => t.minValue as number),
+							borderColor: "rgba(0,207,255,0.75)",
+							backgroundColor: "transparent",
+							borderDash: [6, 3],
+							borderWidth: 1.5,
+							pointRadius: 0,
+							fill: false,
+							tension: 0,
+							_isThreshold: true,
+						} as any)
+					}
 				}
 			}
 
@@ -254,10 +302,17 @@
 
 			onMounted(() => {
 				applyDatasetColors()
+				rebuildThresholdDatasets()
 				if (!props.isRealTime) {
 					handleEvent("on", EventTypes.SESSION_SELECTED, handleSessionSelected)
 				}
 			})
+
+			watch(
+				() => props.thresholds,
+				() => rebuildThresholdDatasets(),
+				{ deep: true }
+			)
 
 			onUnmounted(() => {
 				clearAnimationInterval()
@@ -276,6 +331,7 @@
 				fastForward,
 				rewind,
 				chooseNewXScale,
+				rebuildThresholdDatasets,
 				props,
 			}
 		},

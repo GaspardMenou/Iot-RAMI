@@ -17,7 +17,7 @@ import type { SensorDataStatic } from "#/sensorData";
 import type { SensorStatic, UserSensorAccessStatic } from "#/sensor";
 import type { SessionStatic } from "#/session";
 import type { UserStatic } from "#/user";
-import type { Threshold, ThresholdStatic } from "@/types/threshold";
+import type { ThresholdStatic } from "@/types/threshold";
 
 export interface Database {
   Measurement: MeasurementStatic;

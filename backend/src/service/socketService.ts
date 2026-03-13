@@ -6,12 +6,13 @@ import KafkaService from "@service/kafkaService";
 import db from "@db/index";
 import type { Sensor } from "#/sensor";
 import type { MeasurementTypeModel } from "#/measurementType";
+import type { Threshold } from "#/threshold";
 import { addDiscoveredTopic } from "@service/discorverdSensorSevice";
 import { addDiscoveredMeasurement } from "@service/discoverdMeasurementService";
 import * as dlq from "@service/dlqService";
 import { activeSessionsTotal } from "@middlewares/metrics";
 
-const { Sensor: SensorModel, Session, MeasurementType } = db;
+const { Sensor: SensorModel, Session, MeasurementType, Threshold: ThresholdModel, UserSensorAccess } = db as any;
 
 // ---------- Kafka message payload types ----------
 
@@ -67,6 +68,15 @@ class SocketService {
         } catch (error) {
           console.error("Invalid JWT token for socket connection:", error);
           socket.disconnect();
+        }
+      });
+
+      socket.on("join-user-room", (data: { token: string }) => {
+        try {
+          const payload = jwt.verify(data.token, envs.JWT_SECRET) as { id: string };
+          socket.join(`user-${payload.id}`);
+        } catch (error) {
+          console.error("Invalid JWT token for join-user-room:", error);
         }
       });
     });
@@ -139,6 +149,10 @@ class SocketService {
   private measurementTypesCacheTime: Date | null = null;
 
   private TTL = 5 * 60 * 1000; // 5 minutes
+
+  // Cache des seuils par sensorId — TTL 2 min
+  private thresholdsCache: Map<string, { data: Threshold[]; loadedAt: number }> = new Map();
+  private THRESHOLD_TTL = 2 * 60 * 1000; // 2 minutes
 
   private async getMeasurementTypesMap(): Promise<void> {
     const now = new Date();
@@ -236,9 +250,58 @@ class SocketService {
           idMeasurementType,
           value: measure.value,
         });
+        await this.checkAndEmitAlerts(sensor.id, idMeasurementType, measure.measureType, measure.value, data.sensorTopic);
       }
     }
     this.sendDataToRoom(data.sensorTopic, data);
+  }
+
+  private async getThresholdsForSensor(idSensor: string): Promise<Threshold[]> {
+    const cached = this.thresholdsCache.get(idSensor);
+    if (cached && Date.now() - cached.loadedAt < this.THRESHOLD_TTL) {
+      return cached.data;
+    }
+    const rows = await ThresholdModel.findAll({ where: { idSensor } });
+    const data: Threshold[] = rows.map((r: any) => r.dataValues as Threshold);
+    this.thresholdsCache.set(idSensor, { data, loadedAt: Date.now() });
+    return data;
+  }
+
+  private async checkAndEmitAlerts(
+    idSensor: string,
+    idMeasurementType: string,
+    measureType: string,
+    value: number,
+    sensorTopic: string
+  ): Promise<void> {
+    const thresholds = await this.getThresholdsForSensor(idSensor);
+    const threshold = thresholds.find((t) => t.idMeasurementType === idMeasurementType);
+    if (!threshold) return;
+
+    const violations: Array<{ direction: "min" | "max"; limit: number }> = [];
+    if (threshold.minValue !== undefined && threshold.minValue !== null && value < threshold.minValue) {
+      violations.push({ direction: "min", limit: threshold.minValue });
+    }
+    if (threshold.maxValue !== undefined && threshold.maxValue !== null && value > threshold.maxValue) {
+      violations.push({ direction: "max", limit: threshold.maxValue });
+    }
+    if (violations.length === 0) return;
+
+    const accesses = await UserSensorAccess.findAll({ where: { sensorId: idSensor, status: "accepted" } });
+    for (const violation of violations) {
+      for (const access of accesses) {
+        const userId: string = (access.dataValues as any).userId;
+        this.io.to(`user-${userId}`).emit("threshold-alert", {
+          sensorTopic,
+          measureType,
+          value,
+          minValue: threshold.minValue,
+          maxValue: threshold.maxValue,
+          direction: violation.direction,
+          triggeredAt: new Date().toISOString(),
+        });
+      }
+    }
   }
 
   private async handleSessionStop(data: KafkaStopPayload): Promise<void> {

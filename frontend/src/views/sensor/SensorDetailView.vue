@@ -4,9 +4,15 @@
 	import { useSensor } from "@/composables/useSensor.composable"
 	import { useSession } from "@/composables/useSession.composable"
 	import { useAxios } from "@/composables/useAxios.composable"
+	import { useThreshold } from "@/composables/useThreshold.composable"
 	import SensorCard from "@/components/sensor/SensorCard.vue"
 	import SessionCard from "@/components/session/SessionCard.vue"
 	import type { Sensor } from "#/sensor"
+
+	interface MeasurementType {
+		id: string
+		name: string
+	}
 
 	export default defineComponent({
 		name: "SensorDetailView",
@@ -19,23 +25,89 @@
 			const { axios } = useAxios()
 			const { fetchSensors, sensors } = useSensor(undefined)
 			const { sessions, fetchAllSessionsOfSensor } = useSession()
+			const { thresholds, error: thresholdError, fetchThresholdsBySensor, createThreshold, updateThreshold, deleteThreshold } = useThreshold()
 			const hasActiveSession = ref(false)
+			const measurementTypes = ref<MeasurementType[]>([])
+
+			// Formulaire création/édition seuil
+			const thresholdForm = ref<{ idMeasurementType: string; minValue: string; maxValue: string }>({
+				idMeasurementType: "",
+				minValue: "",
+				maxValue: "",
+			})
+			const thresholdSaving = ref(false)
 
 			onMounted(async () => {
 				await fetchSensors()
 				await fetchAllSessionsOfSensor(props.id)
+				await fetchThresholdsBySensor(props.id)
 				try {
 					const { data } = await axios.get("sessions/active")
 					hasActiveSession.value = data.some((s: any) => s.idSensor === props.id)
 				} catch {
 					hasActiveSession.value = false
 				}
+				try {
+					const { data } = await axios.get("measurementTypes")
+					measurementTypes.value = data
+				} catch {
+					// ignore
+				}
 			})
 
 			const sensor = computed(() => sensors.value.find((s: Sensor) => s.id === props.id))
 			const goToSession = () => router.push({ name: "newsession", params: { id: props.id } })
 
-			return { sensor, sessions, goToSession, hasActiveSession }
+			const getMeasurementTypeName = (id: string) => {
+				return measurementTypes.value.find((mt) => mt.id === id)?.name ?? id
+			}
+
+			const saveThreshold = async () => {
+				if (!thresholdForm.value.idMeasurementType) return
+				thresholdSaving.value = true
+
+				const existing = thresholds.value.find((t) => t.idMeasurementType === thresholdForm.value.idMeasurementType)
+				const payload = {
+					minValue: thresholdForm.value.minValue !== "" ? parseFloat(thresholdForm.value.minValue) : null,
+					maxValue: thresholdForm.value.maxValue !== "" ? parseFloat(thresholdForm.value.maxValue) : null,
+				}
+
+				if (existing) {
+					await updateThreshold(existing.id, payload)
+				} else {
+					await createThreshold({ idSensor: props.id, idMeasurementType: thresholdForm.value.idMeasurementType, ...payload })
+				}
+				thresholdForm.value = { idMeasurementType: "", minValue: "", maxValue: "" }
+				thresholdSaving.value = false
+			}
+
+			const editThreshold = (t: any) => {
+				thresholdForm.value = {
+					idMeasurementType: t.idMeasurementType,
+					minValue: t.minValue !== null && t.minValue !== undefined ? String(t.minValue) : "",
+					maxValue: t.maxValue !== null && t.maxValue !== undefined ? String(t.maxValue) : "",
+				}
+			}
+
+			const removeThreshold = async (id: string) => {
+				await deleteThreshold(id)
+			}
+
+			return {
+				sensor,
+				sessions,
+				goToSession,
+				hasActiveSession,
+				thresholds,
+				thresholdError,
+				measurementTypes,
+				thresholdForm,
+				thresholdSaving,
+				getMeasurementTypeName,
+				saveThreshold,
+				editThreshold,
+				removeThreshold,
+			}
 		},
 	})
 </script>
@@ -57,6 +129,92 @@
 					<span class="btn-session-icon">{{ hasActiveSession ? "◉" : "+" }}</span>
 					{{ hasActiveSession ? "SESSION EN COURS" : "NOUVELLE SESSION" }}
 				</button>
+			</div>
+
+			<!-- Seuils -->
+			<div class="sessions-panel threshold-panel">
+				<div class="panel-header">
+					<h2>SEUILS D'ALERTE</h2>
+					<span class="session-count">{{ thresholds.length }} SEUIL(S)</span>
+				</div>
+
+				<!-- Seuils existants -->
+				<div
+					v-if="thresholds.length > 0"
+					class="threshold-list">
+					<div
+						v-for="t in thresholds"
+						:key="t.id"
+						class="threshold-row">
+						<span class="threshold-type">{{ getMeasurementTypeName(t.idMeasurementType) }}</span>
+						<span
+							v-if="t.minValue !== null && t.minValue !== undefined"
+							class="threshold-badge threshold-badge--min">
+							MIN {{ t.minValue }}
+						</span>
+						<span
+							v-if="t.maxValue !== null && t.maxValue !== undefined"
+							class="threshold-badge threshold-badge--max">
+							MAX {{ t.maxValue }}
+						</span>
+						<div class="threshold-actions">
+							<button
+								class="threshold-btn"
+								title="Modifier"
+								@click="editThreshold(t)">
+								✎
+							</button>
+							<button
+								class="threshold-btn threshold-btn--danger btn-danger"
+								title="Supprimer"
+								@click="removeThreshold(t.id)">
+								✕
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Formulaire -->
+				<div class="threshold-form">
+					<div class="threshold-form-row">
+						<select
+							v-model="thresholdForm.idMeasurementType"
+							class="threshold-input threshold-select">
+							<option
+								value=""
+								disabled>
+								TYPE DE MESURE
+							</option>
+							<option
+								v-for="mt in measurementTypes"
+								:key="mt.id"
+								:value="mt.id">
+								{{ mt.name.toUpperCase() }}
+							</option>
+						</select>
+						<input
+							v-model="thresholdForm.minValue"
+							class="threshold-input"
+							type="number"
+							placeholder="MIN" />
+						<input
+							v-model="thresholdForm.maxValue"
+							class="threshold-input"
+							type="number"
+							placeholder="MAX" />
+						<button
+							class="threshold-save-btn"
+							:disabled="!thresholdForm.idMeasurementType || thresholdSaving"
+							@click="saveThreshold">
+							{{ thresholdSaving ? "..." : "ENREG." }}
+						</button>
+					</div>
+					<p
+						v-if="thresholdError"
+						class="threshold-error">
+						{{ thresholdError }}
+					</p>
+				</div>
 			</div>
 
 			<!-- Sessions -->
@@ -232,6 +390,157 @@
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		border: 1px dashed var(--color-border-bright);
+	}
+
+	/* ── Seuils ── */
+	.threshold-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+	}
+
+	.threshold-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.6rem 1.25rem;
+		border-bottom: 1px solid var(--color-border);
+		flex-wrap: wrap;
+	}
+
+	.threshold-type {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: var(--color-text);
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		min-width: 90px;
+	}
+
+	.threshold-badge {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		font-weight: 700;
+		padding: 2px 8px;
+		letter-spacing: 0.08em;
+	}
+
+	.threshold-badge--min {
+		background: rgba(0, 207, 255, 0.12);
+		border: 1px solid rgba(0, 207, 255, 0.4);
+		color: #00cfff;
+	}
+
+	.threshold-badge--max {
+		background: var(--color-danger-dim);
+		border: 1px solid rgba(255, 64, 64, 0.4);
+		color: var(--color-danger);
+	}
+
+	.threshold-actions {
+		display: flex;
+		gap: 4px;
+		margin-left: auto;
+	}
+
+	.threshold-btn {
+		background: var(--color-surface-secondary);
+		border: 1px solid var(--color-border-bright);
+		color: var(--color-text-muted);
+		padding: 2px 8px;
+		font-size: 0.7rem;
+		cursor: pointer;
+		font-family: var(--font-mono);
+		border-radius: 0;
+		transition: all 0.15s;
+	}
+
+	.threshold-btn:hover {
+		background: var(--color-primary-dim);
+		border-color: var(--color-primary);
+		color: var(--color-primary);
+	}
+
+	.threshold-btn--danger:hover {
+		background: var(--color-danger-dim);
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+	}
+
+	.threshold-form {
+		padding: 0.75rem 1.25rem;
+		background: var(--color-surface-secondary);
+		border-top: 1px solid var(--color-border);
+	}
+
+	.threshold-form-row {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.threshold-input {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border-bright);
+		color: var(--color-text);
+		padding: 0.4rem 0.6rem;
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		border-radius: 0;
+		outline: none;
+		min-width: 0;
+	}
+
+	.threshold-input:focus {
+		border-color: var(--color-primary);
+	}
+
+	.threshold-select {
+		flex: 2;
+		min-width: 120px;
+		cursor: pointer;
+	}
+
+	.threshold-input[type="number"] {
+		flex: 1;
+		min-width: 70px;
+		max-width: 110px;
+	}
+
+	.threshold-save-btn {
+		background: var(--color-success-dim);
+		border: 1px solid rgba(57, 255, 20, 0.35);
+		color: var(--color-success);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		padding: 0.4rem 0.85rem;
+		cursor: pointer;
+		border-radius: 0;
+		transition: all 0.15s;
+		white-space: nowrap;
+	}
+
+	.threshold-save-btn:hover:not(:disabled) {
+		background: var(--color-success);
+		border-color: var(--color-success);
+		color: #070600;
+	}
+
+	.threshold-save-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.threshold-error {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		color: var(--color-danger);
+		letter-spacing: 0.06em;
+		margin-top: 0.4rem;
 	}
 
 	@media (max-width: 600px) {
