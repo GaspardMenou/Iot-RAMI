@@ -38,12 +38,7 @@ const useThreshold = () => {
 		}
 	}
 
-	const createThreshold = async (payload: {
-		idSensor: string
-		idMeasurementType: string
-		minValue?: number | null
-		maxValue?: number | null
-	}): Promise<Threshold | null> => {
+	const createThreshold = async (payload: { idSensor: string; idMeasurementType: string; minValue?: number | null; maxValue?: number | null }): Promise<Threshold | null> => {
 		error.value = null
 		try {
 			const { data } = await axios.post("thresholds", payload)
@@ -55,14 +50,11 @@ const useThreshold = () => {
 		}
 	}
 
-	const updateThreshold = async (
-		id: string,
-		payload: { minValue?: number | null; maxValue?: number | null }
-	): Promise<Threshold | null> => {
+	const updateThreshold = async (id: string, payload: { minValue?: number | null; maxValue?: number | null }): Promise<Threshold | null> => {
 		error.value = null
 		try {
 			const { data } = await axios.put(`thresholds/${id}`, payload)
-			const idx = thresholds.value.findIndex((t) => t.id === id)
+			const idx = thresholds.value.findIndex(t => t.id === id)
 			if (idx !== -1) thresholds.value[idx] = data
 			return data
 		} catch (err: any) {
@@ -75,7 +67,7 @@ const useThreshold = () => {
 		error.value = null
 		try {
 			await axios.delete(`thresholds/${id}`)
-			thresholds.value = thresholds.value.filter((t) => t.id !== id)
+			thresholds.value = thresholds.value.filter(t => t.id !== id)
 			return true
 		} catch (err: any) {
 			error.value = err?.response?.data?.error ?? "Impossible de supprimer le seuil"

@@ -15,17 +15,7 @@
 
 <script setup lang="ts">
 	import { computed } from "vue"
-	import {
-		Chart as ChartJS,
-		LinearScale,
-		PointElement,
-		LineElement,
-		Title,
-		Tooltip,
-		Legend,
-		type ChartOptions,
-		type ChartData,
-	} from "chart.js"
+	import { Chart as ChartJS, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, type ChartOptions, type ChartData } from "chart.js"
 	import { Line } from "vue-chartjs"
 	import zoomPlugin from "chartjs-plugin-zoom"
 
@@ -39,8 +29,7 @@
 
 	// ── CSS vars helper ────────────────────────────────────────────────
 
-	const cssVar = (name: string) =>
-		getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+	const cssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 	// ── Formateur axe X (ms → "+Xs" / "+Xm Ys") ──────────────────────
 
@@ -88,7 +77,7 @@
 					color: cssVar("--color-text-muted") || "#7a6535",
 					font: { family: "Martian Mono", size: 10 },
 					maxTicksLimit: 10,
-					callback: (value) => formatRelativeTime(Number(value)),
+					callback: value => formatRelativeTime(Number(value)),
 				},
 				title: {
 					display: true,
@@ -136,7 +125,7 @@
 				padding: 10,
 				cornerRadius: 0,
 				callbacks: {
-					title: (items) => formatRelativeTime(Number(items[0]?.parsed?.x ?? 0)),
+					title: items => formatRelativeTime(Number(items[0]?.parsed?.x ?? 0)),
 				},
 			},
 			zoom: {
@@ -200,9 +189,7 @@
 		min-height: 0;
 		padding: 1rem 0.75rem 0.75rem;
 		box-sizing: border-box;
-		background-image:
-			linear-gradient(var(--color-primary-dim) 1px, transparent 1px),
-			linear-gradient(90deg, var(--color-primary-dim) 1px, transparent 1px);
+		background-image: linear-gradient(var(--color-primary-dim) 1px, transparent 1px), linear-gradient(90deg, var(--color-primary-dim) 1px, transparent 1px);
 		background-size: 40px 40px;
 	}
 

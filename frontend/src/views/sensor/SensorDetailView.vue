@@ -59,14 +59,14 @@
 			const goToSession = () => router.push({ name: "newsession", params: { id: props.id } })
 
 			const getMeasurementTypeName = (id: string) => {
-				return measurementTypes.value.find((mt) => mt.id === id)?.name ?? id
+				return measurementTypes.value.find(mt => mt.id === id)?.name ?? id
 			}
 
 			const saveThreshold = async () => {
 				if (!thresholdForm.value.idMeasurementType) return
 				thresholdSaving.value = true
 
-				const existing = thresholds.value.find((t) => t.idMeasurementType === thresholdForm.value.idMeasurementType)
+				const existing = thresholds.value.find(t => t.idMeasurementType === thresholdForm.value.idMeasurementType)
 				const payload = {
 					minValue: thresholdForm.value.minValue !== "" ? parseFloat(thresholdForm.value.minValue) : null,
 					maxValue: thresholdForm.value.maxValue !== "" ? parseFloat(thresholdForm.value.maxValue) : null,

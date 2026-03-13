@@ -171,17 +171,7 @@
 
 	// ── Composables ────────────────────────────────────────────────────
 
-	const {
-		sensors,
-		sessions,
-		comparisonData,
-		loadingSessions,
-		loadingGraph,
-		errorMsg,
-		fetchSensors,
-		fetchSessionsForSensor,
-		buildComparisonDatasets,
-	} = useHistoryComparison()
+	const { sensors, sessions, comparisonData, loadingSessions, loadingGraph, errorMsg, fetchSensors, fetchSessionsForSensor, buildComparisonDatasets } = useHistoryComparison()
 
 	// formatHumanReadableDate et calculateDuration depuis useSensor
 	const { formatHumanReadableDate, calculateDuration } = useSensor(undefined)
@@ -193,18 +183,7 @@
 
 	// ── Palette (doit correspondre à useHistoryComparison) ────────────
 
-	const PHOSPHOR_COLORS = [
-		"#ff9f0a",
-		"#39ff14",
-		"#00cfff",
-		"#ff4f80",
-		"#ffcc00",
-		"#bf5af2",
-		"#30d158",
-		"#64d2ff",
-		"#ff6961",
-		"#da8fff",
-	]
+	const PHOSPHOR_COLORS = ["#ff9f0a", "#39ff14", "#00cfff", "#ff4f80", "#ffcc00", "#bf5af2", "#30d158", "#64d2ff", "#ff6961", "#da8fff"]
 
 	const sessionColor = (sessionId: string): string => {
 		const idx = selectedSessions.value.indexOf(sessionId)
@@ -249,7 +228,7 @@
 
 	watch(
 		selectedSessions,
-		(ids) => {
+		ids => {
 			buildComparisonDatasets(ids)
 		},
 		{ deep: true }
@@ -533,20 +512,19 @@
 	/* Skeletons */
 	.history__skeleton {
 		height: 46px;
-		background: linear-gradient(
-			90deg,
-			var(--color-surface-secondary) 25%,
-			var(--color-primary-dim) 50%,
-			var(--color-surface-secondary) 75%
-		);
+		background: linear-gradient(90deg, var(--color-surface-secondary) 25%, var(--color-primary-dim) 50%, var(--color-surface-secondary) 75%);
 		background-size: 200% 100%;
 		animation: shimmer 1.4s infinite;
 		border: 1px solid var(--color-border);
 	}
 
 	@keyframes shimmer {
-		0% { background-position: 200% 0; }
-		100% { background-position: -200% 0; }
+		0% {
+			background-position: 200% 0;
+		}
+		100% {
+			background-position: -200% 0;
+		}
 	}
 
 	.history__empty {
@@ -595,8 +573,15 @@
 	}
 
 	@keyframes pulse-dot {
-		0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--color-primary); }
-		50% { opacity: 0.5; box-shadow: 0 0 2px var(--color-primary); }
+		0%,
+		100% {
+			opacity: 1;
+			box-shadow: 0 0 6px var(--color-primary);
+		}
+		50% {
+			opacity: 0.5;
+			box-shadow: 0 0 2px var(--color-primary);
+		}
 	}
 
 	.history__clear-btn {
@@ -679,8 +664,16 @@
 	}
 
 	@keyframes bounce-dot {
-		0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-		40% { transform: translateY(-8px); opacity: 1; }
+		0%,
+		80%,
+		100% {
+			transform: translateY(0);
+			opacity: 0.4;
+		}
+		40% {
+			transform: translateY(-8px);
+			opacity: 1;
+		}
 	}
 
 	/* Placeholder */
@@ -718,8 +711,13 @@
 	}
 
 	@keyframes fade-blink {
-		0%, 100% { opacity: 0.4; }
-		50% { opacity: 0.9; }
+		0%,
+		100% {
+			opacity: 0.4;
+		}
+		50% {
+			opacity: 0.9;
+		}
 	}
 
 	/* ── Responsive ── */

@@ -57,7 +57,7 @@
 				<span class="header-sub">TABLEAU DE BORD TEMPS RÉEL</span>
 			</div>
 			<div class="search-wrap">
-				<span class="search-icon">⌕	</span>
+				<span class="search-icon">⌕ </span>
 				<input
 					v-model="searchedSensor"
 					placeholder="Filtrer les capteurs…"

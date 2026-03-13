@@ -43,11 +43,9 @@ enum HistoryAPIPath {
 	GET_SESSION_DATA = "/sessions/:id/data",
 }
 
-const buildSensorSessionsUrl = (sensorId: string) =>
-	HistoryAPIPath.GET_SENSOR_SESSIONS.replace(":sensorId", sensorId)
+const buildSensorSessionsUrl = (sensorId: string) => HistoryAPIPath.GET_SENSOR_SESSIONS.replace(":sensorId", sensorId)
 
-const buildSessionDataUrl = (sessionId: string) =>
-	HistoryAPIPath.GET_SESSION_DATA.replace(":id", sessionId)
+const buildSessionDataUrl = (sessionId: string) => HistoryAPIPath.GET_SESSION_DATA.replace(":id", sessionId)
 
 // ────────────────────────────────────────────────────────────
 //  Composable
@@ -129,9 +127,7 @@ export const useHistoryComparison = () => {
 
 		try {
 			// Récupérer les données brutes de chaque session en parallèle
-			const allRawData = await Promise.all(
-				selectedSessionIds.map(id => fetchSessionData(id))
-			)
+			const allRawData = await Promise.all(selectedSessionIds.map(id => fetchSessionData(id)))
 
 			const datasets: ComparisonDataset[] = []
 

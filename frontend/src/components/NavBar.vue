@@ -356,8 +356,13 @@
 	}
 
 	@keyframes alert-pulse {
-		0%, 100% { box-shadow: 0 0 4px rgba(255, 64, 64, 0.3); }
-		50% { box-shadow: 0 0 10px rgba(255, 64, 64, 0.6); }
+		0%,
+		100% {
+			box-shadow: 0 0 4px rgba(255, 64, 64, 0.3);
+		}
+		50% {
+			box-shadow: 0 0 10px rgba(255, 64, 64, 0.6);
+		}
 	}
 
 	.alert-panel {
@@ -419,8 +424,12 @@
 		font-weight: 700;
 	}
 
-	.alert-item.min .alert-dir { color: #00cfff; }
-	.alert-item.max .alert-dir { color: var(--color-danger); }
+	.alert-item.min .alert-dir {
+		color: #00cfff;
+	}
+	.alert-item.max .alert-dir {
+		color: var(--color-danger);
+	}
 
 	.alert-type {
 		color: var(--color-text-muted);
