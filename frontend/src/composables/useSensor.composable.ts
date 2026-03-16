@@ -76,15 +76,16 @@ export const useSensor = (sensorName: string | undefined) => {
 	const getAllSensors = async () => {
 		const allSensors: Sensor[] = []
 		let page = 1
+		let totalPages = 1
 		const limit = 100
-		while (true) {
+		do {
 			const result = (await axios.get(SensorAPIEndpoint.GET_ALL_SENSOR, { params: { page, limit } })) as { data: { data: Sensor[]; totalPages: number } | Sensor[] }
 			const payload = result.data
 			if (Array.isArray(payload)) return payload
 			allSensors.push(...payload.data)
-			if (page >= payload.totalPages) break
+			totalPages = payload.totalPages
 			page++
-		}
+		} while (page <= totalPages)
 		return allSensors
 	}
 
