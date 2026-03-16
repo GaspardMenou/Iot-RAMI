@@ -10,7 +10,7 @@ import type { Threshold } from "#/threshold";
 import { addDiscoveredTopic } from "@service/discorverdSensorSevice";
 import { addDiscoveredMeasurement } from "@service/discoverdMeasurementService";
 import * as dlq from "@service/dlqService";
-import { activeSessionsTotal } from "@middlewares/metrics";
+import { activeSessionsTotal, kafkaMessageProcessingSeconds } from "@middlewares/metrics";
 
 const { Sensor: SensorModel, Session, MeasurementType, Threshold: ThresholdModel, UserSensorAccess } = db as any;
 
@@ -213,6 +213,7 @@ class SocketService {
   }
 
   private async handleSensorData(data: KafkaDataPayload): Promise<void> {
+    const startTime = process.hrtime();
     await this.getMeasurementTypesMap();
     const sessionId = this.activeSessions.get(data.sensorTopic);
     if (!sessionId) {
@@ -253,6 +254,8 @@ class SocketService {
         await this.checkAndEmitAlerts(sensor.id, idMeasurementType, measure.measureType, measure.value, data.sensorTopic);
       }
     }
+    const [seconds, nanoseconds] = process.hrtime(startTime);
+    kafkaMessageProcessingSeconds.observe(seconds + nanoseconds / 1e9);
     this.sendDataToRoom(data.sensorTopic, data);
   }
 

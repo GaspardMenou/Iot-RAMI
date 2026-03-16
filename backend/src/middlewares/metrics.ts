@@ -32,6 +32,13 @@ export const activeSessionsTotal = new Gauge({
   registers: [metricsRegistry],
 });
 
+export const kafkaMessageProcessingSeconds = new Histogram({
+  name: "kafka_message_processing_seconds",
+  help: "Temps de traitement d'un message Kafka (réception → écriture DB)",
+  buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
+  registers: [metricsRegistry],
+});
+
 const normalizeRoute = (path: string): string => {
   return path.replace(/\/\d+/g, "/:id");
 };

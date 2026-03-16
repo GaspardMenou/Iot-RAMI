@@ -29,8 +29,8 @@ def parse_args():
 # ── Prometheus ─────────────────────────────────────────────────────────────────
 
 def query_prometheus(prometheus_url: str, window: int) -> Optional[float]:
-    """Retourne la latence p95 en ms sur la fenêtre glissante (window secondes)."""
-    query = f'histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[{window}s]))'
+    """Retourne la latence p95 du pipeline Kafka en ms sur la fenêtre glissante."""
+    query = f'histogram_quantile(0.95, rate(kafka_message_processing_seconds_bucket[{window}s]))'
     try:
         response = requests.get(
             f'{prometheus_url}/api/v1/query',
@@ -42,7 +42,9 @@ def query_prometheus(prometheus_url: str, window: int) -> Optional[float]:
         if not results:
             return None
         value = float(results[0]['value'][1])
-        return round(value * 1000, 2)  # convertir en ms
+        if np.isnan(value):
+            return None
+        return round(value * 1000, 3)  # secondes → ms
     except Exception as e:
         print(f'  [WARN] Prometheus injoignable : {e}')
         return None
@@ -50,9 +52,9 @@ def query_prometheus(prometheus_url: str, window: int) -> Optional[float]:
 
 # ── Load test ──────────────────────────────────────────────────────────────────
 
-def run_load_test(nb_sensors: int, rate: int, duration: int, types: str, broker: str) -> list:
-    """Lance nb_sensors processus capteurs, attend duration secondes, retourne les processus."""
-    script = os.path.join(os.path.dirname(__file__), 'mqttCliApp.py')
+def run_load_test(nb_sensors: int, rate: int, types: str, broker: str) -> list:
+    """Lance nb_sensors processus capteurs et retourne la liste des processus."""
+    script = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mqttCliApp.py')
     processes = []
     for i in range(nb_sensors):
         p = subprocess.Popen(
@@ -68,9 +70,9 @@ def run_load_test(nb_sensors: int, rate: int, duration: int, types: str, broker:
 
 
 def stop_processes(processes: list):
+    """Arrête proprement tous les processus."""
     for p in processes:
         p.terminate()
-    # Attendre que tous soient bien arrêtés
     for p in processes:
         try:
             p.wait(timeout=5)
@@ -85,7 +87,6 @@ def generate_plot(results: list, output_name: str):
     sensors_vals = sorted(set(r[0] for r in results))
     rate_vals    = sorted(set(r[1] for r in results))
 
-    # Construire la grille Z
     Z = np.full((len(rate_vals), len(sensors_vals)), np.nan)
     for (nb_sensors, rate, latency) in results:
         if latency is None:
@@ -96,16 +97,23 @@ def generate_plot(results: list, output_name: str):
 
     X, Y = np.meshgrid(sensors_vals, rate_vals)
 
-    fig = plt.figure(figsize=(12, 8))
+    fig = plt.figure(figsize=(13, 9))
     ax = fig.add_subplot(111, projection='3d')
 
+    # Surface principale
     surf = ax.plot_surface(X, Y, Z, cmap='plasma', edgecolor='none', alpha=0.85)
     fig.colorbar(surf, ax=ax, shrink=0.5, label='Latence p95 (ms)')
 
+    # Points de données réels
+    valid = [(r[0], r[1], r[2]) for r in results if r[2] is not None]
+    if valid:
+        xs, ys, zs = zip(*valid)
+        ax.scatter(xs, ys, zs, color='white', s=20, zorder=5)
+
     ax.set_xlabel('Nombre de capteurs')
     ax.set_ylabel('Points / seconde / capteur')
-    ax.set_zlabel('Latence p95 (ms)')
-    ax.set_title('Latence p95 en fonction de la charge — RAMI IoT')
+    ax.set_zlabel('Latence p95 pipeline Kafka (ms)')
+    ax.set_title('Latence p95 pipeline Kafka en fonction de la charge\nRAMI IoT — UMons')
 
     plot_path = f'{output_name}.png'
     plt.tight_layout()
@@ -122,7 +130,12 @@ def write_csv(results: list, output_name: str):
         writer = csv.writer(f)
         writer.writerow(['nb_sensors', 'rate_per_sensor', 'total_points_per_sec', 'latency_p95_ms'])
         for (nb_sensors, rate, latency) in results:
-            writer.writerow([nb_sensors, rate, nb_sensors * rate, latency])
+            writer.writerow([
+                nb_sensors,
+                rate,
+                nb_sensors * rate,
+                round(latency, 3) if latency is not None else 'N/A'
+            ])
     print(f'[CSV]  Sauvegardé : {csv_path}')
 
 
@@ -131,21 +144,23 @@ def write_csv(results: list, output_name: str):
 def main():
     args = parse_args()
 
-    # Générer toutes les combinaisons
     sensor_range = list(range(args.step, args.max_sensors + 1, args.step))
     rate_range   = list(range(args.step, args.max_rate    + 1, args.step))
     total        = len(sensor_range) * len(rate_range)
+    estimated_min = total * (args.duration + 5) // 60
 
-    print(f'=== RAMI Load Test Matrix ===')
-    print(f'  Capteurs  : {sensor_range}')
-    print(f'  Taux      : {rate_range} points/s')
+    print('=== RAMI Load Test Matrix ===')
+    print(f'  Capteurs     : {sensor_range}')
+    print(f'  Taux (pts/s) : {rate_range}')
     print(f'  Durée/palier : {args.duration}s')
-    print(f'  Total combinaisons : {total}')
-    print(f'  Durée totale estimée : ~{total * (args.duration + 5) // 60} min')
-    print(f'  Prometheus : {args.prometheus}')
+    print(f'  Combinaisons : {total}')
+    print(f'  Durée totale : ~{estimated_min} min')
+    print(f'  Prometheus   : {args.prometheus}')
+    print(f'  Métrique     : kafka_message_processing_seconds (p95)')
     print()
 
     results = []
+    processes = []
     step_num = 0
 
     try:
@@ -153,35 +168,42 @@ def main():
             for rate in rate_range:
                 step_num += 1
                 total_throughput = nb_sensors * rate
-                print(f'[{step_num}/{total}] {nb_sensors} capteurs × {rate} pts/s = {total_throughput} pts/s total...')
+                print(f'[{step_num}/{total}] {nb_sensors} capteurs × {rate} pts/s = {total_throughput} pts/s total...', end='', flush=True)
 
-                processes = run_load_test(nb_sensors, rate, args.duration, args.types, args.broker)
+                processes = run_load_test(nb_sensors, rate, args.types, args.broker)
 
-                # Laisser le système se stabiliser (5s) puis mesurer
-                time.sleep(max(5, args.duration - 5))
+                # Laisser tourner toute la durée
+                time.sleep(args.duration)
+
+                # Mesurer sur la fenêtre complète
                 latency = query_prometheus(args.prometheus, args.duration)
-                time.sleep(args.duration - max(5, args.duration - 5))
 
                 stop_processes(processes)
+                processes = []
 
-                print(f'  → Latence p95 : {latency} ms')
+                status = f'{latency} ms' if latency is not None else 'N/A (pas de données Prometheus)'
+                print(f' → {status}')
                 results.append((nb_sensors, rate, latency))
 
-                # Petite pause entre paliers
+                # Pause entre paliers pour laisser le système se stabiliser
                 time.sleep(3)
 
     except KeyboardInterrupt:
         print('\n[STOP] Interruption — arrêt des processus...')
-        if 'processes' in locals():
-            stop_processes(processes)
+        stop_processes(processes)
 
     if not results:
         print('Aucun résultat collecté.')
         return
 
-    output = os.path.join(os.path.dirname(__file__), args.output)
+    output = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.output)
     write_csv(results, output)
-    generate_plot(results, output)
+
+    valid_results = [r for r in results if r[2] is not None]
+    if len(valid_results) >= 2:
+        generate_plot(results, output)
+    else:
+        print('[PLOT] Pas assez de données valides pour générer le graphique.')
 
 
 if __name__ == '__main__':
