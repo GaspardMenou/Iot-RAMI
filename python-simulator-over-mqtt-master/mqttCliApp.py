@@ -1,7 +1,6 @@
 import sys
 import argparse
 from brokerInformator import BrokerInformator
-from resultReporter import ResultReporter
 from mqttConnector import MqttConnector
 from constants import MqttAppConstants
 from mode.sensorMode import SensorMode
@@ -64,7 +63,6 @@ class MqttCliApp:
                 sys.exit(1)
 
         except KeyboardInterrupt:
-            # Send stop command before disconnecting if in sensor mode
             if current_user_mode and isinstance(current_user_mode, SensorMode):
                 print("\nSending stop command...")
                 current_user_mode.publish_message(
@@ -72,9 +70,6 @@ class MqttCliApp:
                     MqttAppConstants.MSG_CMD,
                     MqttAppConstants.COMMAND_STOP
                 )
-            save = input("Do you want to save: (y/n) ")
-            if save == "y" and current_user_mode and args:
-                ResultReporter.generate_excel(args.broker, args.mode, current_user_mode.get_all_times_values_interactions())
             if mqtt_service:
                 mqtt_service.disconnect_broker()
             print('Interrupted')
