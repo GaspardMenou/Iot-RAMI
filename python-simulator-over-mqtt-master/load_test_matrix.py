@@ -159,6 +159,10 @@ def main():
     print(f'  Métrique     : kafka_message_processing_seconds (p95)')
     print()
 
+    if args.duration < 30:
+        print('[ERREUR] --duration doit être >= 30s (scrape_interval Prometheus = 15s)')
+        return
+
     results = []
     processes = []
     step_num = 0
@@ -175,7 +179,6 @@ def main():
                 # Laisser tourner toute la durée
                 time.sleep(args.duration)
 
-                # Mesurer sur la fenêtre complète
                 latency = query_prometheus(args.prometheus, args.duration)
 
                 stop_processes(processes)
