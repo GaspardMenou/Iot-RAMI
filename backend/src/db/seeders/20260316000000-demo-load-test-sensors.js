@@ -8,7 +8,7 @@ module.exports = {
     const sensors = Array.from({ length: 1000 }, (_, i) => ({
       id: uuidv4(),
       name: `load-test-sensor-${i}`,
-      topic: `load-test-${i}`,
+      topic: `load-test-${i}-topic`,
       createdAt: new Date(),
       updatedAt: new Date(),
     }));
