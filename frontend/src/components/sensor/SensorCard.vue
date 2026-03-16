@@ -16,7 +16,10 @@
 				<span class="sensor-name">{{ sensor.name }}</span>
 				<span class="status-tag">{{ status }}</span>
 			</div>
-			<span class="sensor-topic">{{ sensor.topic }}</span>
+			<div class="sensor-meta-row">
+				<span class="sensor-topic-prefix">TOPIC</span>
+				<span class="sensor-topic">{{ sensor.topic }}</span>
+			</div>
 		</div>
 
 		<!-- Icône flèche (si navigation) -->
@@ -116,8 +119,9 @@
 		border-left: 3px solid var(--color-border-bright);
 		padding: 0;
 		cursor: pointer;
-		transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+		transition: border-color 0.12s, background-color 0.12s, box-shadow 0.12s;
 		overflow: hidden;
+		width: 100%;
 	}
 
 	.sensor-card:hover {
@@ -193,9 +197,29 @@
 		border: 1px solid;
 	}
 
+	.sensor-meta-row {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		min-width: 0;
+	}
+
+	.sensor-topic-prefix {
+		font-family: var(--font-mono);
+		font-size: 0.55rem;
+		letter-spacing: 0.1em;
+		color: var(--color-border-bright);
+		text-transform: uppercase;
+		flex-shrink: 0;
+		padding: 1px 4px;
+		border: 1px solid var(--color-border);
+		background: var(--color-surface-secondary);
+		line-height: 1.4;
+	}
+
 	.sensor-topic {
 		font-family: var(--font-mono);
-		font-size: 0.7rem;
+		font-size: 0.68rem;
 		color: var(--color-text-muted);
 		letter-spacing: 0.02em;
 		white-space: nowrap;
@@ -264,12 +288,24 @@
 	.status-publishing .status-led {
 		background: var(--color-warning);
 		color: var(--color-warning);
-		animation: pulse-led 1.2s ease-in-out infinite;
+		box-shadow: 0 0 8px var(--color-warning);
+		animation: pulse-led 0.9s ease-in-out infinite;
 	}
 	.status-publishing .status-tag {
 		color: var(--color-warning);
 		border-color: rgba(255, 204, 0, 0.3);
 		background: rgba(255, 204, 0, 0.08);
+		animation: blink-tag 0.9s ease-in-out infinite;
+	}
+
+	@keyframes blink-tag {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.55;
+		}
 	}
 
 	.status-offline .status-led {
