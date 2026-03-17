@@ -72,7 +72,7 @@ class KafkaService {
           const callback = this.mapTopicCallbacks.get(topic);
           if (callback) {
             const data = JSON.parse(message.value?.toString() || "");
-            callback(data);
+            await callback(data);
           } else {
             console.warn("⚠️ No callback registered for topic:", topic);
           }
