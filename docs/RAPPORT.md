@@ -76,6 +76,7 @@ Remplacement de la connexion MQTT directe navigateur → broker (qui exposait le
 - **Backend** : 348 tests Jest — controllers, middlewares, services (MQTT mock, Kafka mock, Socket.io mock).
 - **Frontend** : 137 tests Vitest — composables (`useSession`, `useSensor`, `useUser`, `useChart`, ...), stores Pinia, helpers.
 - **Fix CI** : polyfill `SlowBuffer` pour `buffer-equal-constant-time`, mock manuel MQTT, mock Socket.io.
+- **Test de charge** : campagne de 36 paliers (5–30 capteurs × 5–30 pts/s) via `load_test_matrix.py`. Latence p95 mesurée via `kafka_message_processing_seconds` Prometheus. Voir [LOAD_TEST.md](./LOAD_TEST.md).
 
 ### Phase 6 — Documentation
 
@@ -136,5 +137,5 @@ Backend Cloud (VM x86, port 3000)
 - Nettoyage des `console.log` de debug avant passage en production
 - Securisation des routes (certaines routes ne sont pas encore protegees par le middleware `auth`)
 - Tests d'integration end-to-end (simulateur → DB → frontend)
-- Benchmarks de latence et debit
+- ~~Benchmarks de latence et debit~~ — realise le 17/03/2026 (voir [LOAD_TEST.md](./LOAD_TEST.md))
 - Support TLS pour le broker Mosquitto du fog (actuellement en clair sur le reseau local)

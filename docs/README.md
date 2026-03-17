@@ -8,6 +8,7 @@
 | [MONITORING.md](./MONITORING.md) | Prometheus & Grafana — métriques exposées, datasource, import dashboard |
 | [DEMO.md](./DEMO.md)   | Scenario de demonstration pas a pas                     |
 | [RAPPORT.md](./RAPPORT.md) | Rapport de contribution du stage                    |
+| [LOAD_TEST.md](./LOAD_TEST.md) | Résultats et analyse du test de charge (17/03/2026) |
 
 ## Architecture en bref
 

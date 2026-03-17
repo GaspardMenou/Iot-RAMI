@@ -25,6 +25,7 @@ Le backend RAMI expose des métriques au format Prometheus. Prometheus les scrap
 | `http_requests_total` | Counter | `method`, `route`, `status_code` | Nombre total de requêtes HTTP reçues depuis le démarrage |
 | `http_request_duration_seconds` | Histogram | `method`, `route`, `status_code` | Durée des requêtes HTTP en secondes (buckets : 5ms → 10s) |
 | `active_sessions_total` | Gauge | — | Nombre de sessions d'acquisition actives en base de données |
+| `kafka_message_processing_seconds` | Histogram | — | Temps de traitement d'un message Kafka (réception → écriture DB). Buckets : 1 ms → 2.5 s |
 
 Les segments numériques dans les routes sont normalisés (`/sessions/42` → `/sessions/:id`) pour éviter l'explosion de cardinalité.
 
@@ -124,4 +125,10 @@ rate(http_requests_total{status_code=~"5.."}[1m])
 
 # Sessions actives
 active_sessions_total
+
+# Latence p95 du pipeline Kafka (réception → écriture DB) sur 1 minute
+histogram_quantile(0.95, rate(kafka_message_processing_seconds_bucket[1m]))
+
+# Débit moyen du pipeline Kafka (messages/s traités)
+rate(kafka_message_processing_seconds_count[1m])
 ```
