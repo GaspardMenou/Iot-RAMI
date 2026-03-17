@@ -5,8 +5,8 @@ const { v4: uuidv4 } = require("uuid");
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface) {
-    // 25 capteurs couvrent --max-sensors 20 (défaut load_test_matrix.py) + marge
-    const sensors = Array.from({ length: 25 }, (_, i) => ({
+    // 100 capteurs couvrent --max-sensors 100
+    const sensors = Array.from({ length: 100 }, (_, i) => ({
       id: uuidv4(),
       name: `load-test-sensor-${i}`,
       topic: `load-test-${i}`,
