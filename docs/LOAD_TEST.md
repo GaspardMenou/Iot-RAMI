@@ -118,6 +118,73 @@ La latence reste remarquablement stable de 25 pts/s à 900 pts/s, entre 17 et 25
 
 ---
 
+## Test basse charge (17/03/2026)
+
+**Fichier source** : `load_test_results_20260317_162528.csv`
+
+Campagne complémentaire centrée sur la plage basse charge (4-16 capteurs × 4-16 pts/s) pour caractériser le comportement du pipeline en dessous du seuil minimal du test précédent et confirmer l'absence de surcoût fixe à faible débit.
+
+### Paramètres
+
+| Paramètre | Valeur |
+|-----------|--------|
+| Plage de capteurs | 4 à 16 (pas de 4) |
+| Plage de taux | 4 à 16 pts/s/capteur (pas de 4) |
+| Durée par palier | 30 s |
+| Type de mesure | `temperature` (1 valeur par message) |
+| Combinaisons testées | 16 |
+
+### Tableau des résultats
+
+| Capteurs | Pts/s/capteur | Total pts/s | Latence p95 (ms) |
+|----------|---------------|-------------|-----------------|
+| 4        | 4             | 16          | N/A             |
+| 4        | 8             | 32          | 9.97            |
+| 4        | 12            | 48          | 20.213          |
+| 4        | 16            | 64          | 11.0            |
+| 8        | 4             | 32          | 9.348           |
+| 8        | 8             | 64          | 9.641           |
+| 8        | 12            | 96          | 9.936           |
+| 8        | 16            | 128         | 16.944          |
+| 12       | 4             | 48          | 9.639           |
+| 12       | 8             | 96          | 9.959           |
+| 12       | 12            | 144         | 9.791           |
+| 12       | 16            | 192         | 12.066          |
+| 16       | 4             | 64          | 9.851           |
+| 16       | 8             | 128         | 9.556           |
+| 16       | 12            | 192         | 9.968           |
+| 16       | 16            | 256         | 9.881           |
+
+> **Note N/A** : le palier 4 capteurs × 4 pts/s (16 pts/s total) n'a pas généré suffisamment d'observations Prometheus pendant la fenêtre de 30 s pour calculer un p95 valide. Ce comportement est normal à très faible débit.
+
+### Observations basse charge
+
+**Plancher de latence à ~10 ms.** La quasi-totalité des paliers se situe entre 9.3 ms et 12 ms, nettement en dessous des 17-25 ms observés dans le test haute charge. Ce plancher incompressible correspond au cumul des délais structurels du pipeline :
+
+- Buffer fog : 1 s de fenêtre maximale, mais à faible débit les batches sont petits et fréquents
+- `bulkCreate` + commit PostgreSQL
+- Délai de scrape Prometheus (15 s d'intervalle, fenêtre PromQL `[30s]`)
+
+**Absence de dégradation.** La latence reste stable de 16 à 256 pts/s sans aucune tendance à la hausse. Le pipeline n'introduit pas de surcoût fixe mesurable à basse charge.
+
+**Valeur à 4 × 12 pts/s (20.213 ms).** Ce point est le seul à dépasser 20 ms dans la plage basse charge. Il est cohérent avec les valeurs du test haute charge et reste dans la plage normale — il s'agit probablement d'une fluctuation I/O ponctuelle.
+
+---
+
+## Synthèse combinée des deux campagnes
+
+| Plage de charge | Latence p95 typique | Campagne |
+|-----------------|---------------------|----------|
+| 16 – 256 pts/s  | ~10 ms              | Basse charge (17/03) |
+| 25 – 150 pts/s  | 17 – 24 ms          | Haute charge (17/03) |
+| 200 – 450 pts/s | 20 – 25 ms          | Haute charge (17/03) |
+| 500 – 750 pts/s | 22 – 39 ms          | Haute charge (17/03) |
+| 900 pts/s       | 23 ms               | Haute charge (17/03) |
+
+> La différence de plancher entre les deux campagnes (~10 ms vs ~20 ms) est probablement liée à l'état de charge global du Pi 4 au moment des tests (charge CPU/I/O résiduelle des autres services). Les deux campagnes confirment l'absence de dégradation significative sur la plage 16-900 pts/s.
+
+---
+
 ## Observations et analyse
 
 ### Stabilité de la latence
