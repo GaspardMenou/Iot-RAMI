@@ -4,14 +4,14 @@
 module.exports = {
   async up(queryInterface) {
     await queryInterface.sequelize.query(`
-      CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_sensordata_sensor_time
+      CREATE INDEX IF NOT EXISTS idx_sensordata_sensor_time
       ON sensordata ("idSensor", time DESC);
     `);
   },
 
   async down(queryInterface) {
     await queryInterface.sequelize.query(`
-      DROP INDEX CONCURRENTLY IF EXISTS idx_sensordata_sensor_time;
+      DROP INDEX IF EXISTS idx_sensordata_sensor_time;
     `);
   },
 };
