@@ -27,3 +27,8 @@ export const BROKER_INFO = {
 export const KAFKA_CONFIG = {
   brokers: [process.env.KAFKA_BROKERS ?? "localhost:9092"],
 };
+
+export const BUFFER_CONFIG = {
+  flushIntervalMs: parseInt(process.env.FLUSH_INTERVAL_MS ?? "200"),
+  flushMaxSize: parseInt(process.env.FLUSH_MAX_SIZE ?? "50"),
+};

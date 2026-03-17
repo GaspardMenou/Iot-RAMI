@@ -7,8 +7,8 @@
 			<div class="list-header-left">
 				<h2>INVENTAIRE CAPTEURS</h2>
 				<span class="sensor-count">
-					<span class="count-total">{{ sensors.length }}</span>
-					<span class="count-unit">UNIT{{ sensors.length > 1 ? "S" : "" }}</span>
+					<span class="count-total">{{ standalone ? totalSensors : sensors.length }}</span>
+					<span class="count-unit">UNIT{{ (standalone ? totalSensors : sensors.length) > 1 ? "S" : "" }}</span>
 				</span>
 			</div>
 			<div class="list-header-right">
@@ -27,7 +27,7 @@
 					v-for="(sensor, index) in sensors"
 					:key="sensor.id"
 					class="sensor-row">
-					<span class="sensor-index">{{ String(index + 1).padStart(2, "0") }}</span>
+					<span class="sensor-index">{{ String(pageOffset + index + 1).padStart(2, "0") }}</span>
 					<SensorCard
 						:sensor="sensor"
 						:isForRealTimeSession="props.isForRealTimeSession"
@@ -44,13 +44,48 @@
 				<span class="empty-hint">Contactez un administrateur pour obtenir l'accès aux capteurs.</span>
 			</div>
 		</div>
+
+		<!-- Pagination (mode standalone uniquement) -->
+		<div
+			v-if="standalone && totalPages > 1"
+			class="pagination-bar">
+			<button
+				class="page-btn"
+				:disabled="currentPage <= 1"
+				@click="goToPage(currentPage - 1)">
+				← PREV
+			</button>
+
+			<div class="page-numbers">
+				<button
+					v-for="p in pageNumbers"
+					:key="p"
+					class="page-btn page-btn--num"
+					:class="{ 'page-btn--active': p === currentPage, 'page-btn--ellipsis': p === '…' }"
+					:disabled="p === '…' || p === currentPage"
+					@click="typeof p === 'number' && goToPage(p)">
+					{{ p }}
+				</button>
+			</div>
+
+			<button
+				class="page-btn"
+				:disabled="currentPage >= totalPages"
+				@click="goToPage(currentPage + 1)">
+				NEXT →
+			</button>
+
+			<span class="page-info"> {{ currentPage }} / {{ totalPages }} </span>
+		</div>
 	</div>
 </template>
 
 <script lang="ts">
-	import { defineComponent, onMounted } from "vue"
+	import { defineComponent, onMounted, computed } from "vue"
 	import SensorCard from "@/components/sensor/SensorCard.vue"
 	import { useSensor } from "@/composables/useSensor.composable"
+
+	const PAGE_LIMIT = 20
 
 	export default defineComponent({
 		name: "SensorsListView",
@@ -66,16 +101,50 @@
 			},
 		},
 		setup(props) {
-			const { sensors, selectedSensor, fetchSensors, handleSensorSelect } = useSensor(undefined)
+			const { sensors, selectedSensor, fetchSensors, handleSensorSelect, currentPage, totalPages, totalSensors } = useSensor(undefined)
 
 			onMounted(() => {
-				fetchSensors()
+				fetchSensors(1, PAGE_LIMIT)
+			})
+
+			const goToPage = (page: number) => {
+				if (page < 1 || page > totalPages.value) return
+				fetchSensors(page, PAGE_LIMIT)
+				// Scroll vers le haut de la liste
+				const el = document.querySelector(".sensors-list-view--standalone")
+				if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+			}
+
+			// Index d'affichage global (ex: page 2 limit 20 → commence à 20)
+			const pageOffset = computed(() => (currentPage.value - 1) * PAGE_LIMIT)
+
+			// Génère la séquence de numéros de page avec ellipsis si besoin
+			const pageNumbers = computed<(number | "…")[]>(() => {
+				const total = totalPages.value
+				const cur = currentPage.value
+				if (total <= 7) {
+					return Array.from({ length: total }, (_, i) => i + 1)
+				}
+				const pages: (number | "…")[] = [1]
+				if (cur > 3) pages.push("…")
+				const start = Math.max(2, cur - 1)
+				const end = Math.min(total - 1, cur + 1)
+				for (let i = start; i <= end; i++) pages.push(i)
+				if (cur < total - 2) pages.push("…")
+				pages.push(total)
+				return pages
 			})
 
 			return {
 				sensors,
 				selectedSensor,
 				handleSensorSelect,
+				currentPage,
+				totalPages,
+				totalSensors,
+				pageOffset,
+				pageNumbers,
+				goToPage,
 				props,
 			}
 		},
@@ -242,5 +311,74 @@
 		opacity: 0.5;
 		max-width: 280px;
 		line-height: 1.5;
+	}
+
+	/* ── Pagination ── */
+	.pagination-bar {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.5rem 0.75rem;
+		border-top: 1px solid var(--color-border);
+		background: var(--color-surface-secondary);
+		flex-wrap: wrap;
+	}
+
+	.page-btn {
+		font-family: var(--font-mono);
+		font-size: 0.55rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+		background: transparent;
+		border: 1px solid var(--color-border);
+		padding: 3px 8px;
+		cursor: pointer;
+		transition: color 0.12s, border-color 0.12s, background 0.12s;
+		line-height: 1.6;
+		white-space: nowrap;
+	}
+
+	.page-btn:hover:not(:disabled) {
+		color: var(--color-text);
+		border-color: var(--color-border-bright);
+		background: var(--color-primary-dim);
+	}
+
+	.page-btn:disabled {
+		opacity: 0.3;
+		cursor: default;
+	}
+
+	.page-btn--active {
+		color: var(--color-text-second);
+		background: var(--color-primary);
+		border-color: var(--color-primary);
+		cursor: default;
+	}
+
+	.page-btn--active:hover {
+		background: var(--color-primary);
+		color: var(--color-text-second);
+	}
+
+	.page-btn--ellipsis {
+		border-color: transparent;
+		padding: 3px 4px;
+	}
+
+	.page-numbers {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
+	.page-info {
+		font-family: var(--font-mono);
+		font-size: 0.52rem;
+		letter-spacing: 0.1em;
+		color: var(--color-text-muted);
+		margin-left: auto;
+		opacity: 0.6;
 	}
 </style>

@@ -1,4 +1,4 @@
-import { Kafka, Producer } from "kafkajs";
+import { Kafka, Producer, CompressionTypes } from "kafkajs";
 import { KAFKA_CONFIG } from "./constants";
 class KafkaService {
   private static instance: KafkaService | undefined;
@@ -61,6 +61,7 @@ class KafkaService {
       await this.producer.send({
         topic,
         messages: [{ value: JSON.stringify(data) }],
+        compression: CompressionTypes.GZIP,
       });
       console.log("📤 Published to Kafka:", {
         topic,
@@ -82,6 +83,7 @@ class KafkaService {
       await this.producer.send({
         topic,
         messages,
+        compression: CompressionTypes.GZIP,
       });
       console.log("📤 Published batch to Kafka:", {
         topic,

@@ -43,6 +43,9 @@ export const useSensor = (sensorName: string | undefined) => {
 
 	const sensors = ref<Sensor[]>([])
 	const selectedSensor = ref<string | undefined>(undefined) // Change initial value to undefined
+	const currentPage = ref(1)
+	const totalPages = ref(1)
+	const totalSensors = ref(0)
 
 	// **************************************************** METHODS ****************************************************
 	// *************************** [METHOD]  SENSOR STATUS
@@ -73,26 +76,24 @@ export const useSensor = (sensorName: string | undefined) => {
 
 	// *************************** [METHOD]  SENSOR LIST AND SENSOR SELECTION
 
-	const getAllSensors = async () => {
-		const allSensors: Sensor[] = []
-		let page = 1
-		let totalPages = 1
-		const limit = 100
-		do {
-			const result = (await axios.get(SensorAPIEndpoint.GET_ALL_SENSOR, { params: { page, limit } })) as { data: { data: Sensor[]; totalPages: number } | Sensor[] }
-			const payload = result.data
-			if (Array.isArray(payload)) return payload
-			allSensors.push(...payload.data)
-			totalPages = payload.totalPages
-			page++
-		} while (page <= totalPages)
-		return allSensors
+	const getAllSensors = async (page: number = 1, limit: number = 20) => {
+		const result = (await axios.get(SensorAPIEndpoint.GET_ALL_SENSOR, { params: { page, limit } })) as {
+			data: { data: Sensor[]; total: number; totalPages: number; page: number } | Sensor[]
+		}
+		const payload = result.data
+		if (Array.isArray(payload)) {
+			return { data: payload, total: payload.length, totalPages: 1, page: 1 }
+		}
+		return { data: payload.data, total: payload.total, totalPages: payload.totalPages, page: payload.page }
 	}
 
-	const fetchSensors = async () => {
+	const fetchSensors = async (page: number = 1, limit: number = 20) => {
 		try {
-			const allSensors = await getAllSensors()
-			sensors.value = allSensors
+			const result = await getAllSensors(page, limit)
+			sensors.value = result.data
+			currentPage.value = result.page
+			totalPages.value = result.totalPages
+			totalSensors.value = result.total
 		} catch (error) {
 			console.error("Error fetching sensors:", error)
 		}
@@ -179,6 +180,9 @@ export const useSensor = (sensorName: string | undefined) => {
 		listenToSensorStatus,
 		sensors,
 		selectedSensor,
+		currentPage,
+		totalPages,
+		totalSensors,
 		calculateDuration,
 		formatHumanReadableDate,
 		throwUserRequestSessionBySensor,

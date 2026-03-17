@@ -1,5 +1,5 @@
 import mqtt, { MqttClient } from "mqtt";
-import { BROKER_INFO, TOPICS, MESSAGE_FIELDS, COMMANDS } from "./constants";
+import { BROKER_INFO, TOPICS, MESSAGE_FIELDS, COMMANDS, BUFFER_CONFIG } from "./constants";
 import KafkaService from "./kafkaProducer";
 
 class MqttFog {
@@ -7,8 +7,8 @@ class MqttFog {
   private mqttClient!: MqttClient;
   private kafkaService!: KafkaService;
   private buffer = new Map<string, any[]>();
-  private flushIntervalMs = 1000;
-  private flushMaxSize = 10;
+  private flushIntervalMs = BUFFER_CONFIG.flushIntervalMs;
+  private flushMaxSize = BUFFER_CONFIG.flushMaxSize;
   private sensorTimeouts: Map<string, NodeJS.Timeout> = new Map();
   private flushInterval: NodeJS.Timeout | undefined;
 

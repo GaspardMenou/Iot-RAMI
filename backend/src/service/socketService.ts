@@ -150,6 +150,10 @@ class SocketService {
 
   private TTL = 5 * 60 * 1000; // 5 minutes
 
+  // Cache sensor topic → Sensor (TTL partagé avec measurementTypesMap)
+  private sensorTopicCache: Map<string, Sensor> = new Map();
+  private sensorCacheTime: Date | null = null;
+
   // Cache des seuils par sensorId — TTL 2 min
   private thresholdsCache: Map<string, { data: Threshold[]; loadedAt: number }> = new Map();
   private THRESHOLD_TTL = 2 * 60 * 1000; // 2 minutes
@@ -169,6 +173,25 @@ class SocketService {
     this.measurementTypesCacheTime = now;
   }
 
+  private async getSensorByTopic(baseTopic: string): Promise<Sensor | undefined> {
+    const now = new Date();
+    if (
+      this.sensorTopicCache.size > 0 &&
+      this.sensorCacheTime &&
+      now.getTime() - this.sensorCacheTime.getTime() < this.TTL
+    ) {
+      return this.sensorTopicCache.get(baseTopic);
+    }
+    const sensors = await SensorModel.findAll();
+    this.sensorTopicCache.clear();
+    sensors.forEach((s: any) => {
+      const sensor = s.dataValues as Sensor;
+      this.sensorTopicCache.set(sensor.topic, sensor);
+    });
+    this.sensorCacheTime = now;
+    return this.sensorTopicCache.get(baseTopic);
+  }
+
   private async handleSessionStart(data: KafkaStartPayload): Promise<void> {
     if (
       this.activeSessions.has(data.sensorTopic) ||
@@ -183,17 +206,14 @@ class SocketService {
     this.sessionCreationInProgress.add(data.sensorTopic);
     try {
       const baseTopic = data.sensorTopic.replace("/sensor", "");
-      const sensorInstance = await SensorModel.findOne({
-        where: { topic: baseTopic },
-      });
-      if (!sensorInstance) {
+      const sensor = await this.getSensorByTopic(baseTopic);
+      if (!sensor) {
         console.warn(
           `⚠️ [SessionStart] Capteur inconnu pour topic: ${baseTopic}`
         );
         addDiscoveredTopic(baseTopic);
         return;
       }
-      const sensor = sensorInstance.dataValues as Sensor;
       const session = await Session.create({
         idSensor: sensor.id,
         idFog: "fog-service",
@@ -223,37 +243,45 @@ class SocketService {
       return;
     }
     const baseTopic = data.sensorTopic.replace("/sensor", "");
-    const sensorInstance = await SensorModel.findOne({
-      where: { topic: baseTopic },
-    });
-    if (!sensorInstance) {
+    const sensor = await this.getSensorByTopic(baseTopic);
+    if (!sensor) {
       addDiscoveredTopic(baseTopic);
       return;
     }
-    const sensor = sensorInstance.dataValues as Sensor;
+
+    // Collecter toutes les lignes en une passe synchrone
+    type AlertItem = { idMeasurementType: string; measureType: string; value: number };
+    const rows: Array<{ time: Date; idSensor: string; idMeasurementType: string; value: number }> = [];
+    const alerts: AlertItem[] = [];
 
     for (const entry of data.measures) {
       for (const measure of entry.measures) {
-        const idMeasurementType = this.measurementTypesMap.get(
-          measure.measureType
-        );
+        const idMeasurementType = this.measurementTypesMap.get(measure.measureType);
         if (!idMeasurementType) {
           addDiscoveredMeasurement(measure.measureType);
-          console.warn(
-            `⚠️ [SensorData] Type de mesure inconnu: ${measure.measureType}`
-          );
+          console.warn(`⚠️ [SensorData] Type de mesure inconnu: ${measure.measureType}`);
           continue;
-          // eslint-disable-next-line prettier/prettier
-        };
-        await db.sensordata.create({
+        }
+        rows.push({
           time: new Date(Math.floor(entry.timestamp / 1000)),
           idSensor: sensor.id,
           idMeasurementType,
           value: measure.value,
         });
-        await this.checkAndEmitAlerts(sensor.id, idMeasurementType, measure.measureType, measure.value, data.sensorTopic);
+        alerts.push({ idMeasurementType, measureType: measure.measureType, value: measure.value });
       }
     }
+
+    // Un seul aller-retour DB pour toutes les lignes du batch
+    if (rows.length > 0) {
+      await db.sensordata.bulkCreate(rows);
+    }
+
+    // Checks d'alertes après l'insertion
+    for (const alert of alerts) {
+      await this.checkAndEmitAlerts(sensor.id, alert.idMeasurementType, alert.measureType, alert.value, data.sensorTopic);
+    }
+
     const [seconds, nanoseconds] = process.hrtime(startTime);
     kafkaMessageProcessingSeconds.observe(seconds + nanoseconds / 1e9);
     this.sendDataToRoom(data.sensorTopic, data);
