@@ -4,6 +4,7 @@ import os
 import time
 import argparse
 import csv
+import datetime
 import requests
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,7 +23,7 @@ def parse_args():
     parser.add_argument('--types',       type=str, default='temperature', help='Types de mesures (défaut: temperature)')
     parser.add_argument('--broker',      type=str, default='local',       help='Broker MQTT (défaut: local)')
     parser.add_argument('--prometheus',  type=str, default='http://localhost:9090', help='URL Prometheus (défaut: http://localhost:9090)')
-    parser.add_argument('--output',      type=str, default='load_test_results', help='Nom de base pour le CSV et le plot')
+    parser.add_argument('--output',      type=str, default=None, help='Nom de base pour le CSV et le plot (défaut: load_test_results_<timestamp>)')
     return parser.parse_args()
 
 
@@ -144,6 +145,9 @@ def write_csv(results: list, output_name: str):
 def main():
     args = parse_args()
 
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_name = args.output if args.output else f"load_test_results_{timestamp}"
+
     sensor_range = list(range(args.step, args.max_sensors + 1, args.step))
     rate_range   = list(range(args.step, args.max_rate    + 1, args.step))
     total        = len(sensor_range) * len(rate_range)
@@ -199,7 +203,7 @@ def main():
         print('Aucun résultat collecté.')
         return
 
-    output = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.output)
+    output = os.path.join(os.path.dirname(os.path.abspath(__file__)), output_name)
     write_csv(results, output)
 
     valid_results = [r for r in results if r[2] is not None]
