@@ -6,10 +6,10 @@ import KafkaService from "@service/kafkaService";
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
 jest.mock("@db/index", () => ({
-  Sensor: { findOne: jest.fn() },
+  Sensor: { findAll: jest.fn() },
   Session: { create: jest.fn(), update: jest.fn() },
   MeasurementType: { findAll: jest.fn() },
-  sensordata: { create: jest.fn() },
+  sensordata: { bulkCreate: jest.fn() },
 }));
 
 jest.mock("@service/kafkaService", () => ({
@@ -19,9 +19,11 @@ jest.mock("@service/kafkaService", () => ({
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const sensorRow = {
-  dataValues: { id: "sensor-uuid", name: "sensor1", topic: "test/topic" },
-};
+const makeSensorRow = (topic: string) => ({
+  dataValues: { id: "sensor-uuid", name: "sensor1", topic },
+});
+
+const sensorRow = makeSensorRow("test/topic");
 
 const sessionRow = {
   dataValues: { id: "session-uuid" },
@@ -41,13 +43,15 @@ describe("SocketService", () => {
     (service as any).measurementTypesMap = new Map();
     (service as any).kafkaRetryCount = 0;
     (service as any).measurementTypesCacheTime = null;
+    (service as any).sensorTopicCache = new Map();
+    (service as any).sensorCacheTime = null;
   });
 
   // ── handleSessionStart ───────────────────────────────────────────────────
 
   describe("handleSessionStart", () => {
     it("creates a session when sensor is found", async () => {
-      (db.Sensor.findOne as jest.Mock).mockResolvedValue(sensorRow);
+      (db.Sensor.findAll as jest.Mock).mockResolvedValue([sensorRow]);
       (db.Session.create as jest.Mock).mockResolvedValue(sessionRow);
 
       await (service as any).handleSessionStart({
@@ -63,7 +67,7 @@ describe("SocketService", () => {
     });
 
     it("skips creation when sensor is not found", async () => {
-      (db.Sensor.findOne as jest.Mock).mockResolvedValue(null);
+      (db.Sensor.findAll as jest.Mock).mockResolvedValue([]);
 
       await (service as any).handleSessionStart({
         type: "start",
@@ -78,11 +82,11 @@ describe("SocketService", () => {
       // Use a manually-controlled Promise to simulate DB latency.
       // Both calls enter handleSessionStart before the first one completes,
       // which is exactly the race condition the guard defends against.
-      let resolveFindOne!: (val: unknown) => void;
-      const findOnePromise = new Promise((resolve) => {
-        resolveFindOne = resolve;
+      let resolveFindAll!: (val: unknown) => void;
+      const findAllPromise = new Promise((resolve) => {
+        resolveFindAll = resolve;
       });
-      (db.Sensor.findOne as jest.Mock).mockReturnValue(findOnePromise);
+      (db.Sensor.findAll as jest.Mock).mockReturnValue(findAllPromise);
       (db.Session.create as jest.Mock).mockResolvedValue(sessionRow);
 
       const payload = {
@@ -96,7 +100,7 @@ describe("SocketService", () => {
       const p2 = (service as any).handleSessionStart(payload);
 
       // Now let the DB respond
-      resolveFindOne(sensorRow);
+      resolveFindAll([sensorRow]);
 
       await Promise.all([p1, p2]);
 
@@ -104,7 +108,10 @@ describe("SocketService", () => {
     });
 
     it("allows a new session for a different topic to proceed in parallel", async () => {
-      (db.Sensor.findOne as jest.Mock).mockResolvedValue(sensorRow);
+      (db.Sensor.findAll as jest.Mock).mockResolvedValue([
+        makeSensorRow("topic-a"),
+        makeSensorRow("topic-b"),
+      ]);
       (db.Session.create as jest.Mock).mockResolvedValue(sessionRow);
 
       await Promise.all([
@@ -135,7 +142,7 @@ describe("SocketService", () => {
         timestamp: Date.now(),
       });
 
-      expect(db.Sensor.findOne).not.toHaveBeenCalled();
+      expect(db.Sensor.findAll).not.toHaveBeenCalled();
       expect(db.Session.create).not.toHaveBeenCalled();
     });
   });
