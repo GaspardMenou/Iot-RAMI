@@ -274,7 +274,7 @@ class SocketService {
 
     // Un seul aller-retour DB pour toutes les lignes du batch
     if (rows.length > 0) {
-      await db.sensordata.bulkCreate(rows);
+      await db.sensordata.bulkCreate(rows, { ignoreDuplicates: true });
     }
 
     // Checks d'alertes après l'insertion
