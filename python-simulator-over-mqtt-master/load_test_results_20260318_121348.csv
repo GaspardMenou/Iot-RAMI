@@ -1,2 +1,0 @@
-nb_sensors,rate_per_sensor,total_points_per_sec,latency_p95_ms
-100,100,10000,206.346

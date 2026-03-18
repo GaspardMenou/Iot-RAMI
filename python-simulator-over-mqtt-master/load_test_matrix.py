@@ -203,7 +203,9 @@ def main():
         print('Aucun résultat collecté.')
         return
 
-    output = os.path.join(os.path.dirname(os.path.abspath(__file__)), output_name)
+    results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
+    os.makedirs(results_dir, exist_ok=True)
+    output = os.path.join(results_dir, output_name)
     write_csv(results, output)
 
     valid_results = [r for r in results if r[2] is not None]
