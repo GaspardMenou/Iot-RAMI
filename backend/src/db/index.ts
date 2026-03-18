@@ -40,6 +40,12 @@ const options: Options = {
   database: envs.DB_NAME,
   username: envs.DB_USER,
   password: envs.DB_PASSWORD,
+  pool: {
+    max: 20,
+    min: 2,
+    acquire: 30000,
+    idle: 10000,
+  },
 };
 const sequelize = new Sequelize(options);
 
