@@ -76,7 +76,15 @@ Remplacement de la connexion MQTT directe navigateur → broker (qui exposait le
 - **Backend** : 348 tests Jest — controllers, middlewares, services (MQTT mock, Kafka mock, Socket.io mock).
 - **Frontend** : 137 tests Vitest — composables (`useSession`, `useSensor`, `useUser`, `useChart`, ...), stores Pinia, helpers.
 - **Fix CI** : polyfill `SlowBuffer` pour `buffer-equal-constant-time`, mock manuel MQTT, mock Socket.io.
-- **Test de charge** : campagne de 36 paliers (5–30 capteurs × 5–30 pts/s) via `load_test_matrix.py`. Latence p95 mesurée via `kafka_message_processing_seconds` Prometheus. Voir [LOAD_TEST.md](./LOAD_TEST.md).
+- **Test de charge** : campagne via `load_test_matrix.py`, 100 capteurs, paliers 100–1 000 pts/s/capteur. Latence p95 mesuree via `kafka_message_processing_seconds` Prometheus.
+  - Raspberry Pi 4 (prod) : limite ~2 400 pts/s (bottleneck I/O disque TimescaleDB sur SD).
+  - LXC Proxmox SSD (Ryzen 5 4650 Pro) : plafond utile ~60 000 pts/s (~5 ms p95 a 10 000 pts/s, ~219 ms a 60 000 pts/s).
+  - Au-dela : le fog droppe les messages (`MAX_BUFFER_SIZE=500`), la latence Kafka baisse artificiellement.
+
+### Optimisations appliquees suite aux tests de charge
+
+- **fog-service** : suppression des `console.log` de debug dans le handler MQTT, limite dure du buffer (`MAX_BUFFER_SIZE=500` par topic, configurable), flush parallele via `Promise.all`.
+- **backend** : pool Sequelize `max: 20` connexions (au lieu de 5 par defaut).
 
 ### Phase 6 — Documentation
 
@@ -91,15 +99,18 @@ Remplacement de la connexion MQTT directe navigateur → broker (qui exposait le
 
 ## Bilan technique
 
-| Metrique              | Valeur                        |
-|-----------------------|-------------------------------|
-| Tests backend         | 348 (Jest)                    |
-| Tests frontend        | 137 (Vitest)                  |
-| Routes API            | ~35 endpoints REST            |
-| Topics Kafka          | 1 (`sensor-data`)             |
-| Types de mesures      | 3 (`ecg`, `temperature`, `humidity`) |
-| Services Docker (prod)| 7 (backend, frontend, DB, Kafka, Prometheus, Grafana, Watchtower) |
-| Platforms supportees  | `linux/amd64`, `linux/arm64`  |
+| Metrique                    | Valeur                                            |
+|-----------------------------|---------------------------------------------------|
+| Tests backend               | 348 (Jest)                                        |
+| Tests frontend              | 137 (Vitest)                                      |
+| Routes API                  | ~35 endpoints REST                                |
+| Topics Kafka                | 1 (`sensor-data`)                                 |
+| Types de mesures            | 3 (`ecg`, `temperature`, `humidity`)              |
+| Services Docker (prod)      | 7 (backend, frontend, DB, Kafka, Prometheus, Grafana, Watchtower) |
+| Platforms supportees        | `linux/amd64`, `linux/arm64`                      |
+| Debit prod (Pi 4, SD)       | ~2 400 pts/s                                      |
+| Debit Proxmox SSD (plafond) | ~60 000 pts/s                                     |
+| Buffer max fog par topic    | 500 messages (configurable via `MAX_BUFFER_SIZE`)  |
 
 ---
 
@@ -134,8 +145,9 @@ Backend Cloud (VM x86, port 3000)
 
 ## Points d'amelioration identifies (hors scope stage)
 
-- Nettoyage des `console.log` de debug avant passage en production
+- ~~Nettoyage des `console.log` de debug~~ — realise (handler MQTT fog-service)
 - Securisation des routes (certaines routes ne sont pas encore protegees par le middleware `auth`)
 - Tests d'integration end-to-end (simulateur → DB → frontend)
-- ~~Benchmarks de latence et debit~~ — realise le 17/03/2026 (voir [LOAD_TEST.md](./LOAD_TEST.md))
+- ~~Benchmarks de latence et debit~~ — realise le 17/03/2026 (voir section "Tests de charge" dans [KAFKA.md](./KAFKA.md))
 - Support TLS pour le broker Mosquitto du fog (actuellement en clair sur le reseau local)
+- `synchronous_commit = off` dans PostgreSQL pour gagner en debit sur le Pi (optimisation possible, non appliquee)
