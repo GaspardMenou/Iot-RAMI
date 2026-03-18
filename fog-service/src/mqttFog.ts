@@ -9,6 +9,8 @@ class MqttFog {
   private buffer = new Map<string, any[]>();
   private flushIntervalMs = BUFFER_CONFIG.flushIntervalMs;
   private flushMaxSize = BUFFER_CONFIG.flushMaxSize;
+  private maxBufferSize = BUFFER_CONFIG.maxBufferSize;
+  private dropWarnedTopics = new Set<string>();
   private sensorTimeouts: Map<string, NodeJS.Timeout> = new Map();
   private flushInterval: NodeJS.Timeout | undefined;
 
@@ -118,10 +120,17 @@ class MqttFog {
       console.warn(`⚠️ [handleMeasurement] Mesures reçues sans session active pour: ${topic} — ignorées`);
       return;
     }
-    if (this.buffer.get(topic)!.length >= this.flushMaxSize) {
+    const dataArray = this.buffer.get(topic)!;
+    if (dataArray.length >= this.maxBufferSize) {
+      if (!this.dropWarnedTopics.has(topic)) {
+        console.warn(`⚠️ [handleMeasurement] Buffer plein (${this.maxBufferSize}) pour ${topic} — messages droppés jusqu'au prochain flush`);
+        this.dropWarnedTopics.add(topic);
+      }
+      return;
+    }
+    if (dataArray.length >= this.flushMaxSize) {
       this.flushBuffer(topic).catch((e) => console.error("❌ [flushBuffer]", e));
     }
-    const dataArray = this.buffer.get(topic)!;
     dataArray.push(data);
   }
   private async flushBuffer(topic: string): Promise<void> {
@@ -135,6 +144,7 @@ class MqttFog {
         };
         await this.kafkaService.publishBatchSensorData("sensor-data", [batch]);
         this.buffer.set(topic, []);
+        this.dropWarnedTopics.delete(topic);
         console.log(`📤 [Kafka] batch data envoyé pour ${topic} (${dataArray.length} mesures)`);
       } catch (error) {
         console.error(`❌ [flushBuffer] Erreur Kafka pour ${topic}:`, error);
@@ -143,11 +153,21 @@ class MqttFog {
   }
   private startFlushInterval(): void {
     if (this.flushInterval) return;
-    this.flushInterval = setInterval(async () => {
+    this.flushInterval = setInterval(() => {
+      const flushPromises = [];
       for (const [topic, dataArray] of this.buffer.entries()) {
         if (dataArray.length > 0) {
-          await this.flushBuffer(topic);
+          flushPromises.push(
+            this.flushBuffer(topic).catch((e) =>
+              console.error(`❌ [startFlushInterval] Erreur flush ${topic}:`, e),
+            ),
+          );
         }
+      }
+      if (flushPromises.length > 0) {
+        Promise.all(flushPromises).catch((e) =>
+          console.error("❌ [startFlushInterval] Erreur Promise.all:", e),
+        );
       }
     }, this.flushIntervalMs);
   }
