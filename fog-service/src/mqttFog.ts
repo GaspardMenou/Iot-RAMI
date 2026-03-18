@@ -44,11 +44,8 @@ class MqttFog {
         this.handleConnect();
       });
 
-      // Handler de messages - avec debug explicite
+      // Handler de messages
       this.mqttClient.on("message", (topic: string, message: Buffer) => {
-        console.log("⬇️ [MQTT] ENTRÉE DANS LE HANDLER DE MESSAGE");
-        console.log("📨 [MQTT] Topic:", topic);
-        console.log("📨 [MQTT] Message:", message.toString());
         this.handleMessageReceivedFromSensor(topic, message);
       });
 
