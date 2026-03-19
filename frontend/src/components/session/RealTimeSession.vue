@@ -113,14 +113,14 @@
 	import SensorsList from "@/components/sensor/SensorsList.vue"
 	import { EventTypes, handleEvent } from "@/composables/useUser.composable"
 	import { useSession } from "@/composables/useSession.composable"
-	import { useSensor } from "@/composables/useSensor.composable"
+	import { useAxios } from "@/composables/useAxios.composable"
 
 	export default defineComponent({
 		name: "CreateSession",
 		components: { Graph, SensorsList },
 		setup() {
 			const { idSensor, chartData, timeSinceLastValue, transmissionSpeed, checkAndJoinActiveSession } = useSession()
-			const { fetchSensors, sensors } = useSensor(undefined)
+			const { axios } = useAxios()
 
 			const activeStep = ref(1)
 			const selectedSensorName = ref("")
@@ -130,8 +130,13 @@
 
 			const sensorSelectedCallback = async (sensorId: string) => {
 				idSensor.value = sensorId
-				const sensor = sensors.value.find(s => s.id === sensorId)
-				const sensorTopic = (sensor?.topic ?? "") + "/sensor"
+				let sensorTopic = "/sensor"
+				try {
+					const { data } = await axios.get(`sensors/${sensorId}`)
+					sensorTopic = (data?.topic ?? "") + "/sensor"
+				} catch {
+					// fallback: sensorTopic reste "/sensor"
+				}
 				const alreadyActive = await checkAndJoinActiveSession(sensorId, sensorTopic)
 				if (alreadyActive) {
 					activeStep.value = 3
@@ -140,8 +145,7 @@
 				}
 			}
 
-			onMounted(async () => {
-				await fetchSensors()
+			onMounted(() => {
 				handleEvent("on", EventTypes.SENSOR_SELECTED_FOR_CREATING_SESSION, sensorSelectedCallback)
 			})
 
