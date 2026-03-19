@@ -169,6 +169,129 @@ Types predefinis (seed) : `ecg`, `temperature`, `humidity`.
 
 ---
 
+## Seuils d'alerte — `/thresholds`
+
+Un seuil definit des valeurs minimale et/ou maximale pour un type de mesure sur un capteur donne. Lorsqu'une mesure recue depasse ces limites, une alerte est emise en temps reel via Socket.io a tous les utilisateurs ayant acces au capteur ainsi qu'aux administrateurs.
+
+La contrainte d'unicite est `(idSensor, idMeasurementType)` : un seul seuil par couple capteur/type de mesure.
+
+| Methode  | Route                            | Auth | Description                                     |
+|----------|----------------------------------|------|-------------------------------------------------|
+| `POST`   | `/thresholds`                    | auth | Cree un seuil pour un capteur et un type de mesure |
+| `GET`    | `/thresholds/sensor/:idSensor`   | auth | Recupere tous les seuils d'un capteur           |
+| `PUT`    | `/thresholds/:id`                | auth | Met a jour les valeurs min/max d'un seuil       |
+| `DELETE` | `/thresholds/:id`                | auth | Supprime un seuil                               |
+
+### Schema seuil
+
+```json
+{
+  "id": "uuid",
+  "idSensor": "uuid",
+  "idMeasurementType": "uuid",
+  "minValue": 10.0,
+  "maxValue": 100.0
+}
+```
+
+`minValue` et `maxValue` sont optionnels (peuvent valoir `null`). Un seuil avec uniquement `minValue` ou uniquement `maxValue` est valide.
+
+### POST `/thresholds` — Creer un seuil
+
+Corps de la requete :
+
+```json
+{
+  "idSensor": "uuid",
+  "idMeasurementType": "uuid",
+  "minValue": 10.0,
+  "maxValue": 100.0
+}
+```
+
+`idSensor` et `idMeasurementType` sont obligatoires. `minValue` et `maxValue` sont optionnels.
+
+Reponses :
+
+| Code | Description                                          |
+|------|------------------------------------------------------|
+| 201  | Seuil cree — retourne l'objet complet                |
+| 400  | `idSensor` ou `idMeasurementType` manquant — code `threshold.missing.fields` |
+| 500  | Erreur interne — code `threshold.internal.error`     |
+
+### GET `/thresholds/sensor/:idSensor` — Seuils d'un capteur
+
+Retourne un tableau de tous les seuils configures pour le capteur identifie par `idSensor`.
+
+Reponses :
+
+| Code | Description                                           |
+|------|-------------------------------------------------------|
+| 200  | Tableau de seuils                                     |
+| 404  | Aucun seuil trouve — code `threshold.not.found`       |
+| 500  | Erreur interne — code `threshold.internal.error`      |
+
+### PUT `/thresholds/:id` — Mettre a jour un seuil
+
+Corps de la requete (les deux champs sont optionnels — les valeurs non fournies sont conservees) :
+
+```json
+{
+  "minValue": 20.0,
+  "maxValue": 200.0
+}
+```
+
+Reponses :
+
+| Code | Description                                           |
+|------|-------------------------------------------------------|
+| 200  | Seuil mis a jour — retourne l'objet modifie           |
+| 404  | Seuil introuvable — code `threshold.not.found`        |
+| 500  | Erreur interne — code `threshold.internal.error`      |
+
+### DELETE `/thresholds/:id` — Supprimer un seuil
+
+Reponses :
+
+| Code | Description                                           |
+|------|-------------------------------------------------------|
+| 200  | `{ "message": "Threshold deleted successfully." }`    |
+| 404  | Seuil introuvable — code `threshold.not.found`        |
+| 500  | Erreur interne — code `threshold.internal.error`      |
+
+### Alertes en temps reel (Socket.io)
+
+Quand une mesure recue depasse un seuil configure, le backend emet l'evenement `threshold-alert` sur la room `user-{userId}` de chaque utilisateur ayant acces au capteur et de chaque administrateur.
+
+Pour recevoir ces alertes, le client doit d'abord rejoindre sa room personnelle :
+
+```js
+socket.emit("join-user-room", { token: "<JWT>" });
+```
+
+Puis ecouter l'evenement :
+
+```js
+socket.on("threshold-alert", (alert) => {
+  // alert = {
+  //   sensorTopic: "esp32-dht22-topic/sensor",
+  //   measureType: "temperature",
+  //   value: 105.3,
+  //   minValue: 10.0,
+  //   maxValue: 100.0,
+  //   direction: "max",       // "min" | "max"
+  //   triggeredAt: "2026-01-01T10:05:00.000Z"
+  // }
+});
+```
+
+`direction: "min"` signifie que la valeur est en dessous du seuil minimal. `direction: "max"` signifie qu'elle depasse le seuil maximal.
+
+Le cache des seuils cote backend a une duree de vie de 60 secondes (TTL configurable). Une modification de seuil est donc prise en compte au plus en 60 secondes par le moteur d'alerte.
+
+---
+
 ## WebSocket — Socket.io
 
 Le backend expose un serveur Socket.io sur le meme port que l'API REST (port 3000).
