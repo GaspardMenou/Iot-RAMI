@@ -1,6 +1,5 @@
 <template>
 	<div class="sensors-view">
-		<!-- En-tête page -->
 		<div class="view-header">
 			<div class="view-header-left">
 				<div class="view-breadcrumb">
@@ -9,7 +8,7 @@
 					<span class="breadcrumb-current">CAPTEURS</span>
 				</div>
 				<h1 class="view-title">MES CAPTEURS</h1>
-				<span class="view-sub">GESTION & HISTORIQUE DES SESSIONS</span>
+				<span class="view-sub">GESTION DES CAPTEURS</span>
 			</div>
 			<div class="view-header-right">
 				<div class="status-summary">
@@ -29,28 +28,18 @@
 			</div>
 		</div>
 
-		<!-- Grille principale -->
-		<div class="sensors-grid">
-			<div class="sensors-list-container">
-				<SensorsList :standalone="true" />
-			</div>
-			<div class="sessions-list-container">
-				<SessionList />
-			</div>
-		</div>
+		<SensorsList :standalone="true" />
 	</div>
 </template>
 
 <script lang="ts">
 	import { defineComponent } from "vue"
 	import SensorsList from "@/components/sensor/SensorsList.vue"
-	import SessionList from "@/components/session/SessionsList.vue"
 
 	export default defineComponent({
 		name: "SensorsView",
 		components: {
 			SensorsList,
-			SessionList,
 		},
 	})
 </script>
@@ -63,8 +52,6 @@
 		max-width: 1200px;
 		margin: 0 auto;
 		width: 100%;
-		flex: 1;
-		min-height: 0;
 	}
 
 	/* ── En-tête ── */
@@ -168,27 +155,6 @@
 
 	.status-pill--unknown .pill-dot {
 		background: var(--color-text-muted);
-	}
-
-	/* ── Grille ── */
-	.sensors-grid {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-		flex: 1;
-		min-height: 0;
-	}
-
-	.sensors-list-container {
-		width: 100%;
-	}
-
-	.sessions-list-container {
-		width: 100%;
-		flex: 1;
-		min-height: 500px;
-		display: flex;
-		flex-direction: column;
 	}
 
 	@media (max-width: 600px) {
