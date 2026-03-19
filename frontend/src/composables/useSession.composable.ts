@@ -209,6 +209,7 @@ const useSession = () => {
 			const activeSession = data.find((s: any) => s.idSensor === sensorId)
 			if (activeSession) {
 				startSessionOnClientSide(sensorTopic, sensorId)
+				await fetchDataAndUpdateChart(activeSession.id)
 				return true
 			}
 			return false
