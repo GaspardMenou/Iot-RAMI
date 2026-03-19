@@ -111,7 +111,6 @@ class SocketService {
       });
       await kafkaService.startConsuming();
       this.kafkaRetryCount = 0;
-      console.log("Kafka consumer started");
       await dlq.flush(async (data: KafkaPayload) => {
         if (data.type === "start") await this.handleSessionStart(data);
         else if (data.type === "data") await this.handleSensorData(data);

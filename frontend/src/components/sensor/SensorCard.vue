@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-	import { computed, defineComponent, onMounted, onUnmounted } from "vue"
+	import { computed, defineComponent, onMounted, onUnmounted, watch } from "vue"
 	import { EventTypes, handleEvent } from "@/composables/useUser.composable"
 	import { useSensor, SensorState } from "@/composables/useSensor.composable"
 	import { useRouter } from "vue-router"
@@ -59,11 +59,24 @@
 				type: Boolean,
 				default: false,
 			},
+			externalStatus: {
+				type: String,
+				default: null,
+			},
 		},
 		setup(props) {
 			const router = useRouter()
 
 			const { status, statusClass, checkSensorStatus, listenToSensorStatus } = useSensor(props.sensor.name)
+
+			// Si un statut externe est fourni (par SensorsList), on l'utilise directement
+			if (props.externalStatus) {
+				status.value = props.externalStatus as SensorState
+			}
+
+			watch(() => props.externalStatus, (val) => {
+				if (val) status.value = val as SensorState
+			})
 
 			const isSelected = computed(() => props.selectedSensorId === props.sensor.id)
 
@@ -89,11 +102,14 @@
 			}
 
 			onMounted(() => {
-				checkSensorStatus()
-				const socket = listenToSensorStatus()
-				onUnmounted(() => {
-					socket.disconnect()
-				})
+				// Sans statut externe : comportement autonome (appel HTTP + socket individuel)
+				if (!props.externalStatus) {
+					checkSensorStatus()
+					const socket = listenToSensorStatus()
+					onUnmounted(() => {
+						socket.disconnect()
+					})
+				}
 			})
 
 			return {

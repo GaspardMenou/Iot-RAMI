@@ -12,6 +12,7 @@ import { io } from "socket.io-client"
  */
 
 enum SensorAPIEndpoint {
+	GET_ALL_SENSORS_STATUS = "/sensors/connexion/online",
 	GET_SENSOR_STATUS = "/sensors/connexion/online/:sensorName",
 	GET_ALL_SENSOR = "/sensors",
 }
@@ -53,10 +54,8 @@ export const useSensor = (sensorName: string | undefined) => {
 	const checkSensorStatus = async () => {
 		try {
 			const response = await axios.get(getURLForGettingSensorStatus(sensorName))
-			//console.log(response)
 			if (response.data.message) {
 				status.value = response.data.message
-				//console.log(response.data.message)
 			}
 		} catch (error) {
 			console.error("Error pinging sensor:", error)
@@ -85,6 +84,11 @@ export const useSensor = (sensorName: string | undefined) => {
 			return { data: payload, total: payload.length, totalPages: 1, page: 1 }
 		}
 		return { data: payload.data, total: payload.total, totalPages: payload.totalPages, page: payload.page }
+	}
+
+	const getAllSensorsStatus = async (): Promise<Record<string, SensorState>> => {
+		const { data } = await axios.get(SensorAPIEndpoint.GET_ALL_SENSORS_STATUS)
+		return data
 	}
 
 	const fetchSensors = async (page: number = 1, limit: number = 20) => {
@@ -176,6 +180,7 @@ export const useSensor = (sensorName: string | undefined) => {
 		statusClass,
 		checkSensorStatus,
 		fetchSensors,
+		getAllSensorsStatus,
 		handleSensorSelect,
 		listenToSensorStatus,
 		sensors,

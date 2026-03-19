@@ -26,8 +26,6 @@ class KafkaService {
 
   private async connectToKafka(): Promise<void> {
     try {
-      console.log("🔄 [Kafka] Tentative de connexion...");
-
       this.kafka = new Kafka({
         clientId: "sensor-app",
         brokers: [envs.KAFKA_BROKERS],
@@ -38,7 +36,6 @@ class KafkaService {
       });
 
       this.consumer = this.kafka.consumer({ groupId: "sensor-group" });
-      console.log("✅ [Kafka] Connexion établie");
     } catch (error) {
       console.error("❌ [Kafka] Erreur de connexion:", error);
       throw error;

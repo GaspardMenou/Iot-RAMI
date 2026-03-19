@@ -11,7 +11,6 @@ class KafkaService {
   public static async getInstance(): Promise<KafkaService> {
     if (!KafkaService.instance) {
       try {
-        console.log("📦 Creating new Kafka Service instance");
         KafkaService.instance = new KafkaService();
         await KafkaService.instance.connectToKafka();
         await KafkaService.instance.connect();
@@ -25,8 +24,6 @@ class KafkaService {
 
   private async connectToKafka(): Promise<void> {
     try {
-      console.log("🔄 [Kafka] Tentative de connexion...");
-
       this.kafka = new Kafka({
         clientId: "fog-service",
         brokers: KAFKA_CONFIG.brokers,
@@ -37,7 +34,6 @@ class KafkaService {
       });
 
       this.producer = this.kafka.producer();
-      console.log("✅ [Kafka] Connexion établie");
     } catch (error) {
       console.error("❌ [Kafka] Erreur de connexion:", error);
       throw error;
@@ -63,10 +59,6 @@ class KafkaService {
         messages: [{ value: JSON.stringify(data) }],
         compression: CompressionTypes.GZIP,
       });
-      console.log("📤 Published to Kafka:", {
-        topic,
-        data,
-      });
     } catch (error) {
       console.error("❌ Error publishing to Kafka:", error);
       throw error;
@@ -84,10 +76,6 @@ class KafkaService {
         topic,
         messages,
         compression: CompressionTypes.GZIP,
-      });
-      console.log("📤 Published batch to Kafka:", {
-        topic,
-        count: dataArray.length,
       });
     } catch (error) {
       console.error("❌ Error publishing batch to Kafka:", error);

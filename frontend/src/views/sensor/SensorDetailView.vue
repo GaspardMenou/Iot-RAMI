@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { defineComponent, onMounted, computed, ref } from "vue"
+	import { defineComponent, onMounted, ref } from "vue"
 	import { useRouter } from "vue-router"
-	import { useSensor } from "@/composables/useSensor.composable"
 	import { useSession } from "@/composables/useSession.composable"
 	import { useAxios } from "@/composables/useAxios.composable"
 	import { useThreshold } from "@/composables/useThreshold.composable"
@@ -23,9 +22,9 @@
 		setup(props) {
 			const router = useRouter()
 			const { axios } = useAxios()
-			const { fetchSensors, sensors } = useSensor(undefined)
 			const { sessions, fetchAllSessionsOfSensor } = useSession()
 			const { thresholds, error: thresholdError, fetchThresholdsBySensor, createThreshold, updateThreshold, deleteThreshold } = useThreshold()
+			const sensor = ref<Sensor | null>(null)
 			const hasActiveSession = ref(false)
 			const measurementTypes = ref<MeasurementType[]>([])
 
@@ -38,7 +37,12 @@
 			const thresholdSaving = ref(false)
 
 			onMounted(async () => {
-				await fetchSensors()
+				try {
+					const { data } = await axios.get(`sensors/${props.id}`)
+					sensor.value = data
+				} catch {
+					sensor.value = null
+				}
 				await fetchAllSessionsOfSensor(props.id)
 				await fetchThresholdsBySensor(props.id)
 				try {
@@ -54,8 +58,6 @@
 					// ignore
 				}
 			})
-
-			const sensor = computed(() => sensors.value.find((s: Sensor) => s.id === props.id))
 			const goToSession = () => router.push({ name: "newsession", params: { id: props.id } })
 
 			const getMeasurementTypeName = (id: string) => {

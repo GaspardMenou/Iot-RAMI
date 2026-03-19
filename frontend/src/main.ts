@@ -19,7 +19,3 @@ app.use(router)
 
 app.mount("#app")
 
-// Example of how to use environment variables
-// if mode is development display back url in console
-console.log("Environment variables:")
-console.log(import.meta.env.VITE_APP_BACK_URL)

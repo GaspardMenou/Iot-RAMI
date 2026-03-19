@@ -10,7 +10,7 @@
 		name: "DashboardView",
 		components: { SensorCard },
 		setup() {
-			const { fetchSensors, sensors } = useSensor(undefined)
+			const { fetchSensors, totalSensors } = useSensor(undefined)
 			const { axios } = useAxios()
 			const router = useRouter()
 
@@ -35,7 +35,7 @@
 			})
 
 			return {
-				sensors,
+				totalSensors,
 				totalSessions,
 				activeSessions,
 				firstName,
@@ -69,7 +69,7 @@
 				<span
 					v-else
 					class="stat-num"
-					>{{ String(sensors.length).padStart(2, "0") }}</span
+					>{{ String(totalSensors).padStart(2, "0") }}</span
 				>
 				<span class="stat-label">CAPTEURS</span>
 			</div>

@@ -28,8 +28,6 @@ class MqttFog {
 
   private async connectBroker(): Promise<void> {
     try {
-      console.log("🔄 [connectBroker] Démarrage connexion MQTT");
-
       const connectOptions: mqtt.IClientOptions = {
         clientId: "FogServiceClient",
         username: BROKER_INFO.username,
@@ -56,9 +54,6 @@ class MqttFog {
         console.error("❌ [MQTT] Erreur:", error);
       });
 
-      console.log(
-        "✅ [connectBroker] Client MQTT initialisé et handlers attachés",
-      );
     } catch (error) {
       console.error("❌ [connectBroker] Erreur:", error);
       throw error;
@@ -145,7 +140,6 @@ class MqttFog {
         await this.kafkaService.publishBatchSensorData("sensor-data", [batch]);
         this.buffer.set(topic, []);
         this.dropWarnedTopics.delete(topic);
-        console.log(`📤 [Kafka] batch data envoyé pour ${topic} (${dataArray.length} mesures)`);
       } catch (error) {
         console.error(`❌ [flushBuffer] Erreur Kafka pour ${topic}:`, error);
       }

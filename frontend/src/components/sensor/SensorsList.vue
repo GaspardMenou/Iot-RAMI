@@ -33,6 +33,7 @@
 						:isForRealTimeSession="props.isForRealTimeSession"
 						:selectedSensorId="selectedSensor"
 						:isForNavigation="standalone"
+						:externalStatus="sensorStatuses[sensor.name]"
 						@click="handleSensorSelect(sensor.id)" />
 				</div>
 			</div>
@@ -81,9 +82,10 @@
 </template>
 
 <script lang="ts">
-	import { defineComponent, onMounted, computed } from "vue"
+	import { defineComponent, onMounted, onUnmounted, computed, reactive } from "vue"
+	import { io } from "socket.io-client"
 	import SensorCard from "@/components/sensor/SensorCard.vue"
-	import { useSensor } from "@/composables/useSensor.composable"
+	import { useSensor, SensorState } from "@/composables/useSensor.composable"
 
 	const PAGE_LIMIT = 20
 
@@ -101,15 +103,38 @@
 			},
 		},
 		setup(props) {
-			const { sensors, selectedSensor, fetchSensors, handleSensorSelect, currentPage, totalPages, totalSensors } = useSensor(undefined)
+			const { sensors, selectedSensor, fetchSensors, getAllSensorsStatus, handleSensorSelect, currentPage, totalPages, totalSensors } = useSensor(undefined)
 
-			onMounted(() => {
-				fetchSensors(1, PAGE_LIMIT)
+			const sensorStatuses = reactive<Record<string, SensorState>>({})
+
+			// 1 seule connexion Socket.io pour toute la liste
+			const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000")
+			socket.on("sensor-status", (data: { sensorName: string; status: SensorState }) => {
+				sensorStatuses[data.sensorName] = data.status
 			})
 
-			const goToPage = (page: number) => {
+			const loadStatuses = async () => {
+				try {
+					const statuses = await getAllSensorsStatus()
+					Object.assign(sensorStatuses, statuses)
+				} catch {
+					// statut reste UNKNOWN si l'appel échoue
+				}
+			}
+
+			onMounted(async () => {
+				await fetchSensors(1, PAGE_LIMIT)
+				await loadStatuses()
+			})
+
+			onUnmounted(() => {
+				socket.disconnect()
+			})
+
+			const goToPage = async (page: number) => {
 				if (page < 1 || page > totalPages.value) return
-				fetchSensors(page, PAGE_LIMIT)
+				await fetchSensors(page, PAGE_LIMIT)
+				await loadStatuses()
 				// Scroll vers le haut de la liste
 				const el = document.querySelector(".sensors-list-view--standalone")
 				if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -145,6 +170,7 @@
 				pageOffset,
 				pageNumbers,
 				goToPage,
+				sensorStatuses,
 				props,
 			}
 		},

@@ -119,6 +119,32 @@ const createSensor = async (req: Request, res: Response) => {
   }
 };
 
+const getAllSensorsStatus = async (_: Request, res: Response) => {
+  try {
+    const sensors = await Sensor.findAll({ attributes: ["id", "name"] });
+    const activeSessions = await Session.findAll({
+      where: { endedAt: null },
+      attributes: ["idSensor"],
+    });
+    const publishingIds = new Set(
+      activeSessions.map((s: any) => s.dataValues.idSensor)
+    );
+    const statuses: Record<string, string> = {};
+    for (const sensor of sensors) {
+      statuses[sensor.dataValues.name] = publishingIds.has(
+        sensor.dataValues.id
+      )
+        ? "publishing"
+        : "offline";
+    }
+    return res.status(200).json(statuses);
+  } catch (error) {
+    return res
+      .status(500)
+      .json(new ServerErrorException("Server error", "server.error"));
+  }
+};
+
 const getSensorStatus = async (req: Request, res: Response) => {
   const { sensorName } = req.params;
   try {
@@ -472,4 +498,5 @@ export {
   getSensorTopic,
   getDiscoveredSensors,
   getSensorStatus,
+  getAllSensorsStatus,
 };

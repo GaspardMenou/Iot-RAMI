@@ -158,7 +158,6 @@ const useUser = () => {
 			return { valid: true, error: null }
 		} catch (e) {
 			const { message, name } = e as { message: string; name: string }
-			console.log(e)
 			if (message && name.includes("Axios")) {
 				return { valid: false, error: { message } }
 			} else {
@@ -185,15 +184,11 @@ const useUser = () => {
 	}
 
 	const canUpdateUserRole = (user: UserMailRole) => {
-		console.log("canUpdateUserRole")
 		const role = localStorage.getItem("role")
 		if (role === null) return false
-		console.log("role is not null")
 		if (isBetterThan(role as Role, user.role)) {
-			console.log("role is better than user.role")
 			return true
 		} else {
-			console.log("role is not better than user.role")
 			return false
 		}
 	}
