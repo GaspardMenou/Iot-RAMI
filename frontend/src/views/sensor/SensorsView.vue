@@ -12,6 +12,10 @@
 			</div>
 			<div class="view-header-right">
 				<div class="status-summary">
+					<div class="status-pill status-pill--publishing">
+						<span class="pill-dot" />
+						<span class="pill-label">EN ÉMISSION</span>
+					</div>
 					<div class="status-pill status-pill--online">
 						<span class="pill-dot" />
 						<span class="pill-label">EN LIGNE</span>
@@ -142,6 +146,17 @@
 		height: 5px;
 		border-radius: 50%;
 		flex-shrink: 0;
+	}
+
+	.status-pill--publishing .pill-dot {
+		background: var(--color-warning);
+		box-shadow: 0 0 4px var(--color-warning);
+		animation: blink-dot 0.9s ease-in-out infinite;
+	}
+
+	@keyframes blink-dot {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.3; }
 	}
 
 	.status-pill--online .pill-dot {
