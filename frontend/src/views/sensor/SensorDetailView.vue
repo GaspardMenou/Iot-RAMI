@@ -93,6 +93,7 @@
 
 			const removeThreshold = async (id: string) => {
 				await deleteThreshold(id)
+				thresholdForm.value = { idMeasurementType: "", minValue: "", maxValue: "" }
 			}
 
 			return {

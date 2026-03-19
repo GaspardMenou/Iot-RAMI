@@ -12,7 +12,7 @@ import { addDiscoveredMeasurement } from "@service/discoverdMeasurementService";
 import * as dlq from "@service/dlqService";
 import { activeSessionsTotal, kafkaMessageProcessingSeconds } from "@middlewares/metrics";
 
-const { Sensor: SensorModel, Session, MeasurementType, Threshold: ThresholdModel, UserSensorAccess } = db as any;
+const { Sensor: SensorModel, Session, MeasurementType, Threshold: ThresholdModel, UserSensorAccess, User } = db as any;
 
 // ---------- Kafka message payload types ----------
 
@@ -317,10 +317,16 @@ class SocketService {
     }
     if (violations.length === 0) return;
 
-    const accesses = await UserSensorAccess.findAll({ where: { sensorId: idSensor, status: "accepted" } });
+    const [accesses, admins] = await Promise.all([
+      UserSensorAccess.findAll({ where: { sensorId: idSensor, status: "accepted" } }),
+      User.findAll({ where: { role: "admin" }, attributes: ["id"] }),
+    ]);
+    const accessUserIds = new Set<string>(accesses.map((a: any) => (a.dataValues as any).userId));
+    for (const admin of admins) {
+      accessUserIds.add((admin.dataValues as any).id);
+    }
     for (const violation of violations) {
-      for (const access of accesses) {
-        const userId: string = (access.dataValues as any).userId;
+      for (const userId of accessUserIds) {
         this.io.to(`user-${userId}`).emit("threshold-alert", {
           sensorTopic,
           measureType,
