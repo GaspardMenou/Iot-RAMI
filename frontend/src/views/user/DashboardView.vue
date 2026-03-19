@@ -10,7 +10,7 @@
 		name: "DashboardView",
 		components: { SensorCard },
 		setup() {
-			const { fetchSensors, totalSensors } = useSensor(undefined)
+			const { fetchSensors, sensors, totalSensors } = useSensor(undefined)
 			const { axios } = useAxios()
 			const router = useRouter()
 
@@ -35,6 +35,7 @@
 			})
 
 			return {
+				sensors,
 				totalSensors,
 				totalSessions,
 				activeSessions,
