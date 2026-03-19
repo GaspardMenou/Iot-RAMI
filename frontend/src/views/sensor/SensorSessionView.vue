@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { defineComponent, onMounted, onUnmounted, provide, ref } from "vue"
 	import { useSession } from "@/composables/useSession.composable"
-	import { useSensor } from "@/composables/useSensor.composable"
+	import { useAxios } from "@/composables/useAxios.composable"
 	import { useThreshold } from "@/composables/useThreshold.composable"
 	import SensorCard from "@/components/sensor/SensorCard.vue"
 	import Graph from "@/components/session/Graph.vue"
@@ -14,7 +14,7 @@
 		},
 		setup(props) {
 			const { idSensor, chartData, timeSinceLastValue, transmissionSpeed, checkAndJoinActiveSession, endSession } = useSession()
-			const { fetchSensors, sensors } = useSensor(undefined)
+			const { axios } = useAxios()
 			const { thresholds, fetchThresholdsBySensor } = useThreshold()
 
 			const isSessionActive = ref(false)
@@ -24,8 +24,12 @@
 			provide("chartData", chartData)
 
 			onMounted(async () => {
-				await fetchSensors()
-				sensor.value = sensors.value.find(s => s.id === props.id)
+				try {
+					const { data } = await axios.get(`sensors/${props.id}`)
+					sensor.value = data
+				} catch {
+					sensor.value = null
+				}
 				idSensor.value = props.id
 				await fetchThresholdsBySensor(props.id)
 
