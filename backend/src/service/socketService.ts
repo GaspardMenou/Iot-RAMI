@@ -73,8 +73,8 @@ class SocketService {
 
       socket.on("join-user-room", (data: { token: string }) => {
         try {
-          const payload = jwt.verify(data.token, envs.JWT_SECRET) as { id: string };
-          socket.join(`user-${payload.id}`);
+          const payload = jwt.verify(data.token, envs.JWT_SECRET) as { userId: string };
+          socket.join(`user-${payload.userId}`);
         } catch (error) {
           console.error("Invalid JWT token for join-user-room:", error);
         }
