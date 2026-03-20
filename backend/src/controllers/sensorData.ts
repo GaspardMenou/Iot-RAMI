@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, QueryTypes } from "sequelize";
 // Model import
 import db from "@db/index";
 import { BadRequestException, ServerErrorException } from "@/utils/exceptions";
@@ -205,8 +205,60 @@ const deleteSensorDataWithinTimeRange = async (
   }
 };
 
+/**
+ * Get downsampled sensor data using TimescaleDB time_bucket aggregation.
+ * Returns at most `maxPoints` buckets by averaging values within each bucket.
+ *
+ * @param {string} idSensor - The ID of the sensor.
+ * @param {Date} time1 - Start of the time range.
+ * @param {Date} time2 - End of the time range.
+ * @param {number} maxPoints - Maximum number of data points to return per measurement type.
+ * @throws {ServerErrorException} - Throws an error if there is a problem with the database operation.
+ */
+const getDownsampledSensorData = async (
+  idSensor: string,
+  time1: Date,
+  time2: Date,
+  maxPoints: number
+) => {
+  const durationSeconds = Math.max(1, (time2.getTime() - time1.getTime()) / 1000);
+  const bucketSeconds = Math.max(1, Math.ceil(durationSeconds / maxPoints));
+
+  try {
+    const results = await DB.sequelize.query(
+      `SELECT
+         time_bucket(make_interval(secs => :bucketSeconds), sd.time) AS time,
+         sd."idSensor",
+         sd."idMeasurementType",
+         AVG(sd.value) AS value,
+         mt.name AS "MeasurementTypeName"
+       FROM sensordata sd
+       JOIN "MeasurementTypes" mt ON sd."idMeasurementType" = mt.id
+       WHERE sd."idSensor" = :idSensor
+         AND sd.time BETWEEN :time1 AND :time2
+       GROUP BY 1, sd."idSensor", sd."idMeasurementType", mt.name
+       ORDER BY 1`,
+      {
+        replacements: { bucketSeconds, idSensor, time1, time2 },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    return (results as any[]).map((row: any) => ({
+      time: row.time,
+      value: parseFloat(row.value),
+      idSensor: row.idSensor,
+      idMeasurementType: row.idMeasurementType,
+      MeasurementType: { name: row.MeasurementTypeName },
+    }));
+  } catch (error) {
+    throw new ServerErrorException("Server error!", "server.error");
+  }
+};
+
 export {
   createSensorData,
   getSensorDataWithinTimeRange,
+  getDownsampledSensorData,
   deleteSensorDataWithinTimeRange,
 };

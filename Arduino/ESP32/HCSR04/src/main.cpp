@@ -85,7 +85,7 @@ void loop() {
         sendPing(client, saved_topic_sensor);
     }
 
-    if (currentMillis - previousMillis >= 1000) {
+    if (currentMillis - previousMillis >= INTERVAL) {
         previousMillis = currentMillis;
         if (allow_to_publish) {
             readAndPublishMeasures(client, saved_topic_sensor);

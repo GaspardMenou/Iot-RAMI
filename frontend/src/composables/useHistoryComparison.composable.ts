@@ -101,7 +101,7 @@ export const useHistoryComparison = () => {
 	}
 
 	const fetchSessionData = async (sessionId: string): Promise<RawDataPoint[]> => {
-		const response = await axios.get(buildSessionDataUrl(sessionId))
+		const response = await axios.get(`${buildSessionDataUrl(sessionId)}?maxPoints=1000`)
 		return response.data as RawDataPoint[]
 	}
 

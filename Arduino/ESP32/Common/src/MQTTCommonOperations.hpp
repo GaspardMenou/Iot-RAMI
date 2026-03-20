@@ -60,6 +60,7 @@ extern char saved_topic_server[60];
 /************************************ Function prototypes *************************************/
 // Wifi and security
 void setup_wifi();
+void processWifiManager();
 void setCACertForTLS(WiFiClientSecure& client, const char* certificate);
 // Mqtt (connexion, command reception and message publication)
 void reconnect(PubSubClient& client, const char* mqtt_username, const char* mqtt_password, const char* topic);

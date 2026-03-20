@@ -7,6 +7,7 @@ import {
 import {
   deleteSensorDataWithinTimeRange,
   getSensorDataWithinTimeRange,
+  getDownsampledSensorData,
 } from "@controllers/sensorData";
 
 // Model import
@@ -225,12 +226,16 @@ const getSessionData = async (req: Request, res: Response) => {
         .json(new NotFoundException("Sensor not found", "sensor.not.found"));
     }
 
-    // Utilisation des données du capteur
-    const sensorData = await getSensorDataWithinTimeRange(
-      sensor.dataValues.id,
-      session.dataValues.createdAt,
-      session.dataValues.endedAt ?? new Date()
-    );
+    const startTime = session.dataValues.createdAt;
+    const endTime = session.dataValues.endedAt ?? new Date();
+
+    const maxPointsParam = req.query.maxPoints;
+    const maxPoints = maxPointsParam ? parseInt(maxPointsParam as string, 10) : 0;
+
+    const sensorData =
+      maxPoints > 0
+        ? await getDownsampledSensorData(sensor.dataValues.id, startTime, endTime, maxPoints)
+        : await getSensorDataWithinTimeRange(sensor.dataValues.id, startTime, endTime);
 
     return res.status(200).json(sensorData);
   } catch (error) {

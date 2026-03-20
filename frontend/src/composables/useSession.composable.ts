@@ -308,6 +308,7 @@ const useSession = () => {
 		}
 
 		const newData = [...datasets[datasetIndex].data, { x: label, y: value }]
+		newData.sort((a, b) => a.x.getTime() - b.x.getTime())
 		if (maxpoint > 0 && newData.length > maxpoint) newData.shift()
 		if (maxpoint > 0 && newLabels.length > maxpoint) newLabels.shift()
 
@@ -318,7 +319,7 @@ const useSession = () => {
 	const fetchDataAndUpdateChart = async (idSession: string) => {
 		try {
 			chartData.value = { labels: [], datasets: [] }
-			const response = await axios.get(getURLForFetchingSessionData(idSession))
+			const response = await axios.get(`${getURLForFetchingSessionData(idSession)}?maxPoints=1000`)
 			const sessionData: { time: string; value: number; MeasurementType?: { name: string } }[] = response.data
 
 			// Build all datasets in memory first, then assign once

@@ -59,6 +59,13 @@ char saved_topic_server[60];
 
 /************************************ Function Implementations *************************************/
 void setup_wifi() {
+    // Hold BOOT button (GPIO 0) at startup to reset WiFi credentials and force portal
+    pinMode(0, INPUT_PULLUP);
+    if (digitalRead(0) == LOW) {
+        Serial.println("BOOT button held — reset WiFi credentials");
+        wm.resetSettings();
+    }
+
     wm.setSaveConfigCallback([]() {
           shouldSaveConfig = true;
     });
@@ -95,12 +102,24 @@ void setup_wifi() {
         }
         Serial.println("Connecté");
         Serial.println(WiFi.localIP());
-        
+        wm.startWebPortal(); // Keep config page accessible at http://<esp32-ip>/
     }else {
         Serial.println("Il y a un pb chef");
     }
-    
-    
+}
+
+void processWifiManager() {
+    wm.process();
+    if (shouldSaveConfig) {
+        shouldSaveConfig = false;
+        preference.begin("fog", false);
+        preference.putString("broker", broker.getValue());
+        preference.putString("username", username.getValue());
+        preference.putString("password", password.getValue());
+        preference.putString("sensor_name", sensor_name.getValue());
+        preference.end();
+        ESP.restart();
+    }
 }
 
 void setCACertForTLS(WiFiClientSecure& client, const char* certificate) {

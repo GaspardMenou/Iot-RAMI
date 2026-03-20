@@ -73,6 +73,7 @@ void loop() {
         }
     }
     client.loop();
+    processWifiManager();
     unsigned long currentMillis = millis();
     if (!allow_to_publish && currentMillis - previousStartMillis >= START_INTERVAL){
         previousStartMillis = millis();
