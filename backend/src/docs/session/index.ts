@@ -145,6 +145,49 @@ const paths = {
     },
   },
   "/sessions/{id}/export/csv": { ...exportCsv },
+  "/sessions/{id}/aggregate": {
+    get: {
+      tags: ["Session"],
+      summary: "Get aggregated sensor data for a session",
+      description:
+        "Returns 1-minute TimescaleDB continuous aggregate data (avg, min, max, count) for each measurement type during the session.",
+      operationId: "getSessionAggregate",
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+          description: "Session UUID",
+        },
+      ],
+      responses: {
+        "200": {
+          description: "Aggregated data rows",
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    bucket: { type: "string", format: "date-time", description: "1-minute time bucket" },
+                    avg_value: { type: "number" },
+                    min_value: { type: "number" },
+                    max_value: { type: "number" },
+                    count: { type: "integer" },
+                    idMeasurementType: { type: "string", format: "uuid" },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "404": { description: "Session or sensor not found", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        "500": { description: "Internal server error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+      },
+    },
+  },
   "/sessions/{id}/data": {
     get: {
       tags: ["Session"],

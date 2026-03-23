@@ -4,6 +4,7 @@ import { measurementPaths } from "@docs/measurement";
 import { userPaths } from "@docs/user";
 import { sessionPaths } from "@docs/session";
 import { authPaths } from "@docs/auth";
+import { thresholdPaths } from "@docs/threshold";
 
 const paths = {
   paths: {
@@ -13,6 +14,7 @@ const paths = {
     ...userPaths,
     ...sessionPaths,
     ...authPaths,
+    ...thresholdPaths,
   },
 };
 

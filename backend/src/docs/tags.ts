@@ -9,6 +9,10 @@ const tags = {
       name: "User Access Control",
       description: "User-sensor and user-measurementType access management",
     },
+    {
+      name: "Threshold",
+      description: "Alert threshold management — min/max per sensor and measurement type",
+    },
   ],
 };
 

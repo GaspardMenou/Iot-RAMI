@@ -10,6 +10,34 @@ const paths = {
     ...update,
     ...deleteMeasurementType,
   },
+  "/measurementTypes/discovered": {
+    get: {
+      tags: ["MeasurementType"],
+      summary: "Get discovered measurement types",
+      description:
+        "Returns measurement types seen in incoming MQTT payloads but not yet registered in the database.",
+      operationId: "getDiscoveredMeasurementTypes",
+      parameters: [],
+      responses: {
+        "200": {
+          description: "List of discovered measurement type names",
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: { type: "string" },
+                example: ["ecg", "temperature"],
+              },
+            },
+          },
+        },
+        "500": {
+          description: "Internal server error",
+          content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        },
+      },
+    },
+  },
 };
 
 export { paths as measurementTypePaths };

@@ -188,6 +188,55 @@ const components = {
           },
         },
       },
+      Threshold: {
+        type: "object",
+        properties: {
+          id: { type: "string", format: "uuid", description: "Threshold UUID" },
+          idSensor: {
+            type: "string",
+            format: "uuid",
+            description: "Sensor UUID",
+          },
+          idMeasurementType: {
+            type: "string",
+            format: "uuid",
+            description: "MeasurementType UUID",
+          },
+          minValue: {
+            type: "number",
+            nullable: true,
+            description: "Minimum allowed value (null = no lower bound)",
+          },
+          maxValue: {
+            type: "number",
+            nullable: true,
+            description: "Maximum allowed value (null = no upper bound)",
+          },
+        },
+      },
+      ThresholdCreate: {
+        type: "object",
+        required: ["idSensor", "idMeasurementType"],
+        properties: {
+          idSensor: { type: "string", format: "uuid" },
+          idMeasurementType: { type: "string", format: "uuid" },
+          minValue: { type: "number", nullable: true },
+          maxValue: { type: "number", nullable: true },
+        },
+      },
+      ThresholdUpdate: {
+        type: "object",
+        properties: {
+          minValue: { type: "number", nullable: true },
+          maxValue: { type: "number", nullable: true },
+        },
+      },
+      ThresholdDelete: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
       Error: {
         type: "object",
         properties: {
