@@ -12,6 +12,8 @@ class MqttFog {
   private maxBufferSize = BUFFER_CONFIG.maxBufferSize;
   private dropWarnedTopics = new Set<string>();
   private sensorTimeouts: Map<string, NodeJS.Timeout> = new Map();
+  private sessionTimers: Map<string, NodeJS.Timeout> = new Map();
+  private sessionMaxDurationMs = BUFFER_CONFIG.sessionMaxDurationMs;
   private flushInterval: NodeJS.Timeout | undefined;
 
   private constructor() {
@@ -77,7 +79,7 @@ class MqttFog {
     }, 30000);
     this.sensorTimeouts.set(topic, timeout);
   }
-  private async handleStart(topic: string): Promise<void> {
+  private async startSession(topic: string): Promise<void> {
     if (!this.buffer.has(topic)) {
       this.buffer.set(topic, []);
     }
@@ -87,11 +89,24 @@ class MqttFog {
       ]);
       console.log(`▶️ [Kafka] START envoyé pour ${topic}`);
     } catch (error) {
-      console.error(`❌ [handleStart] Erreur Kafka:`, error);
+      console.error(`❌ [startSession] Erreur Kafka:`, error);
     }
+    clearTimeout(this.sessionTimers.get(topic));
+    const timer = setTimeout(() => {
+      console.log(`🔄 [Session] Durée max atteinte pour ${topic} — rotation de session`);
+      this.handleStop(topic)
+        .then(() => this.startSession(topic))
+        .catch((e) => console.error(`❌ [Session] Erreur lors de la rotation pour ${topic}:`, e));
+    }, this.sessionMaxDurationMs);
+    this.sessionTimers.set(topic, timer);
+  }
+  private async handleStart(topic: string): Promise<void> {
+    await this.startSession(topic);
     this.sendAck(topic);
   }
   private async handleStop(topic: string): Promise<void> {
+    clearTimeout(this.sessionTimers.get(topic));
+    this.sessionTimers.delete(topic);
     await this.flushBuffer(topic);
     try {
       await this.kafkaService.publishBatchSensorData("sensor-data", [

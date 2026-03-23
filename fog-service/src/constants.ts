@@ -32,4 +32,5 @@ export const BUFFER_CONFIG = {
   flushIntervalMs: parseInt(process.env.FLUSH_INTERVAL_MS ?? "200"),
   flushMaxSize: parseInt(process.env.FLUSH_MAX_SIZE ?? "50"),
   maxBufferSize: parseInt(process.env.MAX_BUFFER_SIZE ?? "500"),
+  sessionMaxDurationMs: parseInt(process.env.SESSION_MAX_DURATION_MS ?? "3600000"),
 };
