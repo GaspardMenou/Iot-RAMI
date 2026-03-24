@@ -243,7 +243,7 @@
 		padding: 0.7rem 0.9rem;
 		font-size: 0.85rem;
 		border: 1px solid var(--color-border-bright);
-		background: rgba(0, 0, 0, 0.3);
+		background: var(--color-overlay);
 		color: var(--color-text);
 		font-family: var(--font-mono);
 		border-radius: 0;

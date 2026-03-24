@@ -44,7 +44,6 @@
 						:class="[isActive(item.path) ? 'active-link' : '']"
 						:to="item.path"
 						@click="closeSidebarOnMobile">
-						<span class="nav-indicator" />
 						<span class="nav-icon">{{ item.icon }}</span>
 						<span class="nav-label">{{ item.name }}</span>
 					</router-link>
@@ -170,7 +169,7 @@
 			},
 			logout() {
 				cleanUserLocalStorage()
-				location.href = "/"
+				this.$router.push("/")
 			},
 			closeSidebarOnMobile() {
 				if (window.innerWidth <= 768) {
@@ -286,11 +285,6 @@
 		border-left: 2px solid transparent;
 	}
 
-	.nav-indicator {
-		width: 0;
-		height: 0;
-	}
-
 	.nav-icon {
 		font-size: 0.9rem;
 		width: 16px;
@@ -305,7 +299,7 @@
 	.sidebar-nav ul li a:hover {
 		background-color: var(--color-sidebar-hover);
 		color: var(--color-primary);
-		border-left-color: rgba(255, 159, 10, 0.4);
+		border-left-color: var(--color-primary-glow);
 	}
 
 	.sidebar-nav ul li a.active-link {
@@ -425,7 +419,7 @@
 	}
 
 	.alert-item.min .alert-dir {
-		color: #00cfff;
+		color: var(--color-info);
 	}
 	.alert-item.max .alert-dir {
 		color: var(--color-danger);
@@ -515,17 +509,18 @@
 		.hamburger {
 			display: flex;
 			flex-direction: column;
-			justify-content: space-between;
+			justify-content: center;
+			gap: 5px;
 			position: fixed;
-			top: 1rem;
-			left: 1rem;
+			top: 0.5rem;
+			left: 0.5rem;
 			z-index: 200;
-			width: 2rem;
-			height: 1.4rem;
+			width: 2.75rem;
+			height: 2.75rem;
 			background: none;
 			border: none;
 			cursor: pointer;
-			padding: 0;
+			padding: 0.65rem 0.5rem;
 		}
 
 		.hamburger span {
@@ -534,6 +529,7 @@
 			height: 2px;
 			background-color: var(--color-primary);
 			border-radius: 0;
+			flex-shrink: 0;
 		}
 
 		.sidebar {

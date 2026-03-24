@@ -45,7 +45,13 @@ input, select, textarea {
     font-size: 0.85rem;
     transition: border-color 0.2s, box-shadow 0.2s;
     outline: none;
-    width: 100%;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }
 
 input::placeholder, textarea::placeholder {

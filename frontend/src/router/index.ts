@@ -106,13 +106,11 @@ router.beforeEach(async (to, from, next) => {
 
 	if (!token || !expires_at) {
 		cleanUserLocalStorage()
-		alert("You need to login first")
 		return next("/")
 	}
 	if (token && expires_at < Date.now().toString()) {
 		// If the token is expired, clean the local storage and redirect to log in
 		cleanUserLocalStorage()
-		alert("Your session has expired")
 		return next("/")
 	}
 	if (to.name === "admin") {

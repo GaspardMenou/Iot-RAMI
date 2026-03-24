@@ -60,8 +60,12 @@
 		<div class="stats-row">
 			<div
 				class="stat-card stat-card--link"
+				role="button"
+				tabindex="0"
 				title="Voir mes capteurs"
-				@click="goToSensors">
+				@click="goToSensors"
+				@keydown.enter="goToSensors"
+				@keydown.space.prevent="goToSensors">
 				<span
 					v-if="isLoading"
 					class="stat-num stat-skeleton"
@@ -76,8 +80,12 @@
 			</div>
 			<div
 				class="stat-card stat-card--link"
+				role="button"
+				tabindex="0"
 				title="Voir l'historique des sessions"
-				@click="goToSensors">
+				@click="goToSensors"
+				@keydown.enter="goToSensors"
+				@keydown.space.prevent="goToSensors">
 				<span
 					v-if="isLoading"
 					class="stat-num stat-skeleton"
@@ -92,8 +100,12 @@
 			</div>
 			<div
 				class="stat-card stat-card--live stat-card--link"
+				role="button"
+				tabindex="0"
 				title="Voir les sessions en cours"
-				@click="goToSensors">
+				@click="goToSensors"
+				@keydown.enter="goToSensors"
+				@keydown.space.prevent="goToSensors">
 				<span
 					v-if="isLoading"
 					class="stat-num stat-skeleton"
@@ -176,12 +188,12 @@
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		line-height: 1;
-		text-shadow: 0 0 40px rgba(255, 159, 10, 0.08);
+		text-shadow: 0 0 40px var(--color-primary-glow);
 	}
 
 	.greeting-line {
 		height: 1px;
-		background: linear-gradient(to right, var(--color-primary), rgba(255, 159, 10, 0.15), transparent);
+		background: linear-gradient(to right, var(--color-primary), var(--color-primary-dim), transparent);
 		margin-top: 4px;
 	}
 

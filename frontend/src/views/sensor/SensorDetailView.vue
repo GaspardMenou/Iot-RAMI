@@ -249,6 +249,11 @@
 			v-else
 			class="empty-state">
 			CAPTEUR INTROUVABLE
+			<button
+				class="btn-back"
+				@click="$router.back()">
+				← RETOUR
+			</button>
 		</div>
 	</div>
 </template>
@@ -296,7 +301,7 @@
 		gap: 0.5rem;
 		padding: 0.65rem 1.25rem;
 		background: var(--color-success-dim);
-		border: 1px solid rgba(57, 255, 20, 0.35);
+		border: 1px solid color-mix(in srgb, var(--color-success) 35%, transparent);
 		color: var(--color-success);
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
@@ -313,13 +318,13 @@
 	.btn-session:hover {
 		background: var(--color-success);
 		border-color: var(--color-success);
-		color: #070600;
-		box-shadow: 0 0 16px rgba(57, 255, 20, 0.25);
+		color: var(--color-text-second);
+		box-shadow: 0 0 16px color-mix(in srgb, var(--color-success) 25%, transparent);
 	}
 
 	.btn-session--active {
 		background: var(--color-primary-dim);
-		border-color: rgba(255, 159, 10, 0.35);
+		border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
 		color: var(--color-primary);
 	}
 
@@ -393,6 +398,24 @@
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		border: 1px dashed var(--color-border-bright);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.btn-back {
+		font-family: var(--font-mono);
+		color: var(--color-primary);
+		background: none;
+		border: 1px solid var(--color-border);
+		padding: 0.5rem 1rem;
+		cursor: pointer;
+		letter-spacing: 0.05em;
+	}
+
+	.btn-back:hover {
+		border-color: var(--color-primary);
 	}
 
 	/* ── Seuils ── */
@@ -430,9 +453,9 @@
 	}
 
 	.threshold-badge--min {
-		background: rgba(0, 207, 255, 0.12);
-		border: 1px solid rgba(0, 207, 255, 0.4);
-		color: #00cfff;
+		background: var(--color-info-dim);
+		border: 1px solid var(--color-info);
+		color: var(--color-info);
 	}
 
 	.threshold-badge--max {
@@ -451,7 +474,9 @@
 		background: var(--color-surface-secondary);
 		border: 1px solid var(--color-border-bright);
 		color: var(--color-text-muted);
-		padding: 2px 8px;
+		padding: 6px 12px;
+		min-height: 2.75rem;
+		min-width: 2.75rem;
 		font-size: 0.7rem;
 		cursor: pointer;
 		font-family: var(--font-mono);
@@ -514,7 +539,7 @@
 
 	.threshold-save-btn {
 		background: var(--color-success-dim);
-		border: 1px solid rgba(57, 255, 20, 0.35);
+		border: 1px solid color-mix(in srgb, var(--color-success) 35%, transparent);
 		color: var(--color-success);
 		font-family: var(--font-mono);
 		font-size: 0.68rem;
@@ -530,7 +555,7 @@
 	.threshold-save-btn:hover:not(:disabled) {
 		background: var(--color-success);
 		border-color: var(--color-success);
-		color: #070600;
+		color: var(--color-text-second);
 	}
 
 	.threshold-save-btn:disabled {

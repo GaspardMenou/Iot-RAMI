@@ -40,6 +40,8 @@
     --color-danger-hover: #e02020;
     --color-danger-dim: rgba(255, 64, 64, 0.12);
     --color-warning: #ffcc00;
+    --color-info: #00cfff;
+    --color-info-dim: rgba(0, 207, 255, 0.12);
 
     /* ── Ombres ── */
     --color-shadow: rgba(255, 159, 10, 0.04);
@@ -50,7 +52,7 @@
 
     /* ── Typographie ── */
     --font-display: 'Big Shoulders Display', Impact, condensed, sans-serif;
-    --font-sans: 'Martian Mono', 'Courier New', monospace;
+    --font-sans: 'Martian Mono', 'Courier New', monospace; /* identique à --font-mono, conservé pour compatibilité */
     --font-mono: 'Martian Mono', 'Courier New', monospace;
 }
 
@@ -59,7 +61,6 @@
 *::after {
     box-sizing: border-box;
     margin: 0;
-    position: relative;
     font-weight: normal;
 }
 
@@ -117,6 +118,8 @@ body {
         --color-danger-hover: #aa1800;
         --color-danger-dim: rgba(204, 34, 0, 0.1);
         --color-warning: #b88000;
+        --color-info: #0088cc;
+        --color-info-dim: rgba(0, 136, 204, 0.1);
 
         /* Ombres */
         --color-shadow: rgba(0, 0, 0, 0.08);
@@ -147,4 +150,13 @@ body {
 ::selection {
     background: var(--color-primary);
     color: var(--color-text-second);
+}
+
+/* Respect des préférences système : désactive les animations pour les utilisateurs sensibles */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

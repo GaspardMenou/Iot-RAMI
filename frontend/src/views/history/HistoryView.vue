@@ -247,8 +247,8 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-		min-height: calc(100vh - 0px);
-		background: var(--color-bg);
+		min-height: 100dvh;
+		background: var(--color-background);
 		color: var(--color-text);
 		overflow: hidden;
 	}
@@ -435,7 +435,7 @@
 
 	.history__session-item:hover:not(.history__session-item--disabled) {
 		background: var(--color-primary-dim);
-		border-left-color: rgba(255, 159, 10, 0.3);
+		border-left-color: var(--color-primary-glow);
 	}
 
 	.history__session-item--selected {
@@ -505,7 +505,7 @@
 		font-weight: 700;
 		letter-spacing: 0.06em;
 		padding: 1px 5px;
-		color: var(--color-bg);
+		color: var(--color-background);
 		flex-shrink: 0;
 	}
 
@@ -622,7 +622,7 @@
 		display: flex;
 		align-items: stretch;
 		overflow: hidden;
-		background: var(--color-bg);
+		background: var(--color-background);
 	}
 
 	.history__graph > * {
@@ -671,7 +671,7 @@
 			opacity: 0.4;
 		}
 		40% {
-			transform: translateY(-8px);
+			transform: translateY(-4px);
 			opacity: 1;
 		}
 	}

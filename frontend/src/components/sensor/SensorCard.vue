@@ -1,8 +1,13 @@
 <template>
 	<div
 		class="sensor-card"
-		:class="[statusClass, { 'sensor-card--selected': isSelected, 'sensor-card--clickable': !isForNavigation || true }]"
-		@click="handleCardClick">
+		role="button"
+		tabindex="0"
+		:class="[statusClass, { 'sensor-card--selected': isSelected, 'sensor-card--clickable': !isForNavigation || true, 'sensor-card--disabled': isCardDisabled }]"
+		:aria-disabled="isCardDisabled"
+		@click="handleCardClick"
+		@keydown.enter="handleCardClick"
+		@keydown.space.prevent="handleCardClick">
 		<!-- Barre de statut gauche -->
 		<div class="sensor-status-bar">
 			<span
@@ -80,6 +85,9 @@
 
 			const isSelected = computed(() => props.selectedSensorId === props.sensor.id)
 
+			// Disabled when used in real-time session context and sensor is not online
+			const isCardDisabled = computed(() => props.isForRealTimeSession && status.value !== SensorState.ONLINE)
+
 			const selectSensor = () => {
 				if (props.isForRealTimeSession) {
 					handleEvent("emit", EventTypes.SENSOR_SELECTED_FOR_CREATING_SESSION, props.sensor.id)
@@ -120,6 +128,7 @@
 				handleCardClick,
 				SensorState,
 				isSelected,
+				isCardDisabled,
 			}
 		},
 	})
@@ -144,7 +153,7 @@
 		border-color: var(--color-primary);
 		border-left-color: var(--color-primary);
 		background: var(--color-surface-secondary);
-		box-shadow: 0 0 20px rgba(255, 159, 10, 0.06), inset 0 0 30px rgba(255, 159, 10, 0.02);
+		box-shadow: 0 0 20px var(--color-primary-glow), inset 0 0 30px var(--color-primary-dim);
 	}
 
 	.sensor-card--selected {
@@ -152,6 +161,11 @@
 		border-left-color: var(--color-primary);
 		background: var(--color-primary-dim);
 		box-shadow: 0 0 16px var(--color-primary-glow);
+	}
+
+	.sensor-card--disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
 	}
 
 	/* Barre de statut gauche */
@@ -297,7 +311,7 @@
 	}
 	.status-online .status-tag {
 		color: var(--color-success);
-		border-color: rgba(57, 255, 20, 0.3);
+		border-color: color-mix(in srgb, var(--color-success) 30%, transparent);
 		background: var(--color-success-dim);
 	}
 
@@ -309,7 +323,7 @@
 	}
 	.status-publishing .status-tag {
 		color: var(--color-warning);
-		border-color: rgba(255, 204, 0, 0.3);
+		border-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
 		background: rgba(255, 204, 0, 0.08);
 		animation: blink-tag 0.9s ease-in-out infinite;
 	}

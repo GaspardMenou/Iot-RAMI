@@ -82,9 +82,9 @@
 		gap: 1.5rem;
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: 14px;
+		border-radius: 0;
 		padding: 1.75rem 2rem;
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+		box-shadow: inset 0 0 8px var(--color-overlay);
 	}
 
 	.profile-avatar {
@@ -131,7 +131,8 @@
 		font-weight: 600;
 		padding: 2px 10px;
 		border-radius: 999px;
-		background: rgba(14, 165, 233, 0.15);
+		background: var(--color-info-dim);
+		border-color: var(--color-info);
 		color: var(--color-primary);
 		width: fit-content;
 		text-transform: capitalize;
@@ -142,7 +143,7 @@
 		background: var(--color-surface-secondary);
 		color: var(--color-text);
 		border: 1px solid var(--color-border);
-		border-radius: 8px;
+		border-radius: 0;
 		font-size: 0.875rem;
 		font-weight: 600;
 		text-decoration: none;
@@ -161,9 +162,9 @@
 	.requests-section {
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: 14px;
+		border-radius: 0;
 		padding: 1.5rem 2rem;
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+		box-shadow: inset 0 0 8px var(--color-overlay);
 		display: flex;
 		flex-direction: column;
 		gap: 1.25rem;

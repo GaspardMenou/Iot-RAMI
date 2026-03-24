@@ -34,7 +34,7 @@
 </template>
 
 <script lang="ts">
-	import { defineComponent, ref } from "vue"
+	import { defineComponent, ref, onUnmounted } from "vue"
 	import { useSensor } from "@/composables/useSensor.composable"
 	import { useSession } from "@/composables/useSession.composable"
 
@@ -49,6 +49,7 @@
 			const { calculateDuration, formatHumanReadableDate } = useSensor(undefined)
 			const { exportSessionToCsv } = useSession()
 			const csvState = ref<"idle" | "loading" | "done" | "error">("idle")
+			const csvTimeoutId = ref<ReturnType<typeof setTimeout> | null>(null)
 
 			const handleExport = async (sessionId: string) => {
 				if (csvState.value === "loading") return
@@ -56,16 +57,20 @@
 				try {
 					await exportSessionToCsv(sessionId)
 					csvState.value = "done"
-					setTimeout(() => {
+					csvTimeoutId.value = setTimeout(() => {
 						csvState.value = "idle"
 					}, 2000)
 				} catch {
 					csvState.value = "error"
-					setTimeout(() => {
+					csvTimeoutId.value = setTimeout(() => {
 						csvState.value = "idle"
 					}, 2000)
 				}
 			}
+
+			onUnmounted(() => {
+				if (csvTimeoutId.value) clearTimeout(csvTimeoutId.value)
+			})
 
 			return {
 				calculateDuration,
@@ -193,7 +198,8 @@
 	}
 
 	.btn-export {
-		padding: 0.35rem 0.85rem;
+		padding: 0.55rem 0.85rem;
+		min-height: 2.75rem;
 		margin-right: 0.75rem;
 		font-size: 0.68rem;
 		font-family: var(--font-mono);
@@ -222,15 +228,15 @@
 		cursor: wait;
 	}
 
-	.btn-export--done {
-		border-color: var(--color-success) !important;
-		color: var(--color-success) !important;
-		background: var(--color-success-dim) !important;
+	.btn-export.btn-export--done {
+		border-color: var(--color-success);
+		color: var(--color-success);
+		background: var(--color-success-dim);
 	}
 
-	.btn-export--error {
-		border-color: var(--color-danger) !important;
-		color: var(--color-danger) !important;
-		background: var(--color-danger-dim) !important;
+	.btn-export.btn-export--error {
+		border-color: var(--color-danger);
+		color: var(--color-danger);
+		background: var(--color-danger-dim);
 	}
 </style>

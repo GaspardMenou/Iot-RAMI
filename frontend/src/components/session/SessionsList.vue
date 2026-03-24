@@ -14,8 +14,13 @@
 					v-for="session in sessions"
 					:key="session.id"
 					class="session-row"
+					role="button"
+					tabindex="0"
 					:class="{ 'session-row--selected': selectedSession === session.id }"
-					@click="handleSessionSelect(session.id)">
+					:aria-pressed="selectedSession === session.id"
+					@click="handleSessionSelect(session.id)"
+					@keydown.enter="handleSessionSelect(session.id)"
+					@keydown.space.prevent="handleSessionSelect(session.id)">
 					<SessionCard :session="session" />
 				</div>
 			</div>
@@ -177,7 +182,7 @@
 	}
 
 	.session-row:hover {
-		background: rgba(255, 159, 10, 0.04);
+		background: var(--color-primary-dim);
 	}
 
 	.session-row--selected {
