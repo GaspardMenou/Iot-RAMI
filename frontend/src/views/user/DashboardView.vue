@@ -322,24 +322,33 @@
 
 	.sensor-skeleton {
 		height: 64px;
-		background: var(--color-surface);
+		background: var(--color-surface-secondary);
 		border-bottom: 1px solid var(--color-border);
-		animation: shimmer 1.5s ease-in-out infinite;
-		background-image: linear-gradient(90deg, var(--color-surface) 0%, var(--color-surface-secondary) 50%, var(--color-surface) 100%);
-		background-size: 200% 100%;
+		animation: scan-line 1.2s ease-in-out infinite;
+		position: relative;
+	}
+
+	.sensor-skeleton::after {
+		content: "···";
+		position: absolute;
+		top: 50%;
+		left: 1rem;
+		transform: translateY(-50%);
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.2em;
+		opacity: 0.4;
 	}
 
 	.sensor-skeleton:last-child {
 		border-bottom: none;
 	}
 
-	@keyframes shimmer {
-		0% {
-			background-position: 200% 0;
-		}
-		100% {
-			background-position: -200% 0;
-		}
+	@keyframes scan-line {
+		0%   { opacity: 0.3; }
+		50%  { opacity: 0.7; }
+		100% { opacity: 0.3; }
 	}
 
 	/* Empty state */

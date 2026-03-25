@@ -85,19 +85,29 @@
 		border-radius: 0;
 		padding: 1.75rem 2rem;
 		box-shadow: inset 0 0 8px var(--color-overlay);
+		transition: box-shadow 0.2s, border-color 0.2s;
+	}
+
+	.profile-card:hover {
+		border-color: var(--color-border-bright);
+		box-shadow: inset 0 0 30px var(--color-overlay), 0 0 20px var(--color-primary-dim);
 	}
 
 	.profile-avatar {
-		width: 64px;
-		height: 64px;
-		border-radius: 50%;
-		background: var(--color-primary);
-		color: white;
+		width: 80px;
+		height: 80px;
+		border-radius: 0;
+		background: var(--color-surface-secondary);
+		border: 2px solid var(--color-primary);
+		box-shadow: 0 0 12px var(--color-primary-glow), inset 0 0 20px var(--color-overlay);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 1.4rem;
-		font-weight: 700;
+		font-family: var(--font-display);
+		font-size: 2rem;
+		font-weight: 900;
+		color: var(--color-primary);
+		text-shadow: 0 0 16px var(--color-primary);
 		flex-shrink: 0;
 	}
 
@@ -114,6 +124,7 @@
 		font-weight: 700;
 		margin: 0;
 		color: var(--color-text);
+		text-shadow: 0 0 20px var(--color-primary-dim);
 	}
 
 	.profile-email {
@@ -130,12 +141,14 @@
 		font-size: 0.75rem;
 		font-weight: 600;
 		padding: 2px 10px;
-		border-radius: 999px;
+		border-radius: 0;
 		background: var(--color-info-dim);
-		border-color: var(--color-info);
+		border: 1px solid var(--color-info);
 		color: var(--color-primary);
 		width: fit-content;
-		text-transform: capitalize;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		font-family: var(--font-mono);
 	}
 
 	.btn-edit {
@@ -154,8 +167,9 @@
 
 	.btn-edit:hover {
 		background: var(--color-primary);
-		color: white;
+		color: var(--color-text-second);
 		border-color: var(--color-primary);
+		box-shadow: 0 0 12px var(--color-primary-glow);
 	}
 
 	/* Requests section */
@@ -188,11 +202,14 @@
 		font-size: 0.85rem;
 		font-weight: 600;
 		border: 1px solid var(--color-border);
-		border-radius: 999px;
+		border-radius: 0;
 		background: var(--color-surface-secondary);
 		color: var(--color-text-muted);
 		cursor: pointer;
-		transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+		font-family: var(--font-mono);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		transition: background-color 0.15s, color 0.15s, border-color 0.15s, text-shadow 0.15s;
 	}
 
 	.tab-btn:hover {
@@ -203,7 +220,8 @@
 	.tab-btn.active {
 		background: var(--color-primary);
 		border-color: var(--color-primary);
-		color: white;
+		color: var(--color-text-second);
+		text-shadow: 0 0 8px var(--color-primary-dim);
 	}
 
 	.tab-content {

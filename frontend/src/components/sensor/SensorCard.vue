@@ -31,7 +31,7 @@
 		<div
 			v-if="isForNavigation"
 			class="sensor-arrow">
-			›
+			⟩
 		</div>
 	</div>
 </template>
@@ -269,6 +269,7 @@
 	.sensor-card:hover .sensor-arrow {
 		color: var(--color-primary);
 		transform: translateX(3px);
+		text-shadow: 0 0 8px var(--color-primary);
 	}
 
 	@media (max-width: 500px) {

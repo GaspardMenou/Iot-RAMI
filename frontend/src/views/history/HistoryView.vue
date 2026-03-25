@@ -512,19 +512,29 @@
 	/* Skeletons */
 	.history__skeleton {
 		height: 46px;
-		background: linear-gradient(90deg, var(--color-surface-secondary) 25%, var(--color-primary-dim) 50%, var(--color-surface-secondary) 75%);
-		background-size: 200% 100%;
-		animation: shimmer 1.4s infinite;
+		background: var(--color-surface-secondary);
 		border: 1px solid var(--color-border);
+		animation: scan-line 1.2s ease-in-out infinite;
+		position: relative;
 	}
 
-	@keyframes shimmer {
-		0% {
-			background-position: 200% 0;
-		}
-		100% {
-			background-position: -200% 0;
-		}
+	.history__skeleton::after {
+		content: "···";
+		position: absolute;
+		top: 50%;
+		left: 0.75rem;
+		transform: translateY(-50%);
+		color: var(--color-text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		letter-spacing: 0.2em;
+		opacity: 0.35;
+	}
+
+	@keyframes scan-line {
+		0%   { opacity: 0.3; }
+		50%  { opacity: 0.7; }
+		100% { opacity: 0.3; }
 	}
 
 	.history__empty {

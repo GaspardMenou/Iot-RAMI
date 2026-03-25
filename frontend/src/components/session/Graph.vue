@@ -10,28 +10,28 @@
 					title="Rewind"
 					aria-label="Reculer"
 					@click="rewind">
-					⏮
+					◁◁
 				</button>
 				<button
 					class="ctrl-btn"
 					title="Play"
 					aria-label="Lecture"
 					@click="play">
-					▶
+					▷
 				</button>
 				<button
 					class="ctrl-btn"
 					title="Pause"
 					aria-label="Pause"
 					@click="pause">
-					⏸
+					▐▐
 				</button>
 				<button
 					class="ctrl-btn"
 					title="Fast forward"
 					aria-label="Avancer"
 					@click="fastForward">
-					⏭
+					▷▷
 				</button>
 			</div>
 			<div
@@ -394,6 +394,7 @@
 		border-color: var(--color-primary);
 		color: var(--color-primary);
 		box-shadow: 0 0 8px var(--color-primary-glow);
+		text-shadow: 0 0 8px var(--color-primary);
 	}
 
 	/* Indicateur LIVE */
