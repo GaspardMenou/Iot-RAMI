@@ -11,7 +11,8 @@ const tags = {
     },
     {
       name: "Threshold",
-      description: "Alert threshold management — min/max per sensor and measurement type",
+      description:
+        "Alert threshold management — min/max per sensor and measurement type",
     },
   ],
 };

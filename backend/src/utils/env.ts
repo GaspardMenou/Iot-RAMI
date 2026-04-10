@@ -35,10 +35,14 @@ const envs = {
 
 if (envs.NODE_ENV === "production") {
   if (envs.JWT_SECRET === "secret") {
-    throw new Error("[env] JWT_SECRET must be set to a strong value in production");
+    throw new Error(
+      "[env] JWT_SECRET must be set to a strong value in production"
+    );
   }
   if (envs.REFRESH_TOKEN_SECRET === "refresh_secret") {
-    throw new Error("[env] REFRESH_TOKEN_SECRET must be set to a strong value in production");
+    throw new Error(
+      "[env] REFRESH_TOKEN_SECRET must be set to a strong value in production"
+    );
   }
 }
 

@@ -780,5 +780,4 @@ describe("Auxiliary functions", () => {
       );
     });
   });
-
 });

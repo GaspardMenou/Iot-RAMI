@@ -33,7 +33,11 @@ const paths = {
         },
         "500": {
           description: "Internal server error",
-          content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
         },
       },
     },

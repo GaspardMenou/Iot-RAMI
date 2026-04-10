@@ -268,9 +268,7 @@ describe("Threshold controller", () => {
         ...thresholdFixture,
         save: jest.fn().mockResolvedValue(undefined),
       };
-      ThresholdModel.findByPk = jest
-        .fn()
-        .mockResolvedValue(thresholdInstance);
+      ThresholdModel.findByPk = jest.fn().mockResolvedValue(thresholdInstance);
 
       const result = await superTest(app)
         .put(`${baseUri}/${thresholdId}`)
@@ -321,9 +319,7 @@ describe("Threshold controller", () => {
         ...thresholdFixture,
         save: jest.fn().mockRejectedValue(new Error("Save failed")),
       };
-      ThresholdModel.findByPk = jest
-        .fn()
-        .mockResolvedValue(thresholdInstance);
+      ThresholdModel.findByPk = jest.fn().mockResolvedValue(thresholdInstance);
 
       const body = { minValue: 20, maxValue: 200 };
 
@@ -344,9 +340,7 @@ describe("Threshold controller", () => {
         ...thresholdFixture,
         destroy: jest.fn().mockResolvedValue(undefined),
       };
-      ThresholdModel.findByPk = jest
-        .fn()
-        .mockResolvedValue(thresholdInstance);
+      ThresholdModel.findByPk = jest.fn().mockResolvedValue(thresholdInstance);
 
       const result = await superTest(app)
         .delete(`${baseUri}/${thresholdId}`)
@@ -388,9 +382,7 @@ describe("Threshold controller", () => {
         ...thresholdFixture,
         destroy: jest.fn().mockRejectedValue(new Error("Destroy failed")),
       };
-      ThresholdModel.findByPk = jest
-        .fn()
-        .mockResolvedValue(thresholdInstance);
+      ThresholdModel.findByPk = jest.fn().mockResolvedValue(thresholdInstance);
 
       const result = await superTest(app)
         .delete(`${baseUri}/${thresholdId}`)

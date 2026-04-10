@@ -2,7 +2,8 @@ const exportCsv = {
   get: {
     tags: ["Session"],
     summary: "Export session data as CSV",
-    description: "Returns a CSV file with session metadata header lines and sensor time/value data rows",
+    description:
+      "Returns a CSV file with session metadata header lines and sensor time/value data rows",
     operationId: "exportSessionAsCsv",
     parameters: [
       {
@@ -20,11 +21,19 @@ const exportCsv = {
       },
       "404": {
         description: "Session or sensor not found",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
       "500": {
         description: "Internal server error",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
     },
   },

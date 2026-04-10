@@ -131,9 +131,7 @@ const getAllSensorsStatus = async (_: Request, res: Response) => {
     );
     const statuses: Record<string, string> = {};
     for (const sensor of sensors) {
-      statuses[sensor.dataValues.name] = publishingIds.has(
-        sensor.dataValues.id
-      )
+      statuses[sensor.dataValues.name] = publishingIds.has(sensor.dataValues.id)
         ? "publishing"
         : "offline";
     }

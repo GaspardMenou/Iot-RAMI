@@ -10,9 +10,19 @@ import type { Threshold } from "#/threshold";
 import { addDiscoveredTopic } from "@service/discorverdSensorSevice";
 import { addDiscoveredMeasurement } from "@service/discoverdMeasurementService";
 import * as dlq from "@service/dlqService";
-import { activeSessionsTotal, kafkaMessageProcessingSeconds } from "@middlewares/metrics";
+import {
+  activeSessionsTotal,
+  kafkaMessageProcessingSeconds,
+} from "@middlewares/metrics";
 
-const { Sensor: SensorModel, Session, MeasurementType, Threshold: ThresholdModel, UserSensorAccess, User } = db as any;
+const {
+  Sensor: SensorModel,
+  Session,
+  MeasurementType,
+  Threshold: ThresholdModel,
+  UserSensorAccess,
+  User,
+} = db as any;
 
 // ---------- Kafka message payload types ----------
 
@@ -73,7 +83,9 @@ class SocketService {
 
       socket.on("join-user-room", (data: { token: string }) => {
         try {
-          const payload = jwt.verify(data.token, envs.JWT_SECRET) as { userId: string };
+          const payload = jwt.verify(data.token, envs.JWT_SECRET) as {
+            userId: string;
+          };
           socket.join(`user-${payload.userId}`);
         } catch (error) {
           console.error("Invalid JWT token for join-user-room:", error);
@@ -154,7 +166,10 @@ class SocketService {
   private sensorCacheTime: Date | null = null;
 
   // Cache des seuils par sensorId — TTL 2 min
-  private thresholdsCache: Map<string, { data: Threshold[]; loadedAt: number }> = new Map();
+  private thresholdsCache: Map<
+    string,
+    { data: Threshold[]; loadedAt: number }
+  > = new Map();
   private THRESHOLD_TTL = 2 * 60 * 1000; // 2 minutes
 
   private async getMeasurementTypesMap(): Promise<void> {
@@ -172,7 +187,9 @@ class SocketService {
     this.measurementTypesCacheTime = now;
   }
 
-  private async getSensorByTopic(baseTopic: string): Promise<Sensor | undefined> {
+  private async getSensorByTopic(
+    baseTopic: string
+  ): Promise<Sensor | undefined> {
     const now = new Date();
     if (
       this.sensorTopicCache.size > 0 &&
@@ -249,16 +266,29 @@ class SocketService {
     }
 
     // Collecter toutes les lignes en une passe synchrone
-    type AlertItem = { idMeasurementType: string; measureType: string; value: number };
-    const rows: Array<{ time: Date; idSensor: string; idMeasurementType: string; value: number }> = [];
+    type AlertItem = {
+      idMeasurementType: string;
+      measureType: string;
+      value: number;
+    };
+    const rows: Array<{
+      time: Date;
+      idSensor: string;
+      idMeasurementType: string;
+      value: number;
+    }> = [];
     const alerts: AlertItem[] = [];
 
     for (const entry of data.measures) {
       for (const measure of entry.measures) {
-        const idMeasurementType = this.measurementTypesMap.get(measure.measureType);
+        const idMeasurementType = this.measurementTypesMap.get(
+          measure.measureType
+        );
         if (!idMeasurementType) {
           addDiscoveredMeasurement(measure.measureType);
-          console.warn(`⚠️ [SensorData] Type de mesure inconnu: ${measure.measureType}`);
+          console.warn(
+            `⚠️ [SensorData] Type de mesure inconnu: ${measure.measureType}`
+          );
           continue;
         }
         rows.push({
@@ -267,7 +297,11 @@ class SocketService {
           idMeasurementType,
           value: measure.value,
         });
-        alerts.push({ idMeasurementType, measureType: measure.measureType, value: measure.value });
+        alerts.push({
+          idMeasurementType,
+          measureType: measure.measureType,
+          value: measure.value,
+        });
       }
     }
 
@@ -278,7 +312,13 @@ class SocketService {
 
     // Checks d'alertes après l'insertion
     for (const alert of alerts) {
-      await this.checkAndEmitAlerts(sensor.id, alert.idMeasurementType, alert.measureType, alert.value, data.sensorTopic);
+      await this.checkAndEmitAlerts(
+        sensor.id,
+        alert.idMeasurementType,
+        alert.measureType,
+        alert.value,
+        data.sensorTopic
+      );
     }
 
     const [seconds, nanoseconds] = process.hrtime(startTime);
@@ -305,23 +345,37 @@ class SocketService {
     sensorTopic: string
   ): Promise<void> {
     const thresholds = await this.getThresholdsForSensor(idSensor);
-    const threshold = thresholds.find((t) => t.idMeasurementType === idMeasurementType);
+    const threshold = thresholds.find(
+      (t) => t.idMeasurementType === idMeasurementType
+    );
     if (!threshold) return;
 
     const violations: Array<{ direction: "min" | "max"; limit: number }> = [];
-    if (threshold.minValue !== undefined && threshold.minValue !== null && value < threshold.minValue) {
+    if (
+      threshold.minValue !== undefined &&
+      threshold.minValue !== null &&
+      value < threshold.minValue
+    ) {
       violations.push({ direction: "min", limit: threshold.minValue });
     }
-    if (threshold.maxValue !== undefined && threshold.maxValue !== null && value > threshold.maxValue) {
+    if (
+      threshold.maxValue !== undefined &&
+      threshold.maxValue !== null &&
+      value > threshold.maxValue
+    ) {
       violations.push({ direction: "max", limit: threshold.maxValue });
     }
     if (violations.length === 0) return;
 
     const [accesses, admins] = await Promise.all([
-      UserSensorAccess.findAll({ where: { sensorId: idSensor, status: "accepted" } }),
+      UserSensorAccess.findAll({
+        where: { sensorId: idSensor, status: "accepted" },
+      }),
       User.findAll({ where: { role: "admin" }, attributes: ["id"] }),
     ]);
-    const accessUserIds = new Set<string>(accesses.map((a: any) => (a.dataValues as any).userId));
+    const accessUserIds = new Set<string>(
+      accesses.map((a: any) => (a.dataValues as any).userId)
+    );
     for (const admin of admins) {
       accessUserIds.add((admin.dataValues as any).id);
     }

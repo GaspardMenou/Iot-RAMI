@@ -79,9 +79,12 @@
 				status.value = props.externalStatus as SensorState
 			}
 
-			watch(() => props.externalStatus, (val) => {
-				if (val) status.value = val as SensorState
-			})
+			watch(
+				() => props.externalStatus,
+				val => {
+					if (val) status.value = val as SensorState
+				}
+			)
 
 			const isSelected = computed(() => props.selectedSensorId === props.sensor.id)
 

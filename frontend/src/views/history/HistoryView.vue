@@ -532,9 +532,15 @@
 	}
 
 	@keyframes scan-line {
-		0%   { opacity: 0.3; }
-		50%  { opacity: 0.7; }
-		100% { opacity: 0.3; }
+		0% {
+			opacity: 0.3;
+		}
+		50% {
+			opacity: 0.7;
+		}
+		100% {
+			opacity: 0.3;
+		}
 	}
 
 	.history__empty {

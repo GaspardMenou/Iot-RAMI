@@ -4,10 +4,7 @@ import db from "@db/index";
 const DB: any = db;
 const { Threshold } = DB;
 // --- End of model(s) import
-import {
-  BadRequestException,
-  NotFoundException,
-} from "@utils/exceptions";
+import { BadRequestException, NotFoundException } from "@utils/exceptions";
 
 const createThreshold = async (req: Request, res: Response) => {
   try {

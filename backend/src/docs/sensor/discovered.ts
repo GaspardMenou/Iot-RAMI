@@ -2,7 +2,8 @@ const discovered = {
   get: {
     tags: ["Sensor"],
     summary: "Get auto-discovered sensors",
-    description: "Returns sensors detected via MQTT PING that are not yet registered in the database",
+    description:
+      "Returns sensors detected via MQTT PING that are not yet registered in the database",
     operationId: "getDiscoveredSensors",
     responses: {
       "200": {
@@ -18,7 +19,11 @@ const discovered = {
       },
       "500": {
         description: "Internal server error",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
     },
   },

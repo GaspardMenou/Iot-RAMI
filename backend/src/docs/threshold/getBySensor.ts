@@ -2,7 +2,8 @@ const getBySensor = {
   get: {
     tags: ["Threshold"],
     summary: "Get thresholds for a sensor",
-    description: "Returns all alert thresholds configured for the given sensor.",
+    description:
+      "Returns all alert thresholds configured for the given sensor.",
     operationId: "getThresholdBySensor",
     security: [{ bearerAuth: [] }],
     parameters: [

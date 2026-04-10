@@ -106,7 +106,11 @@ describe("generateUserResponse", () => {
   });
 
   test("should return user response with provided token", () => {
-    const response = generateUserResponse(mockUserOfUserType, mockRes, mockToken);
+    const response = generateUserResponse(
+      mockUserOfUserType,
+      mockRes,
+      mockToken
+    );
 
     expect(response).toEqual({
       id: mockUserOfUserType.id,
@@ -167,7 +171,11 @@ describe("generateUserResponse", () => {
   });
 
   test("should correctly calculate token expiration time", () => {
-    const response = generateUserResponse(mockUserOfUserType, mockRes, mockToken);
+    const response = generateUserResponse(
+      mockUserOfUserType,
+      mockRes,
+      mockToken
+    );
 
     const expectedExpiration = Date.now() + 12 * 60 * 60 * 1000;
 
@@ -202,7 +210,9 @@ describe("User controller", () => {
         .post(`${baseUri}/signup`)
         .send(mockUserOfUserType);
 
-      const expectedResponse = generateUserResponse(mockUserOfUserType, { cookie: jest.fn() } as any);
+      const expectedResponse = generateUserResponse(mockUserOfUserType, {
+        cookie: jest.fn(),
+      } as any);
 
       expect(response.body).toEqual({
         id: expectedResponse.id,
@@ -389,7 +399,11 @@ describe("User controller", () => {
         password: "password", // Original password, not hashed
       });
 
-      const expectedResponse = generateUserResponse(userTest, { cookie: jest.fn() } as any, token.token);
+      const expectedResponse = generateUserResponse(
+        userTest,
+        { cookie: jest.fn() } as any,
+        token.token
+      );
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual({
@@ -887,9 +901,7 @@ describe("User controller", () => {
       expect(response.body.codeError).toBe("server.error");
     });
     test("should return a 400 if no token is provided", async () => {
-      const response = await superTest(app).get(
-        `${baseUri}/verify/adminPanel`
-      );
+      const response = await superTest(app).get(`${baseUri}/verify/adminPanel`);
 
       expect(response.statusCode).toBe(400);
       expect(response.body.message).toBe("Invalid token !");

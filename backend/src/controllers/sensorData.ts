@@ -221,7 +221,10 @@ const getDownsampledSensorData = async (
   time2: Date,
   maxPoints: number
 ) => {
-  const durationSeconds = Math.max(1, (time2.getTime() - time1.getTime()) / 1000);
+  const durationSeconds = Math.max(
+    1,
+    (time2.getTime() - time1.getTime()) / 1000
+  );
   const bucketSeconds = Math.max(1, Math.ceil(durationSeconds / maxPoints));
 
   try {

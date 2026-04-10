@@ -2,7 +2,8 @@ const status = {
   get: {
     tags: ["Sensor"],
     summary: "Get real-time sensor status",
-    description: "Sends a PING to the sensor and returns its current connectivity status. Times out after 500 ms",
+    description:
+      "Sends a PING to the sensor and returns its current connectivity status. Times out after 500 ms",
     operationId: "getSensorStatus",
     parameters: [
       {
@@ -24,11 +25,19 @@ const status = {
       },
       "404": {
         description: "Sensor not found",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
       "500": {
         description: "Internal server error",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
     },
   },

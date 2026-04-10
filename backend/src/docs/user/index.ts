@@ -18,14 +18,34 @@ const paths = {
       summary: "Get all sessions for a user",
       operationId: "getUserSessions",
       parameters: [
-        { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" }, description: "User UUID" },
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+          description: "User UUID",
+        },
       ],
       responses: {
         "200": {
           description: "List of sessions for this user",
-          content: { "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Session" } } } },
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: { $ref: "#/components/schemas/Session" },
+              },
+            },
+          },
         },
-        "500": { description: "Internal server error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        "500": {
+          description: "Internal server error",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
       },
     },
   },
@@ -35,15 +55,41 @@ const paths = {
       summary: "Get sessions for a user on a specific sensor",
       operationId: "getUserSessionsOnSensor",
       parameters: [
-        { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" }, description: "User UUID" },
-        { name: "idSensor", in: "path", required: true, schema: { type: "string", format: "uuid" }, description: "Sensor UUID" },
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+          description: "User UUID",
+        },
+        {
+          name: "idSensor",
+          in: "path",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+          description: "Sensor UUID",
+        },
       ],
       responses: {
         "200": {
           description: "List of sessions for this user on this sensor",
-          content: { "application/json": { schema: { type: "array", items: { $ref: "#/components/schemas/Session" } } } },
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: { $ref: "#/components/schemas/Session" },
+              },
+            },
+          },
         },
-        "500": { description: "Internal server error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        "500": {
+          description: "Internal server error",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
       },
     },
   },
@@ -55,7 +101,14 @@ const paths = {
       security: [{ bearerAuth: [] }],
       responses: {
         "200": { description: "List of access entries" },
-        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        "401": {
+          description: "Unauthorized",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
       },
     },
     post: {
@@ -80,8 +133,22 @@ const paths = {
       },
       responses: {
         "201": { description: "Access granted" },
-        "400": { description: "Validation error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        "400": {
+          description: "Validation error",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
+        "401": {
+          description: "Unauthorized",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
       },
     },
     delete: {
@@ -106,8 +173,22 @@ const paths = {
       },
       responses: {
         "200": { description: "Access revoked" },
-        "400": { description: "Validation error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        "400": {
+          description: "Validation error",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
+        "401": {
+          description: "Unauthorized",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
       },
     },
   },
@@ -133,8 +214,22 @@ const paths = {
       },
       responses: {
         "201": { description: "Request submitted" },
-        "400": { description: "Already has access or pending request", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-        "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+        "400": {
+          description: "Already has access or pending request",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
+        "401": {
+          description: "Unauthorized",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
       },
     },
   },

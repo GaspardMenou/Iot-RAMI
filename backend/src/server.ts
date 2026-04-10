@@ -1,4 +1,5 @@
 // Polyfill for Node.js >= 22 (SlowBuffer removed)
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const buffer = require("buffer");
 if (!buffer.SlowBuffer) {
   buffer.SlowBuffer = buffer.Buffer;

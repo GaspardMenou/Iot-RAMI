@@ -2,7 +2,8 @@ const updateRole = {
   put: {
     tags: ["User"],
     summary: "Update user role",
-    description: "Change a user's role. Requires privileged or admin rights — cannot elevate to a role higher than the requester's own",
+    description:
+      "Change a user's role. Requires privileged or admin rights — cannot elevate to a role higher than the requester's own",
     operationId: "updateRole",
     security: [{ bearerAuth: [] }],
     requestBody: {
@@ -14,7 +15,10 @@ const updateRole = {
             required: ["email", "role"],
             properties: {
               email: { type: "string", format: "email" },
-              role: { type: "string", enum: ["admin", "privileged", "regular"] },
+              role: {
+                type: "string",
+                enum: ["admin", "privileged", "regular"],
+              },
             },
           },
         },
@@ -23,19 +27,33 @@ const updateRole = {
     responses: {
       "200": {
         description: "Role updated",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/User" } } },
+        content: {
+          "application/json": { schema: { $ref: "#/components/schemas/User" } },
+        },
       },
       "400": {
         description: "Validation error or role escalation denied",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
       "401": {
         description: "Unauthorized",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
       "500": {
         description: "Internal server error",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
     },
   },

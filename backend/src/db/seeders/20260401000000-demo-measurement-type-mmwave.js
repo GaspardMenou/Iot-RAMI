@@ -14,7 +14,14 @@ module.exports = {
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete("MeasurementTypes", {
-      name: ["breathing_rate", "heart_rate", "distance", "x_position", "y_position", "people_count"],
+      name: [
+        "breathing_rate",
+        "heart_rate",
+        "distance",
+        "x_position",
+        "y_position",
+        "people_count",
+      ],
     });
   },
 };

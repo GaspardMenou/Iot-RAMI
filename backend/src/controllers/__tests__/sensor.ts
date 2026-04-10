@@ -32,20 +32,28 @@ jest.mock("@db/index", () => ({
     findOne: jest.fn(),
   },
   Measurement: {
-    hasOne: jest.fn()
+    hasOne: jest.fn(),
   },
   User: {
-    hasOne: jest.fn()
+    hasOne: jest.fn(),
   },
   UserSensorAccess: {
     findAll: jest.fn(),
-    hasOne: jest.fn()
-  }
+    hasOne: jest.fn(),
+  },
 }));
 
 jest.mock("@service/discorverdSensorSevice", () => ({
   discoveredTopics: new Map([
-    ["esp32-dht22-topic", { baseTopic: "esp32-dht22-topic", firstSeenAt: "2024-01-01T10:00:00.000Z", lastSeenAt: "2024-01-01T10:05:00.000Z", count: 3 }],
+    [
+      "esp32-dht22-topic",
+      {
+        baseTopic: "esp32-dht22-topic",
+        firstSeenAt: "2024-01-01T10:00:00.000Z",
+        lastSeenAt: "2024-01-01T10:05:00.000Z",
+        count: 3,
+      },
+    ],
   ]),
 }));
 
@@ -54,15 +62,15 @@ jest.mock("jsonwebtoken", () => {
     verify: jest.fn().mockImplementation(() => {
       return {
         id: "id-1",
-        role: "regular"
+        role: "regular",
       };
     }),
     decode: jest.fn().mockImplementation(() => {
       return {
         id: "id-1",
-        role: "regular"
+        role: "regular",
       };
-    })
+    }),
   };
 });
 
@@ -218,7 +226,10 @@ describe("Sensor controller", () => {
       jwt.decode = verifyMock;
 
       const findAndCountAllMock = jest.fn();
-      findAndCountAllMock.mockResolvedValue({ count: sensors.length, rows: sensors });
+      findAndCountAllMock.mockResolvedValue({
+        count: sensors.length,
+        rows: sensors,
+      });
       SensorModel.findAndCountAll = findAndCountAllMock;
 
       const result = await superTest(app)
@@ -885,7 +896,9 @@ describe("Sensor controller", () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      jwt.verify = jest.fn().mockReturnValue({ userId: "id-1", role: Role.REGULAR });
+      jwt.verify = jest
+        .fn()
+        .mockReturnValue({ userId: "id-1", role: Role.REGULAR });
     });
 
     test("should return 400 if sensor name is not found", async () => {
@@ -902,7 +915,9 @@ describe("Sensor controller", () => {
 
     test("should return 'publishing' if sensor has an active session", async () => {
       SensorModel.findOne = jest.fn().mockResolvedValue(sensorMock);
-      SessionModel.findOne = jest.fn().mockResolvedValue({ id: "session-uuid" });
+      SessionModel.findOne = jest
+        .fn()
+        .mockResolvedValue({ id: "session-uuid" });
 
       const result = await superTest(app)
         .get(`${baseUri}/connexion/online/${sensors[0].name}`)
@@ -939,7 +954,9 @@ describe("Sensor controller", () => {
 
   describe("GET /sensors/discovered", () => {
     beforeEach(() => {
-      jwt.verify = jest.fn().mockReturnValue({ userId: "id-1", role: Role.ADMIN });
+      jwt.verify = jest
+        .fn()
+        .mockReturnValue({ userId: "id-1", role: Role.ADMIN });
     });
     test("should return discovered sensors list", async () => {
       const result = await superTest(app)

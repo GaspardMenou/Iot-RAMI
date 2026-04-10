@@ -46,14 +46,22 @@ app.use(
 
 const baseUri = "/api/v1";
 
-app.use("/metrics", (req, res, next) => {
-  const ip = req.ip || req.socket.remoteAddress || "";
-  const allowed = ip === "127.0.0.1" || ip === "::1" || ip.startsWith("172.") || ip.startsWith("::ffff:172.");
-  if (!allowed) {
-    return res.status(403).json({ message: "Forbidden" });
-  }
-  next();
-}, metricsRoutes);
+app.use(
+  "/metrics",
+  (req, res, next) => {
+    const ip = req.ip || req.socket.remoteAddress || "";
+    const allowed =
+      ip === "127.0.0.1" ||
+      ip === "::1" ||
+      ip.startsWith("172.") ||
+      ip.startsWith("::ffff:172.");
+    if (!allowed) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    next();
+  },
+  metricsRoutes
+);
 
 for (const route of routes) {
   app.use(baseUri + route.path, route.handler);

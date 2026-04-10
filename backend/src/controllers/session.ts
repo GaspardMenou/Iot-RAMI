@@ -230,12 +230,23 @@ const getSessionData = async (req: Request, res: Response) => {
     const endTime = session.dataValues.endedAt ?? new Date();
 
     const maxPointsParam = req.query.maxPoints;
-    const maxPoints = maxPointsParam ? parseInt(maxPointsParam as string, 10) : 0;
+    const maxPoints = maxPointsParam
+      ? parseInt(maxPointsParam as string, 10)
+      : 0;
 
     const sensorData =
       maxPoints > 0
-        ? await getDownsampledSensorData(sensor.dataValues.id, startTime, endTime, maxPoints)
-        : await getSensorDataWithinTimeRange(sensor.dataValues.id, startTime, endTime);
+        ? await getDownsampledSensorData(
+            sensor.dataValues.id,
+            startTime,
+            endTime,
+            maxPoints
+          )
+        : await getSensorDataWithinTimeRange(
+            sensor.dataValues.id,
+            startTime,
+            endTime
+          );
 
     return res.status(200).json(sensorData);
   } catch (error) {

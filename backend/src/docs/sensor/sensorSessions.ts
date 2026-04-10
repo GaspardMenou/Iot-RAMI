@@ -2,7 +2,8 @@ const sensorSessions = {
   get: {
     tags: ["Sensor"],
     summary: "Get sessions for a sensor",
-    description: "Returns all recording sessions associated with a given sensor",
+    description:
+      "Returns all recording sessions associated with a given sensor",
     operationId: "getSensorSessions",
     parameters: [
       {
@@ -18,17 +19,28 @@ const sensorSessions = {
         description: "List of sessions",
         content: {
           "application/json": {
-            schema: { type: "array", items: { $ref: "#/components/schemas/Session" } },
+            schema: {
+              type: "array",
+              items: { $ref: "#/components/schemas/Session" },
+            },
           },
         },
       },
       "404": {
         description: "Sensor not found",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
       "500": {
         description: "Internal server error",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
     },
   },

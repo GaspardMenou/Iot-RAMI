@@ -11,12 +11,12 @@ const createByGroup = {
           schema: {
             type: "array",
             items: {
-              $ref: "#/components/schemas/MeasurementCreate"
-            }
-          }
-        }
+              $ref: "#/components/schemas/MeasurementCreate",
+            },
+          },
+        },
       },
-      required: true
+      required: true,
     },
     responses: {
       201: {
@@ -26,33 +26,33 @@ const createByGroup = {
             schema: {
               type: "array",
               items: {
-                $ref: "#/components/schemas/Measurement"
-              }
-            }
-          }
-        }
+                $ref: "#/components/schemas/Measurement",
+              },
+            },
+          },
+        },
       },
       400: {
         description: "Bad request",
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/Error"
-            }
-          }
-        }
+              $ref: "#/components/schemas/Error",
+            },
+          },
+        },
       },
       500: {
         description: "Server error",
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/Error"
-            }
-          }
-        }
-      }
-    }
-  }
+              $ref: "#/components/schemas/Error",
+            },
+          },
+        },
+      },
+    },
+  },
 };
 export { createByGroup };

@@ -3,7 +3,8 @@ const authPaths = {
     post: {
       tags: ["Auth"],
       summary: "Logout",
-      description: "Clears the HttpOnly refresh token cookie. Call this on user logout.",
+      description:
+        "Clears the HttpOnly refresh token cookie. Call this on user logout.",
       operationId: "logout",
       responses: {
         "200": {
@@ -37,10 +38,14 @@ const authPaths = {
               schema: {
                 type: "object",
                 properties: {
-                  token: { type: "string", description: "New JWT access token" },
+                  token: {
+                    type: "string",
+                    description: "New JWT access token",
+                  },
                   expiresAt: {
                     type: "number",
-                    description: "Expiration timestamp in ms (Date.now() + 15min)",
+                    description:
+                      "Expiration timestamp in ms (Date.now() + 15min)",
                   },
                 },
               },
@@ -50,7 +55,9 @@ const authPaths = {
         "401": {
           description: "No refresh token, or token is invalid / expired",
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/Error" } },
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
           },
         },
       },

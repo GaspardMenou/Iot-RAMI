@@ -350,9 +350,8 @@ describe("SocketService", () => {
     it("log un warning et retourne sans bulkCreate si pas de session active", async () => {
       (service as any).activeSessions = new Map();
 
-      const warnSpy = jest
-        .spyOn(console, "warn")
-        .mockImplementation(() => {});
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
 
       await (service as any).handleSensorData(dataPayload);
 
@@ -367,6 +366,7 @@ describe("SocketService", () => {
     it("appelle sendDataToRoom avec le bon topic après insertion", async () => {
       const sendDataToRoomSpy = jest
         .spyOn(service, "sendDataToRoom")
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         .mockImplementation(() => {});
 
       await (service as any).handleSensorData(dataPayload);
@@ -423,9 +423,9 @@ describe("SocketService", () => {
           },
         },
       ]);
-      (db as any).UserSensorAccess.findAll = jest.fn().mockResolvedValue([
-        { dataValues: { userId: "user-uuid-1" } },
-      ]);
+      (db as any).UserSensorAccess.findAll = jest
+        .fn()
+        .mockResolvedValue([{ dataValues: { userId: "user-uuid-1" } }]);
       (db as any).User.findAll = jest.fn().mockResolvedValue([]);
 
       await (service as any).checkAndEmitAlerts(
@@ -459,9 +459,9 @@ describe("SocketService", () => {
           },
         },
       ]);
-      (db as any).UserSensorAccess.findAll = jest.fn().mockResolvedValue([
-        { dataValues: { userId: "user-uuid-1" } },
-      ]);
+      (db as any).UserSensorAccess.findAll = jest
+        .fn()
+        .mockResolvedValue([{ dataValues: { userId: "user-uuid-1" } }]);
       (db as any).User.findAll = jest.fn().mockResolvedValue([]);
 
       await (service as any).checkAndEmitAlerts(

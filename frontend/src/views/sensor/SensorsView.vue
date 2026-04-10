@@ -155,8 +155,13 @@
 	}
 
 	@keyframes blink-dot {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.3; }
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.3;
+		}
 	}
 
 	.status-pill--online .pill-dot {

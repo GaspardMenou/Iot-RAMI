@@ -20,9 +20,10 @@ vi.mock("@/composables/useUser.composable", () => ({
 
 const mockEmit = vi.fn()
 const mockOn = vi.fn()
+const mockOff = vi.fn()
 const mockDisconnect = vi.fn()
 vi.mock("socket.io-client", () => ({
-	io: vi.fn(() => ({ emit: mockEmit, on: mockOn, disconnect: mockDisconnect })),
+	io: vi.fn(() => ({ emit: mockEmit, on: mockOn, off: mockOff, disconnect: mockDisconnect })),
 }))
 
 import { useSession } from "@/composables/useSession.composable"
@@ -43,6 +44,7 @@ describe("useSession", () => {
 		mockGet.mockReset()
 		mockEmit.mockReset()
 		mockOn.mockReset()
+		mockOff.mockReset()
 		mockDisconnect.mockReset()
 		getItemMock.mockReturnValue("fake-token")
 	})

@@ -137,7 +137,10 @@ describe("Session Controller", () => {
         },
       ];
 
-      mockDB.Session.findAndCountAll.mockResolvedValue({ count: sessions.length, rows: sessions });
+      mockDB.Session.findAndCountAll.mockResolvedValue({
+        count: sessions.length,
+        rows: sessions,
+      });
 
       const res = await request.get(baseUri);
 
@@ -249,10 +252,18 @@ describe("Session Controller", () => {
       mockDB.Session.findByPk.mockResolvedValue(session);
       mockDB.Sensor.findByPk.mockResolvedValue({
         ...sensors[0],
-        dataValues: { id: sensors[0].id, name: sensors[0].name, topic: sensors[0].topic },
+        dataValues: {
+          id: sensors[0].id,
+          name: sensors[0].name,
+          topic: sensors[0].topic,
+        },
       });
       mockDB.sensordata.findAll.mockResolvedValue([
-        { time: new Date("2024-01-01T00:00:01Z"), value: 1.5, MeasurementType: { name: "ecg" } },
+        {
+          time: new Date("2024-01-01T00:00:01Z"),
+          value: 1.5,
+          MeasurementType: { name: "ecg" },
+        },
       ]);
 
       const res = await request.get(`${baseUri}/session1/export/csv`);
@@ -274,7 +285,12 @@ describe("Session Controller", () => {
       mockDB.Session.findByPk.mockResolvedValue({
         id: "session1",
         idSensor: sensors[0].id,
-        dataValues: { id: "session1", idSensor: sensors[0].id, createdAt: new Date(), endedAt: new Date() },
+        dataValues: {
+          id: "session1",
+          idSensor: sensors[0].id,
+          createdAt: new Date(),
+          endedAt: new Date(),
+        },
       });
       mockDB.Sensor.findByPk.mockResolvedValue(null);
       const res = await request.get(`${baseUri}/session1/export/csv`);

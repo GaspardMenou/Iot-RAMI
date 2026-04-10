@@ -2,7 +2,8 @@ const signup = {
   post: {
     tags: ["User"],
     summary: "Signup",
-    description: "Create a new user account. Role defaults to 'regular' and must be elevated by an admin",
+    description:
+      "Create a new user account. Role defaults to 'regular' and must be elevated by an admin",
     operationId: "signup",
     requestBody: {
       required: true,
@@ -10,7 +11,14 @@ const signup = {
         "application/json": {
           schema: {
             type: "object",
-            required: ["email", "password", "firstName", "lastName", "dateOfBirth", "sex"],
+            required: [
+              "email",
+              "password",
+              "firstName",
+              "lastName",
+              "dateOfBirth",
+              "sex",
+            ],
             properties: {
               email: { type: "string", format: "email" },
               password: { type: "string", minLength: 12 },
@@ -34,11 +42,19 @@ const signup = {
       },
       "400": {
         description: "Validation error or email already in use",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
       "500": {
         description: "Internal server error",
-        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/Error" },
+          },
+        },
       },
     },
   },
