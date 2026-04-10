@@ -61,6 +61,7 @@
         DB_NAME: ${DB_NAME}
         DB_DIALECT: postgres
         JWT_SECRET: ${JWT_SECRET}
+        REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
         BCRYPT_SALT_ROUNDS: 10
         KAFKA_BROKERS: "iot-rami-kafka:29092"
         FRONTEND_URL: "http://${SERVER_HOST}:8080"
