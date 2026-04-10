@@ -39,11 +39,11 @@ jest.mock("@service/discorverdSensorSevice", () => ({
 
 jest.mock("jsonwebtoken", () => ({
   verify: jest.fn().mockImplementation(() => ({
-    id: "user-uuid-1",
+    userId: "user-uuid-1",
     role: "admin",
   })),
   decode: jest.fn().mockImplementation(() => ({
-    id: "user-uuid-1",
+    userId: "user-uuid-1",
     role: "admin",
   })),
 }));
@@ -67,11 +67,11 @@ describe("Threshold controller", () => {
     jest.resetAllMocks();
     // Restore default jwt mocks after each test
     (jwt.verify as jest.Mock).mockImplementation(() => ({
-      id: "user-uuid-1",
+      userId: "user-uuid-1",
       role: Role.ADMIN,
     }));
     (jwt.decode as jest.Mock).mockImplementation(() => ({
-      id: "user-uuid-1",
+      userId: "user-uuid-1",
       role: Role.ADMIN,
     }));
   });

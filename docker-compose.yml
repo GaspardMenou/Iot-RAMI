@@ -11,6 +11,12 @@
         POSTGRES_DB: ${DB_NAME}
       volumes:
         - db-data:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-postgres}"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+        start_period: 20s
       networks:
         - rami-network
 
@@ -60,7 +66,7 @@
         FRONTEND_URL: "http://${SERVER_HOST}:8080"
       depends_on:
         node-db:
-          condition: service_started
+          condition: service_healthy
         kafka:
           condition: service_healthy
       networks:

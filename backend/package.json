@@ -31,6 +31,7 @@
     "docker:exec": "docker exec -it $NODE_CONTAINER_NAME sh",
     "start": "TZ='UTC' pm2-runtime dist/server.js --name $CI_PROJECT_NAME-$NODE_ENV -i $PM2_INSTANCES",
     "format": "eslint src/**/*.ts --fix",
+    "lint:check": "eslint src/ --max-warnings=0",
     "migrate": "sequelize-cli db:migrate --env $NODE_ENV",
     "migrate:undo": "sequelize-cli db:migrate:undo --env $NODE_ENV",
     "db-reset": "sequelize-cli db:migrate:undo:all --env $NODE_ENV",

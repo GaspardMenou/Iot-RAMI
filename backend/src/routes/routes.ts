@@ -5,7 +5,6 @@ import { measurementRoutes } from "@routes/measurement";
 import { homeRoutes } from "@routes/home";
 import { userRoutes } from "@routes/user";
 import { authRoutes } from "@routes/auth";
-import { testRoutes } from "@routes/testRoutes";
 import { thresholdRoutes } from "@routes/threshold";
 
 const routes = [
@@ -20,10 +19,6 @@ const routes = [
   {
     path: "/auth",
     handler: authRoutes,
-  },
-  {
-    path: "/tests",
-    handler: testRoutes,
   },
   {
     path: "/",

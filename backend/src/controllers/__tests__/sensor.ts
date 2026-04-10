@@ -413,13 +413,12 @@ describe("Sensor controller", () => {
     });
 
     test("should return a 400 if name is not provided", async () => {
-      const body = { name: "", topic: "topic" };
-      /*const verifyMock = jest.fn();
-      verifyMock.mockReturnValue({ id: "id-34", role: Role.ADMIN });
+      const verifyMock = jest.fn();
+      verifyMock.mockReturnValue({ userId: "id-34", role: Role.ADMIN });
       jwt.verify = verifyMock;
       jwt.decode = verifyMock;
 
-      const body = { name: "" };*/
+      const body = { name: "", topic: "topic" };
 
       const result = await superTest(app)
         .post(baseUri)
@@ -465,22 +464,38 @@ describe("Sensor controller", () => {
 
       const body = { name: sensors[0].name, topic: sensors[0].topic };
 
-      const result = await superTest(app).post(baseUri).send(body);
+      const result = await superTest(app)
+        .post(baseUri)
+        .send(body)
+        .set("Authorization", `Bearer 1234`);
 
       expect(result.status).toBe(500);
       expect(result.body.message).toBe("Server error");
       expect(result.body.codeError).toBe("server.error");
     });
     test("should return a 400 if topic is not provided", async () => {
+      const verifyMock = jest.fn();
+      verifyMock.mockReturnValue({ userId: "id-34", role: Role.ADMIN });
+      jwt.verify = verifyMock;
+      jwt.decode = verifyMock;
+
       const body = { name: "Sensor 1", topic: "" };
 
-      const result = await superTest(app).post(baseUri).send(body);
+      const result = await superTest(app)
+        .post(baseUri)
+        .send(body)
+        .set("Authorization", `Bearer 1234`);
 
       expect(result.status).toBe(400);
       expect(result.body.message).toBe("Topic is required");
       expect(result.body.codeError).toBe("topic.name.required");
     });
     test("should return a 400 if topic already exists", async () => {
+      const verifyMock = jest.fn();
+      verifyMock.mockReturnValue({ userId: "id-34", role: Role.ADMIN });
+      jwt.verify = verifyMock;
+      jwt.decode = verifyMock;
+
       const findOneMock = jest
         .fn()
         .mockResolvedValueOnce(null)
@@ -489,13 +504,21 @@ describe("Sensor controller", () => {
 
       const body = { name: "newSensorName", topic: sensors[0].topic };
 
-      const result = await superTest(app).post(baseUri).send(body);
+      const result = await superTest(app)
+        .post(baseUri)
+        .send(body)
+        .set("Authorization", `Bearer 1234`);
 
       expect(result.status).toBe(400);
       expect(result.body.message).toBe("Topic already exists");
       expect(result.body.codeError).toBe("topic.already.exists");
     });
     test("should return a 500 if the research of existing topic throws a server error", async () => {
+      const verifyMock = jest.fn();
+      verifyMock.mockReturnValue({ userId: "id-34", role: Role.ADMIN });
+      jwt.verify = verifyMock;
+      jwt.decode = verifyMock;
+
       const findOneMock = jest.fn();
       findOneMock.mockRejectedValue(new Error("Error"));
       SensorModel.findOne = findOneMock;
@@ -588,13 +611,12 @@ describe("Sensor controller", () => {
     });
 
     test("should return a 400 if name is not valid", async () => {
-      const body = { name: "", topic: "topic" };
-      /*const verifyMock = jest.fn();
-      verifyMock.mockReturnValue({ id: "id-34", role: Role.ADMIN });
+      const verifyMock = jest.fn();
+      verifyMock.mockReturnValue({ userId: "id-34", role: Role.ADMIN });
       jwt.verify = verifyMock;
       jwt.decode = verifyMock;
 
-      const body = { name: "" };*/
+      const body = { name: "", topic: "topic" };
 
       const result = await superTest(app)
         .put(baseUri + "/" + sensors[0].id)
@@ -606,26 +628,29 @@ describe("Sensor controller", () => {
       expect(result.body.codeError).toBe("sensor.name.required");
     });
     test("should return a 400 if name is not valid", async () => {
+      const verifyMock = jest.fn();
+      verifyMock.mockReturnValue({ userId: "id-34", role: Role.ADMIN });
+      jwt.verify = verifyMock;
+      jwt.decode = verifyMock;
+
       const body = { name: "name", topic: "" };
 
       const result = await superTest(app)
         .put(baseUri + "/" + sensors[0].id)
-        .send(body);
+        .send(body)
+        .set("Authorization", `Bearer 1234`);
 
       expect(result.status).toBe(400);
       expect(result.body.message).toBe("Topic is required");
       expect(result.body.codeError).toBe("topic.name.required");
     });
     test("should return a 400 if id is not valid", async () => {
-      const body = { name: sensors[0].name, topic: sensors[0].topic };
-
-    /*test("should return a 400 if id is not valid", async () => {
       const verifyMock = jest.fn();
-      verifyMock.mockReturnValue({ id: "id-34", role: Role.ADMIN });
+      verifyMock.mockReturnValue({ userId: "id-34", role: Role.ADMIN });
       jwt.verify = verifyMock;
       jwt.decode = verifyMock;
 
-      const body = { name: sensors[0].name };*/
+      const body = { name: sensors[0].name, topic: sensors[0].topic };
 
       const result = await superTest(app)
         .put(baseUri + "/1")
@@ -860,6 +885,7 @@ describe("Sensor controller", () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
+      jwt.verify = jest.fn().mockReturnValue({ userId: "id-1", role: Role.REGULAR });
     });
 
     test("should return 400 if sensor name is not found", async () => {
@@ -912,6 +938,9 @@ describe("Sensor controller", () => {
   });
 
   describe("GET /sensors/discovered", () => {
+    beforeEach(() => {
+      jwt.verify = jest.fn().mockReturnValue({ userId: "id-1", role: Role.ADMIN });
+    });
     test("should return discovered sensors list", async () => {
       const result = await superTest(app)
         .get(`${baseUri}/discovered`)

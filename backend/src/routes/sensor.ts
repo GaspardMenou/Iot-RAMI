@@ -10,23 +10,23 @@ import {
   getSensorStatus,
   getAllSensorsStatus,
 } from "@controllers/sensor";
-//import { auth, authAdmin } from "@middlewares/auth";
+import { auth, authAdmin } from "@middlewares/auth";
 
 const router = express.Router();
 
 // Must be before /:id? to avoid being caught as an id param
-router.get("/discovered", getDiscoveredSensors);
-router.get("/connexion/online", getAllSensorsStatus);
-router.get("/connexion/online/:sensorName", getSensorStatus);
+router.get("/discovered", authAdmin, getDiscoveredSensors);
+router.get("/connexion/online", auth, getAllSensorsStatus);
+router.get("/connexion/online/:sensorName", auth, getSensorStatus);
 
 router
   .route("/:id?")
-  .post(createSensor) // authAdmin
-  .get(getSensor) //auth pour le reste
-  .put(updateSensor)
-  .delete(deleteSensor);
+  .post(authAdmin, createSensor)
+  .get(auth, getSensor)
+  .put(authAdmin, updateSensor)
+  .delete(authAdmin, deleteSensor);
 // Depend at least on two models
-router.get("/:id/sessions", getSensorSessions);
-router.get("/:id/topic", getSensorTopic);
+router.get("/:id/sessions", auth, getSensorSessions);
+router.get("/:id/topic", auth, getSensorTopic);
 
 export { router as sensorRoutes };

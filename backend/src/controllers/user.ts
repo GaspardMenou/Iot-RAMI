@@ -487,7 +487,7 @@ const haveRightsToAcessToAdminPanel = async (req: Request, res: Response) => {
   }
 
   try {
-    const decodedToken = (await jwt.decode(token)) as UserPayload;
+    const decodedToken = jwt.verify(token, envs.JWT_SECRET) as UserPayload;
     if (!decodedToken) {
       return res
         .status(400)
@@ -534,7 +534,7 @@ const getAllRoleWithWorseRole = async (req: Request, res: Response) => {
   }
 
   try {
-    const decodedToken = jwt.decode(token) as UserPayload;
+    const decodedToken = jwt.verify(token, envs.JWT_SECRET) as UserPayload;
     if (!decodedToken) {
       return res
         .status(400)
@@ -584,9 +584,17 @@ const getUserSessions = async (req: Request, res: Response) => {
       whereClause.idSensor = idSensor;
     }
 
-    const userSessions = await Session.findAll({ where: whereClause });
+    const limit = parseInt(String(req.query.limit || "50"), 10);
+    const offset = parseInt(String(req.query.offset || "0"), 10);
 
-    return res.status(200).json(userSessions);
+    const { count, rows } = await Session.findAndCountAll({
+      where: whereClause,
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.status(200).json({ total: count, sessions: rows });
   } catch (error) {
     console.error("Error fetching session:", error);
     return res.status(500).json({ error: "Internal Server Error" });

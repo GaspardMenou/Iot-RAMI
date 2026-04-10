@@ -78,8 +78,9 @@ const useDistributionSessionBySensor = () => {
 		try {
 			const userId = localStorage.getItem(UserFields.ID)
 			const { data } = await axios.get(getURLForFetchingUserSessions(userId))
+			const sessionList: any[] = data.sessions ?? data
 
-			const sensorCounts = data.reduce((acc: any, session: any) => {
+			const sensorCounts = sessionList.reduce((acc: any, session: any) => {
 				acc[session.idSensor] = (acc[session.idSensor] || 0) + 1
 				return acc
 			}, {})
@@ -89,13 +90,13 @@ const useDistributionSessionBySensor = () => {
 
 			updateBarChartWithNewValues(newLabels, newData)
 
-			const totalDuration = data.reduce((acc: number, session: any) => {
+			const totalDuration = sessionList.reduce((acc: number, session: any) => {
 				const start = new Date(session.createdAt).getTime()
 				const end = new Date(session.endedAt).getTime()
 				return acc + (end - start)
 			}, 0)
 
-			averageDuration.value = totalDuration / data.length / 60000 // Convertir en minutes
+			averageDuration.value = totalDuration / sessionList.length / 60000 // Convertir en minutes
 		} catch (error) {
 			console.error("Erreur lors de la récupération des sessions par capteur:", error)
 		}
@@ -162,7 +163,8 @@ const useSession = () => {
 	const fetchAllSessionsOfUser = async (userId: string) => {
 		try {
 			const response = await axios.get(getURLForFetchingUserSessions(userId))
-			sessions.value = response.data // Mettre à jour les sessions avec les données de l'API
+			const payload = response.data
+			sessions.value = payload.sessions ?? payload // Mettre à jour les sessions avec les données de l'API
 		} catch (error) {
 			console.error("Error fetching sessions:", error)
 		}
@@ -224,6 +226,7 @@ const useSession = () => {
 	}
 
 	const endSession = () => {
+		socketClient.value?.off("new-data")
 		socketClient.value?.disconnect()
 		cleanAfterSession()
 	}
@@ -241,6 +244,11 @@ const useSession = () => {
 		endedAt.value = null
 	}
 	const connectToWebSocket = (topic: string) => {
+		if (socketClient.value) {
+			socketClient.value.off("new-data")
+			socketClient.value.disconnect()
+			socketClient.value = null
+		}
 		const token = localStorage.getItem(UserFields.TOKEN)
 		const socket = io(import.meta.env.VITE_SOCKET_URL)
 		socketClient.value = socket

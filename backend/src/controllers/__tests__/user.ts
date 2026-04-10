@@ -798,10 +798,10 @@ describe("User controller", () => {
       expect(response.body.codeError).toBe("server.error");
     });
     test("should return a 400 if there is no token", async () => {
-      const response = await superTest(app).put(`/api/v1/tests/update/role`);
+      const response = await superTest(app).put(`${baseUri}/update/role`);
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe("No token provided !");
-      expect(response.body.codeError).toBe("auth.token.not.found");
+      expect(response.body.message).toBe("Invalid token !");
+      expect(response.body.codeError).toBe("auth.token.invalid");
     });
   });
   describe("/verify/adminPanel", () => {
@@ -815,9 +815,9 @@ describe("User controller", () => {
       });
     });
     test("should pass if the token is valid and role is better than regular", async () => {
-      const decodeMock = jest.fn();
-      decodeMock.mockReturnValue({ id: "id-34", role: Role.ADMIN });
-      jwt.decode = decodeMock;
+      const verifyMock = jest.fn();
+      verifyMock.mockReturnValue({ userId: "id-34", role: Role.ADMIN });
+      jwt.verify = verifyMock;
 
       const response = await superTest(app)
         .get(`${baseUri}/verify/adminPanel`)
@@ -858,23 +858,25 @@ describe("User controller", () => {
       );
       expect(response.body.codeError).toBe("user.role.not.enough.permissions");
     });
-    test("should not pass if decode return null", async () => {
-      const decodeMock = jest.fn();
-      decodeMock.mockReturnValue(null);
-      jwt.decode = decodeMock;
+    test("should not pass if verify return null", async () => {
+      const verifyMock = jest.fn();
+      verifyMock.mockReturnValue(null);
+      jwt.verify = verifyMock;
 
       const response = await superTest(app)
         .get(`${baseUri}/verify/adminPanel`)
         .set("Authorization", `Bearer 1234`);
 
-      expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe("Invalid token !");
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe("Unauthorized !");
       expect(response.body.codeError).toBe("auth.token.invalid");
     });
-    test("should return a 500 if jwt.decode throw an error", async () => {
-      const decodeMock = jest.fn();
-      decodeMock.mockRejectedValueOnce(new Error("Server error !"));
-      jwt.decode = decodeMock;
+    test("should return a 500 if jwt.verify throw an error", async () => {
+      const verifyMock = jest.fn();
+      verifyMock.mockImplementation(() => {
+        throw new Error("Server error !");
+      });
+      jwt.verify = verifyMock;
 
       const response = await superTest(app)
         .get(`${baseUri}/verify/adminPanel`)
@@ -886,12 +888,12 @@ describe("User controller", () => {
     });
     test("should return a 400 if no token is provided", async () => {
       const response = await superTest(app).get(
-        `/api/v1/tests/verify/adminPanel`
+        `${baseUri}/verify/adminPanel`
       );
 
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe("No token provided !");
-      expect(response.body.codeError).toBe("auth.token.not.found");
+      expect(response.body.message).toBe("Invalid token !");
+      expect(response.body.codeError).toBe("auth.token.invalid");
     });
   });
   describe("/all", () => {
@@ -974,21 +976,17 @@ describe("User controller", () => {
       expect(response.body.message).toBe("Server error !");
       expect(response.body.codeError).toBe("server.error");
     });
-    test("should not pass if decode return null", async () => {
+    test("should not pass if verify return null", async () => {
       const verifyMock = jest.fn();
-      verifyMock.mockReturnValue({ id: "id-34", role: Role.REGULAR });
+      verifyMock.mockReturnValue(null);
       jwt.verify = verifyMock;
-
-      const decodeMock = jest.fn();
-      decodeMock.mockReturnValue(null);
-      jwt.decode = decodeMock;
 
       const response = await superTest(app)
         .get(`${baseUri}/all`)
         .set("Authorization", `Bearer 1234`);
 
-      expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe("Invalid token !");
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe("Unauthorized !");
       expect(response.body.codeError).toBe("auth.token.invalid");
     });
     test("should return a 404 if jwt.decode throw an error", async () => {
@@ -1010,11 +1008,11 @@ describe("User controller", () => {
       expect(response.body.codeError).toBe("user.not.found");
     });
     test("should return a 400 if no token is provided", async () => {
-      const response = await superTest(app).get(`/api/v1/tests/all`);
+      const response = await superTest(app).get(`${baseUri}/all`);
 
       expect(response.statusCode).toBe(400);
-      expect(response.body.message).toBe("No token provided !");
-      expect(response.body.codeError).toBe("auth.token.not.found");
+      expect(response.body.message).toBe("Invalid token !");
+      expect(response.body.codeError).toBe("auth.token.invalid");
     });
   });
 

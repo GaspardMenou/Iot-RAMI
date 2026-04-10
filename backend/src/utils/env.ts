@@ -33,4 +33,13 @@ const envs = {
   REFRESH_TOKEN_EXPIRATION: env("REFRESH_TOKEN_EXPIRATION", "7d") as string,
 };
 
+if (envs.NODE_ENV === "production") {
+  if (envs.JWT_SECRET === "secret") {
+    throw new Error("[env] JWT_SECRET must be set to a strong value in production");
+  }
+  if (envs.REFRESH_TOKEN_SECRET === "refresh_secret") {
+    throw new Error("[env] REFRESH_TOKEN_SECRET must be set to a strong value in production");
+  }
+}
+
 export { envs };

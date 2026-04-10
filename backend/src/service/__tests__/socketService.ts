@@ -2,6 +2,7 @@ import { createServer } from "http";
 import SocketService from "@service/socketService";
 import db from "@db/index";
 import KafkaService from "@service/kafkaService";
+import * as discoveredMeasurementService from "@service/discoverdMeasurementService";
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -10,11 +11,34 @@ jest.mock("@db/index", () => ({
   Session: { create: jest.fn(), update: jest.fn() },
   MeasurementType: { findAll: jest.fn() },
   sensordata: { bulkCreate: jest.fn() },
+  Threshold: { findAll: jest.fn() },
+  UserSensorAccess: { findAll: jest.fn() },
+  User: { findAll: jest.fn() },
 }));
 
 jest.mock("@service/kafkaService", () => ({
   __esModule: true,
   default: { getInstance: jest.fn() },
+}));
+
+jest.mock("@service/discorverdSensorSevice", () => ({
+  addDiscoveredTopic: jest.fn(),
+  discoveredTopics: new Map(),
+}));
+
+jest.mock("@service/discoverdMeasurementService", () => ({
+  addDiscoveredMeasurement: jest.fn(),
+  discoveredMeasurements: new Map(),
+}));
+
+jest.mock("@service/dlqService", () => ({
+  push: jest.fn(),
+  flush: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock("@middlewares/metrics", () => ({
+  activeSessionsTotal: { inc: jest.fn(), dec: jest.fn(), set: jest.fn() },
+  kafkaMessageProcessingSeconds: { observe: jest.fn() },
 }));
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -243,6 +267,265 @@ describe("SocketService", () => {
       await service.startKafkaConsumer();
 
       expect((service as any).kafkaRetryCount).toBe(0);
+    });
+  });
+
+  // ── handleSensorData ─────────────────────────────────────────────────────
+
+  describe("handleSensorData", () => {
+    const sensorId = "sensor-uuid";
+    const baseTopic = "sensor-test";
+    const sensorTopic = "sensor-test/sensor";
+
+    const dataPayload = {
+      type: "data" as const,
+      sensorTopic,
+      measures: [
+        {
+          timestamp: Date.now() * 1000,
+          measures: [{ measureType: "temperature", value: 25.5 }],
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      // Session active pour le topic
+      (service as any).activeSessions.set(sensorTopic, "session-uuid");
+
+      // Cache sensor
+      (service as any).sensorTopicCache.set(baseTopic, {
+        id: sensorId,
+        name: "sensor-test",
+        topic: baseTopic,
+      });
+      (service as any).sensorCacheTime = new Date();
+
+      // Cache measurementTypes
+      (service as any).measurementTypesMap.set("temperature", "type-uuid-temp");
+      (service as any).measurementTypesCacheTime = new Date();
+
+      // Thresholds vides par défaut
+      (db as any).Threshold.findAll = jest.fn().mockResolvedValue([]);
+
+      // bulkCreate OK
+      (db.sensordata.bulkCreate as jest.Mock).mockResolvedValue([]);
+    });
+
+    it("appelle bulkCreate avec les bonnes lignes quand la session est active", async () => {
+      await (service as any).handleSensorData(dataPayload);
+
+      expect(db.sensordata.bulkCreate).toHaveBeenCalledTimes(1);
+      expect(db.sensordata.bulkCreate).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            idSensor: sensorId,
+            idMeasurementType: "type-uuid-temp",
+            value: 25.5,
+          }),
+        ]),
+        { ignoreDuplicates: true }
+      );
+    });
+
+    it("appelle addDiscoveredMeasurement et ne plante pas si le type de mesure est inconnu", async () => {
+      const payloadUnknownType = {
+        ...dataPayload,
+        measures: [
+          {
+            timestamp: Date.now() * 1000,
+            measures: [{ measureType: "unknown-type", value: 99 }],
+          },
+        ],
+      };
+
+      await (service as any).handleSensorData(payloadUnknownType);
+
+      expect(
+        discoveredMeasurementService.addDiscoveredMeasurement
+      ).toHaveBeenCalledWith("unknown-type");
+      // Aucune ligne à insérer → bulkCreate non appelé
+      expect(db.sensordata.bulkCreate).not.toHaveBeenCalled();
+    });
+
+    it("log un warning et retourne sans bulkCreate si pas de session active", async () => {
+      (service as any).activeSessions = new Map();
+
+      const warnSpy = jest
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
+      await (service as any).handleSensorData(dataPayload);
+
+      expect(db.sensordata.bulkCreate).not.toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(sensorTopic)
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it("appelle sendDataToRoom avec le bon topic après insertion", async () => {
+      const sendDataToRoomSpy = jest
+        .spyOn(service, "sendDataToRoom")
+        .mockImplementation(() => {});
+
+      await (service as any).handleSensorData(dataPayload);
+
+      expect(sendDataToRoomSpy).toHaveBeenCalledWith(sensorTopic, dataPayload);
+
+      sendDataToRoomSpy.mockRestore();
+    });
+  });
+
+  // ── checkAndEmitAlerts ───────────────────────────────────────────────────
+
+  describe("checkAndEmitAlerts", () => {
+    const sensorId = "sensor-uuid";
+    const measurementTypeId = "type-uuid-temp";
+    const measureType = "temperature";
+    const sensorTopic = "sensor-test/sensor";
+
+    // Accès io interne pour vérifier les émissions
+    let emitMock: jest.Mock;
+    let toMock: jest.Mock;
+
+    beforeEach(() => {
+      // Reset cache thresholds entre chaque test
+      (service as any).thresholdsCache = new Map();
+
+      emitMock = jest.fn();
+      toMock = jest.fn().mockReturnValue({ emit: emitMock });
+      (service as any).io = { to: toMock };
+    });
+
+    it("retourne sans émettre si aucun threshold n'existe pour ce capteur", async () => {
+      (db as any).Threshold.findAll = jest.fn().mockResolvedValue([]);
+
+      await (service as any).checkAndEmitAlerts(
+        sensorId,
+        measurementTypeId,
+        measureType,
+        25.5,
+        sensorTopic
+      );
+
+      expect(toMock).not.toHaveBeenCalled();
+    });
+
+    it("émet threshold-alert à l'utilisateur concerné quand la valeur est sous le min", async () => {
+      (db as any).Threshold.findAll = jest.fn().mockResolvedValue([
+        {
+          dataValues: {
+            idSensor: sensorId,
+            idMeasurementType: measurementTypeId,
+            minValue: 20,
+            maxValue: 100,
+          },
+        },
+      ]);
+      (db as any).UserSensorAccess.findAll = jest.fn().mockResolvedValue([
+        { dataValues: { userId: "user-uuid-1" } },
+      ]);
+      (db as any).User.findAll = jest.fn().mockResolvedValue([]);
+
+      await (service as any).checkAndEmitAlerts(
+        sensorId,
+        measurementTypeId,
+        measureType,
+        10, // < minValue 20
+        sensorTopic
+      );
+
+      expect(toMock).toHaveBeenCalledWith("user-user-uuid-1");
+      expect(emitMock).toHaveBeenCalledWith(
+        "threshold-alert",
+        expect.objectContaining({
+          direction: "min",
+          sensorTopic,
+          measureType,
+          value: 10,
+        })
+      );
+    });
+
+    it("émet threshold-alert à l'utilisateur concerné quand la valeur dépasse le max", async () => {
+      (db as any).Threshold.findAll = jest.fn().mockResolvedValue([
+        {
+          dataValues: {
+            idSensor: sensorId,
+            idMeasurementType: measurementTypeId,
+            minValue: 0,
+            maxValue: 30,
+          },
+        },
+      ]);
+      (db as any).UserSensorAccess.findAll = jest.fn().mockResolvedValue([
+        { dataValues: { userId: "user-uuid-1" } },
+      ]);
+      (db as any).User.findAll = jest.fn().mockResolvedValue([]);
+
+      await (service as any).checkAndEmitAlerts(
+        sensorId,
+        measurementTypeId,
+        measureType,
+        50, // > maxValue 30
+        sensorTopic
+      );
+
+      expect(toMock).toHaveBeenCalledWith("user-user-uuid-1");
+      expect(emitMock).toHaveBeenCalledWith(
+        "threshold-alert",
+        expect.objectContaining({
+          direction: "max",
+          value: 50,
+        })
+      );
+    });
+
+    it("ne émet aucune alerte si la valeur est dans les limites", async () => {
+      (db as any).Threshold.findAll = jest.fn().mockResolvedValue([
+        {
+          dataValues: {
+            idSensor: sensorId,
+            idMeasurementType: measurementTypeId,
+            minValue: 0,
+            maxValue: 100,
+          },
+        },
+      ]);
+
+      await (service as any).checkAndEmitAlerts(
+        sensorId,
+        measurementTypeId,
+        measureType,
+        50, // dans les limites
+        sensorTopic
+      );
+
+      expect(toMock).not.toHaveBeenCalled();
+    });
+
+    it("utilise le cache des thresholds : Threshold.findAll appelé une seule fois pour deux appels consécutifs", async () => {
+      (db as any).Threshold.findAll = jest.fn().mockResolvedValue([]);
+      (db as any).UserSensorAccess.findAll = jest.fn().mockResolvedValue([]);
+      (db as any).User.findAll = jest.fn().mockResolvedValue([]);
+
+      await (service as any).checkAndEmitAlerts(
+        sensorId,
+        measurementTypeId,
+        measureType,
+        25,
+        sensorTopic
+      );
+      await (service as any).checkAndEmitAlerts(
+        sensorId,
+        measurementTypeId,
+        measureType,
+        30,
+        sensorTopic
+      );
+
+      expect((db as any).Threshold.findAll).toHaveBeenCalledTimes(1);
     });
   });
 });
