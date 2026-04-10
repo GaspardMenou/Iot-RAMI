@@ -65,8 +65,19 @@
 		justify-content: space-between;
 		gap: 1rem;
 		padding-bottom: 1rem;
-		border-bottom: 1px solid var(--color-border);
+		border-bottom: none;
 		flex-wrap: wrap;
+		position: relative;
+	}
+
+	.view-header::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: linear-gradient(to right, var(--color-primary) 0%, var(--color-border) 40%, transparent 100%);
 	}
 
 	.view-header-left {
@@ -103,6 +114,7 @@
 		text-transform: uppercase;
 		line-height: 1;
 		color: var(--color-text);
+		text-shadow: 0 0 30px var(--color-primary-glow);
 	}
 
 	.view-sub {

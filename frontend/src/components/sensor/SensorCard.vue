@@ -147,7 +147,7 @@
 		border-left: 3px solid var(--color-border-bright);
 		padding: 0;
 		cursor: pointer;
-		transition: border-color 0.12s, background-color 0.12s, box-shadow 0.12s;
+		transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s, transform 0.15s;
 		overflow: hidden;
 		width: 100%;
 	}
@@ -156,7 +156,8 @@
 		border-color: var(--color-primary);
 		border-left-color: var(--color-primary);
 		background: var(--color-surface-secondary);
-		box-shadow: 0 0 20px var(--color-primary-glow), inset 0 0 30px var(--color-primary-dim);
+		box-shadow: 0 0 24px var(--color-primary-glow), inset 0 0 40px var(--color-primary-dim);
+		transform: translateX(1px);
 	}
 
 	.sensor-card--selected {
@@ -217,6 +218,11 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		transition: color 0.15s;
+	}
+
+	.sensor-card:hover .sensor-name {
+		color: var(--color-primary);
 	}
 
 	.status-tag {

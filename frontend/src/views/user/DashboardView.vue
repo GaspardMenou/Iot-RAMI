@@ -51,8 +51,8 @@
 	<div class="dashboard">
 		<!-- Greeting -->
 		<div class="greeting-block">
-			<div class="greeting-label">TERMINAL RAMI — ACCÈS AUTORISÉ</div>
-			<h1 class="greeting-name">{{ firstName.toUpperCase() }}</h1>
+			<div class="greeting-label"><span class="label-blink">▶</span> TERMINAL RAMI — ACCÈS AUTORISÉ</div>
+			<h1 class="greeting-name">{{ firstName.toUpperCase() }}<span class="cursor">_</span></h1>
 			<div class="greeting-line" />
 		</div>
 
@@ -178,6 +178,19 @@
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
 		opacity: 0.6;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.label-blink {
+		animation: label-blink 1.2s step-end infinite;
+		font-size: 0.5rem;
+	}
+
+	@keyframes label-blink {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0; }
 	}
 
 	.greeting-name {
@@ -191,10 +204,40 @@
 		text-shadow: 0 0 40px var(--color-primary-glow);
 	}
 
+	.cursor {
+		color: var(--color-primary);
+		animation: cursor-blink 1s step-end infinite;
+		text-shadow: 0 0 12px var(--color-primary);
+		margin-left: 2px;
+	}
+
+	@keyframes cursor-blink {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0; }
+	}
+
 	.greeting-line {
-		height: 1px;
+		height: 2px;
 		background: linear-gradient(to right, var(--color-primary), var(--color-primary-dim), transparent);
 		margin-top: 4px;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.greeting-line::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 60%;
+		height: 100%;
+		background: linear-gradient(to right, transparent, rgba(255,159,10,0.8), transparent);
+		animation: line-scan 3s ease-in-out infinite 0.5s;
+	}
+
+	@keyframes line-scan {
+		0% { left: -60%; }
+		100% { left: 160%; }
 	}
 
 	/* Stats */
@@ -212,7 +255,32 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-		transition: background-color 0.15s;
+		transition: background-color 0.2s, box-shadow 0.2s;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.stat-card::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 2px;
+		background: var(--color-primary);
+		opacity: 0.3;
+		transition: opacity 0.2s;
+	}
+
+	.stat-card--live::before {
+		background: var(--color-success);
+		opacity: 0.5;
+		animation: live-bar 2s ease-in-out infinite;
+	}
+
+	@keyframes live-bar {
+		0%, 100% { opacity: 0.5; }
+		50% { opacity: 1; box-shadow: 0 0 8px var(--color-success); }
 	}
 
 	.stat-card--link {
@@ -221,7 +289,11 @@
 
 	.stat-card--link:hover {
 		background: var(--color-surface-secondary);
-		box-shadow: inset 0 0 0 1px var(--color-border-bright);
+		box-shadow: inset 0 0 40px var(--color-primary-dim);
+	}
+
+	.stat-card--link:hover::before {
+		opacity: 1;
 	}
 
 	.stat-skeleton {
@@ -276,6 +348,19 @@
 		background: var(--color-surface-secondary);
 		border: 1px solid var(--color-border);
 		border-bottom: none;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.section-header::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 3px;
+		background: var(--color-primary);
+		opacity: 0.6;
 	}
 
 	.section-header h2 {
@@ -285,6 +370,7 @@
 		letter-spacing: 0.15em;
 		color: var(--color-text-muted);
 		text-transform: uppercase;
+		padding-left: 0.25rem;
 	}
 
 	.section-hint {

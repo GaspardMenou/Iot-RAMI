@@ -229,18 +229,19 @@
 		font-weight: 900;
 		color: var(--color-primary);
 		letter-spacing: 0.12em;
-		text-shadow: 0 0 20px var(--color-primary-glow);
+		text-shadow: 0 0 24px var(--color-primary-glow), 0 0 2px rgba(255,159,10,0.4);
 		line-height: 1;
 	}
 
 	.logo-sub {
 		font-family: var(--font-mono);
 		font-size: 0.58rem;
-		color: var(--color-text-muted);
-		letter-spacing: 0.12em;
+		color: var(--color-sidebar-text);
+		letter-spacing: 0.15em;
 		text-transform: uppercase;
-		font-weight: 300;
+		font-weight: 400;
 		margin-top: 4px;
+		opacity: 0.8;
 	}
 
 	.close-btn {
@@ -307,7 +308,12 @@
 		background-color: var(--color-primary-dim);
 		border-left-color: var(--color-primary);
 		font-weight: 700;
-		box-shadow: inset 0 0 20px rgba(255, 159, 10, 0.04);
+		box-shadow: inset 0 0 24px rgba(255, 159, 10, 0.08);
+		text-shadow: 0 0 8px var(--color-primary-glow);
+	}
+
+	.sidebar-nav ul li a.active-link .nav-icon {
+		text-shadow: 0 0 10px var(--color-primary);
 	}
 
 	/* ── Footer ── */

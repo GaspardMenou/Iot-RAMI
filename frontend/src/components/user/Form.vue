@@ -147,6 +147,8 @@
 		background: var(--color-surface);
 		border: 1px solid var(--color-border-bright);
 		padding: 2px;
+		position: relative;
+		box-shadow: 0 0 60px var(--color-primary-glow), 0 0 120px rgba(255,159,10,0.04);
 	}
 
 	/* Coins décoratifs */
@@ -191,8 +193,14 @@
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		line-height: 1;
-		text-shadow: 0 0 30px var(--color-primary-glow);
+		text-shadow: 0 0 30px var(--color-primary-glow), 0 0 60px rgba(255,159,10,0.15);
 		margin-bottom: 4px;
+		animation: title-fade-in 0.4s ease-out both;
+	}
+
+	@keyframes title-fade-in {
+		from { opacity: 0; transform: translateY(-6px); }
+		to { opacity: 1; transform: translateY(0); }
 	}
 
 	.form-subtitle {
@@ -203,6 +211,7 @@
 		text-transform: uppercase;
 		font-weight: 300;
 		margin-bottom: 2.5rem;
+		opacity: 0.7;
 	}
 
 	.input-row {
@@ -306,14 +315,33 @@
 		background: var(--color-primary);
 		border: none;
 		cursor: pointer;
-		transition: background-color 0.2s, box-shadow 0.2s;
+		transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
 		border-radius: 0;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.submit-button::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+		transform: translateX(-100%);
+		transition: transform 0.35s ease;
+	}
+
+	.submit-button:hover::after {
+		transform: translateX(100%);
 	}
 
 	.submit-button:hover {
 		background: var(--color-primary-hover);
-		box-shadow: 0 0 24px var(--color-primary-glow);
+		box-shadow: 0 0 30px var(--color-primary-glow);
 		color: var(--color-text-second);
+	}
+
+	.submit-button:active {
+		transform: scaleX(0.98);
 	}
 
 	.btn-arrow {
